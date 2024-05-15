@@ -1,0 +1,47 @@
+[workspace]
+resolver = "2"
+default-members = ["tallyvm"]
+members = ["tallyvm", "runtime/core", "runtime/sdk", "runtime/core"]
+
+[workspace.package]
+rust-version = "1.66.1"
+version = "0.0.1-rc"
+
+[profile.dev]
+codegen-units = 512
+opt-level = 1
+
+[profile.release]
+codegen-units = 1
+incremental = true
+lto = "thin"
+panic = "abort"
+strip = true
+
+[workspace.dependencies]
+actix = "0.13"
+async-trait = "0.1"
+bn254 = { git = "https://github.com/sedaprotocol/bn254", branch = "main" }
+hex = "0.4"
+home = "0.5.5"
+lazy_static = "1.4"
+parking_lot = "0.12"
+seda-common = { path = "./runtime/common" }
+seda-runtime-sdk = { path = "./runtime/sdk" }
+seda-wasm-vm = { path = "./runtime/core" }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0", default-features = false }
+sha3 = "0.10.8"
+thiserror = "1.0"
+tokio = { version = "1.21", default-features = false }
+tracing = { version = "0.1", features = ["log-always"] }
+url = { version = "2.3", default-features = false }
+wasmer = { version = "4.2.4", default-features = true }
+wasmer-wasix = { version = "0.17", default-features = false, features = [
+	"sys",
+	"logging",
+	"host-fs",
+	"sys-thread",
+	"sys-poll",
+	"host-threads",
+] }
