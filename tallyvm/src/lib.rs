@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    ffi::{c_char, CString},
+    ffi::{c_char, CStr, CString},
     ptr,
 };
 
@@ -11,6 +11,7 @@ use crate::errors::Result;
 
 mod errors;
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct FfiExitInfo {
     exit_message: *const c_char,
@@ -26,13 +27,14 @@ impl FfiExitInfo {
     }
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct FfiVmResult {
-    stdout_ptr: *const *const c_char,
+    stdout:     *const *const c_char,
     stdout_len: usize,
-    stderr_ptr: *const *const c_char,
+    stderr:     *const *const c_char,
     stderr_len: usize,
-    result_ptr: *const u8,
+    result:     *const u8,
     result_len: usize,
     exit_info:  FfiExitInfo,
 }
@@ -54,11 +56,11 @@ impl FfiVmResult {
         let stderr_ptrs: Vec<*const c_char> = stderr.iter().map(|s| s.as_ptr()).collect();
 
         FfiVmResult {
-            stdout_ptr: stdout_ptrs.as_ptr(),
+            stdout:     stdout_ptrs.as_ptr(),
             stdout_len: stdout_ptrs.len(),
-            stderr_ptr: stderr_ptrs.as_ptr(),
+            stderr:     stderr_ptrs.as_ptr(),
             stderr_len: stderr_ptrs.len(),
-            result_ptr: vm_result.result.as_deref().unwrap_or(&[]).as_ptr(),
+            result:     vm_result.result.as_deref().unwrap_or(&[]).as_ptr(),
             result_len: vm_result.result.as_deref().unwrap_or(&[]).len(),
             exit_info:  FfiExitInfo::from_exit_info(vm_result.exit_info),
         }
@@ -72,38 +74,28 @@ impl FfiVmResult {
 pub unsafe extern "C" fn execute_tally_vm(
     wasm_bytes: *const u8,
     wasm_bytes_len: usize,
-    args_ptr: *const *const u8,
-    args_len: *const usize,
+    args_ptr: *const *const c_char,
     args_count: usize,
-    env_keys_ptr: *const *const u8,
-    env_keys_len: *const usize,
-    env_values_ptr: *const *const u8,
-    env_values_len: *const usize,
+    env_keys_ptr: *const *const c_char,
+    env_values_ptr: *const *const c_char,
     env_count: usize,
-) -> FfiVmResult {
+) {
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
-    let args = (0..args_count)
+    let args: Vec<String> = (0..args_count)
         .map(|i| {
             let ptr = unsafe { *args_ptr.add(i) };
-            let len = unsafe { *args_len.add(i) };
-            let slice = unsafe { std::slice::from_raw_parts(ptr, len) };
-            String::from_utf8_lossy(slice).into_owned()
+            CStr::from_ptr(ptr).to_string_lossy().into_owned()
         })
         .collect();
 
     let mut envs = HashMap::new();
     for i in 0..env_count {
         let key_ptr = unsafe { *env_keys_ptr.add(i) };
-        let key_len = unsafe { *env_keys_len.add(i) };
         let value_ptr = unsafe { *env_values_ptr.add(i) };
-        let value_len = unsafe { *env_values_len.add(i) };
 
-        let key_slice = unsafe { std::slice::from_raw_parts(key_ptr, key_len) };
-        let value_slice = unsafe { std::slice::from_raw_parts(value_ptr, value_len) };
-
-        let key = String::from_utf8_lossy(key_slice).into_owned();
-        let value = String::from_utf8_lossy(value_slice).into_owned();
+        let key = CStr::from_ptr(key_ptr).to_string_lossy().into_owned();
+        let value = CStr::from_ptr(value_ptr).to_string_lossy().into_owned();
 
         envs.insert(key, value);
     }
@@ -112,21 +104,22 @@ pub unsafe extern "C" fn execute_tally_vm(
         Ok(vm_result) => FfiVmResult::from_vm_result(vm_result),
         // TODO better handle this lol
         Err(_) => FfiVmResult {
-            stdout_ptr: ptr::null(),
+            stdout:     ptr::null(),
             stdout_len: 0,
-            stderr_ptr: ptr::null(),
+            stderr:     ptr::null(),
             stderr_len: 0,
-            result_ptr: ptr::null(),
+            result:     ptr::null(),
             result_len: 0,
             exit_info:  FfiExitInfo {
                 exit_message: ptr::null(),
                 exit_code:    -1,
             },
         },
-    }
+    };
 }
 
 fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: HashMap<String, String>) -> Result<VmResult> {
+    dbg!(&args, &envs);
     let wasm_id = WasmId::Bytes(wasm_bytes);
     let runtime_context = RuntimeContext::new(&wasm_id)?;
 

@@ -1,32 +1,69 @@
-package bind
+package bind_go
+
+/*
+#include <../tallyvm/libseda_tally_vm.h>
+*/
+import "C"
 
 import (
+	"fmt"
+	"runtime"
+	"unsafe"
+
 	"github.com/ebitengine/purego"
 )
-
-func execute_tally_vm(bytes []byte, args []string, envs map[string]string) FfiVmResult {
-	pbindings, err := purego.Dlopen(getSystemLibrary(), purego.RTLD_NOW|purego.RTLD_GLOBAL)
-	if err != nil {
-		panic(err)
-	}
-	// inputs:
-	// 1. the bytes of the wasm binary
-	// 2. the arguments to the wasm module
-	// 3. the array of sizes of each argument
-	// 4. the number of arguments
-	// 5. the environment variables
-	// 6. the number of environment variables
-	var executeTallyVm func([]byte, int, []string, []int, int, map[string]string, int) FfiVmResult
-	purego.RegisterLibFunc(&executeTallyVm, bindings, "execute_tally_vm")
-}
 
 func getSystemLibrary() string {
 	switch runtime.GOOS {
 	case "darwin":
-		return "./target/release/libbindings.dylib"
+		return "../target/debug/libseda_tally_vm.dylib"
 	case "linux":
-		return "./target/release/libbindings.so"
+		return "../target/debug/libseda_tally_vm.so"
 	default:
 		panic(fmt.Errorf("GOOS=%s is not supported", runtime.GOOS))
 	}
+}
+
+type FfiExitInfo struct {
+	ExitMessage string
+	ExitCode    int
+}
+
+type FfiVmResult struct {
+	Stdout    string
+	StdoutLen int
+	Stderr    string
+	StderrLen int
+	Result    []byte
+	ResultLen int
+	ExitInfo  FfiExitInfo
+}
+
+func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) {
+	pbindings, err := purego.Dlopen(getSystemLibrary(), purego.RTLD_NOW|purego.RTLD_GLOBAL)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("go args: ", args)
+
+	argsC := make([]*C.char, len(args))
+	for i, s := range args {
+		argsC[i] = C.CString(s)
+		defer C.free(unsafe.Pointer(argsC[i]))
+	}
+	var executeTallyVm func([]byte, int, []*C.char, int, []*C.char, []*C.char, int) FfiVmResult
+	purego.RegisterLibFunc(&executeTallyVm, pbindings, "execute_tally_vm")
+	keys := make([]*C.char, 0, len(envs))
+	values := make([]*C.char, 0, len(envs))
+	for k := range envs {
+		key := C.CString(k)
+		keys = append(keys, key)
+		defer C.free(unsafe.Pointer(key))
+		value := C.CString(envs[k])
+		values = append(values, value)
+		defer C.free(unsafe.Pointer(value))
+	}
+	// executeTallyVm(bytes, len(bytes), args, len(args), keys, values, len(envs))
+	executeTallyVm(bytes, len(bytes), argsC, len(args), keys, values, len(envs))
 }
