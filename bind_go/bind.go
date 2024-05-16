@@ -1,7 +1,7 @@
 package bind_go
 
 /*
-#cgo CFLAGS: -I../tallyvm
+#cgo CFLAGS: -Itallyvm
 #cgo LDFLAGS: -L../target/release -lseda_tally_vm -Wl,-rpath,../target/release
 #include <libseda_tally_vm.h>
 */
