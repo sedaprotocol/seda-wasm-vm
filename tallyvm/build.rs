@@ -6,5 +6,5 @@ fn main() {
 
     cbindgen::generate(crate_dir)
         .expect("Unable to generate bindings")
-        .write_to_file("libseda_tally_vm.h");
+        .write_to_file("../bind_go/libseda_tally_vm.h");
 }
