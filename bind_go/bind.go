@@ -1,7 +1,7 @@
 package bind_go
 
 /*
-#include <../tallyvm/libseda_tally_vm.h>
+#include <libseda_tally_vm.h>
 */
 import "C"
 
