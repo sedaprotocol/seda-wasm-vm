@@ -16,9 +16,9 @@ import (
 func getSystemLibrary() string {
 	switch runtime.GOOS {
 	case "darwin":
-		return "../target/debug/libseda_tally_vm.dylib"
+		return "libseda_tally_vm.dylib"
 	case "linux":
-		return "../target/debug/libseda_tally_vm.so"
+		return "libseda_tally_vm.so"
 	default:
 		panic(fmt.Errorf("GOOS=%s is not supported", runtime.GOOS))
 	}
