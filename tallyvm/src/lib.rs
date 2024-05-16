@@ -43,7 +43,7 @@ mod test {
         )
         .unwrap();
 
-        result.stdout.iter().for_each(|line| println!("{}", line));
+        result.stdout.iter().for_each(|line| print!("{}", line));
 
         dbg!(result);
     }

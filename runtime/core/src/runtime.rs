@@ -1,13 +1,8 @@
 use std::{io::Read, sync::mpsc, thread, time::Duration};
 
-use seda_runtime_sdk::{ExecutionResult, VmCallData, VmResult, VmResultStatus};
+use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
-use wasmer_wasix::{
-    wasmer_wasix_types::wasi::{Errno, ExitCode},
-    Pipe,
-    WasiEnv,
-    WasiRuntimeError,
-};
+use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
 
 use crate::{context::VmContext, runtime_context::RuntimeContext, vm_imports::create_wasm_imports};
 
@@ -16,7 +11,7 @@ fn internal_run_vm(
     mut context: RuntimeContext,
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
-) -> ExecutionResult<Vec<u8>> {
+) -> ExecutionResult<(Vec<u8>, i32)> {
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
 
@@ -81,15 +76,19 @@ fn internal_run_vm(
             .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
         let runtime_result = main_func.call(&mut context.wasm_store, &[]);
+        dbg!(&runtime_result);
+
         wasi_env.cleanup(&mut context.wasm_store, None);
         drop(_guard);
+
+        let mut exit_code: i32 = 0;
 
         if let Err(err) = runtime_result {
             // we convert the error to a wasix error
             let wasix_error = WasiRuntimeError::from(err);
-            // If the error does not match a success exit code, we return an execution error
-            if !matches!(wasix_error.as_exit_code(), Some(ExitCode::Errno(Errno::Success))) {
-                return Err(VmResultStatus::ExecutionError(wasix_error.to_string()));
+
+            if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
+                exit_code = wasi_exit_code.raw();
             }
         }
 
@@ -99,7 +98,7 @@ fn internal_run_vm(
             tracing::error!("Failed to send result: {:?}", e);
         }
 
-        Ok(execution_result.clone())
+        Ok((execution_result.clone(), exit_code))
     });
 
     // Wait for the function to complete or timeout.
@@ -114,7 +113,7 @@ fn internal_run_vm(
             // This is caused by an error occuring in the thread
             handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?
         }
-    }?;
+    };
 
     let mut stdout_buffer = String::new();
     stdout_rx
@@ -134,21 +133,27 @@ fn internal_run_vm(
         stderr.push(stderr_buffer);
     }
 
-    Ok(execution_result)
+    execution_result
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {
     let mut stdout: Vec<String> = vec![];
     let mut stderr: Vec<String> = vec![];
 
-    let result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
+    let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
 
-    match result {
-        Ok(result) => VmResult {
+    match vm_execution_result {
+        Ok((result, exit_code)) => VmResult {
             stdout,
             stderr,
+            exit_info: ExitInfo {
+                exit_code,
+                exit_message: match exit_code {
+                    0 => "Ok".to_string(),
+                    _ => String::from_utf8_lossy(&result).to_string(),
+                },
+            },
             result: Some(result),
-            exit_info: VmResultStatus::EmptyQueue.into(),
         },
         Err(error) => VmResult {
             stdout,

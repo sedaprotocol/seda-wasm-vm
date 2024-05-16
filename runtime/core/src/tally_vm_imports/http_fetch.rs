@@ -12,15 +12,15 @@ pub fn http_fetch_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmConte
         let ctx = env.data();
 
         let message = "http_fetch is not allowed in tally".as_bytes().to_vec();
-        // let http_response: Result<HttpFetchResponse, HttpFetchResponse> = Err(HttpFetchResponse {
-        //     url:            "".to_string(),
-        //     status:         0,
-        //     headers:        HashMap::default(),
-        //     content_length: message.len(),
-        //     bytes:          message,
-        // });
+        let http_response: HttpFetchResponse = HttpFetchResponse {
+            url:            "".to_string(),
+            status:         0,
+            headers:        HashMap::default(),
+            content_length: message.len(),
+            bytes:          message,
+        };
 
-        let result: PromiseStatus = PromiseStatus::Rejected(message);
+        let result: PromiseStatus = PromiseStatus::Rejected(serde_json::to_vec(&http_response)?);
 
         let mut call_value = ctx.call_result_value.write();
         *call_value = serde_json::to_vec(&result)?;

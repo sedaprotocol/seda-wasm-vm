@@ -80,7 +80,7 @@ impl Default for VmCallData {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ExitInfo {
     pub exit_message: String,
-    pub exit_code:    u8,
+    pub exit_code:    i32,
 }
 
 impl ExitInfo {
@@ -89,8 +89,8 @@ impl ExitInfo {
     }
 }
 
-impl From<(String, u8)> for ExitInfo {
-    fn from((exit_message, exit_code): (String, u8)) -> Self {
+impl From<(String, i32)> for ExitInfo {
+    fn from((exit_message, exit_code): (String, i32)) -> Self {
         Self {
             exit_message,
             exit_code,
@@ -108,7 +108,7 @@ pub struct VmResult {
 }
 
 impl VmResult {
-    pub fn create_err<M: ToString>(message: M, exit_code: u8) -> VmResult {
+    pub fn create_err<M: ToString>(message: M, exit_code: i32) -> VmResult {
         VmResult {
             stdout:    vec![],
             stderr:    vec![message.to_string()],
