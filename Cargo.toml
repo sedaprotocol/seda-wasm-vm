@@ -22,6 +22,7 @@ strip = true
 actix = "0.13"
 async-trait = "0.1"
 bn254 = { git = "https://github.com/sedaprotocol/bn254", branch = "main" }
+cbindgen = "0.26"
 hex = "0.4"
 home = "0.5.5"
 lazy_static = "1.4"
