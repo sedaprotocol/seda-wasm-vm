@@ -76,7 +76,6 @@ fn internal_run_vm(
             .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
         let runtime_result = main_func.call(&mut context.wasm_store, &[]);
-        dbg!(&runtime_result);
 
         wasi_env.cleanup(&mut context.wasm_store, None);
         drop(_guard);

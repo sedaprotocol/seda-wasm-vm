@@ -9,15 +9,38 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef struct FfiExitInfo {
+  const char *exit_message;
+  int32_t exit_code;
+} FfiExitInfo;
+
+typedef struct FfiVmResult {
+  const char *const *stdout_ptr;
+  uintptr_t stdout_len;
+  const char *const *stderr_ptr;
+  uintptr_t stderr_len;
+  const uint8_t *result_ptr;
+  uintptr_t result_len;
+  struct FfiExitInfo exit_info;
+} FfiVmResult;
+
 /**
  * # Safety
- *
- * TODO something more meaningful here
  */
-void execute_tally_vm(const uint8_t *wasm_bytes,
-                      uintptr_t wasm_bytes_len,
-                      const char *const *args_ptr,
-                      uintptr_t args_count,
-                      const char *const *env_keys_ptr,
-                      const char *const *env_values_ptr,
-                      uintptr_t env_count);
+void free_ffi_exit_info(struct FfiExitInfo *exit_info);
+
+/**
+ * # Safety
+ */
+void free_ffi_vm_result(struct FfiVmResult *vm_result);
+
+/**
+ * # Safety
+ */
+struct FfiVmResult execute_tally_vm(const uint8_t *wasm_bytes,
+                                    uintptr_t wasm_bytes_len,
+                                    const char *const *args_ptr,
+                                    uintptr_t args_count,
+                                    const char *const *env_keys_ptr,
+                                    const char *const *env_values_ptr,
+                                    uintptr_t env_count);
