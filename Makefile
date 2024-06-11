@@ -1,5 +1,6 @@
 .PHONY: all build build-rust build-go
 
+SHARED_LIB = ""
 ifeq ($(OS),Windows_NT)
 	SHARED_LIB = seda_tally_vm.dll
 else
@@ -14,7 +15,7 @@ endif
 
 all: build test
 
-build: build-rust build-go
+build: build-rust #build-go
 
 build-rust: build-rust-release
 
@@ -25,3 +26,6 @@ build-rust-debug:
 build-rust-release:
 	cargo build --release
 	cp target/release/$(SHARED_LIB) tallyvm/$(SHARED_LIB_DST)
+
+# build-go:
+# 	(cd tallyvm && go build .)
