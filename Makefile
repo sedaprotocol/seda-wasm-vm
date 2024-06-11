@@ -1,4 +1,4 @@
-.PHONY: all build build-rust build-go
+.PHONY: all build build-rust
 
 SHARED_LIB = ""
 ifeq ($(OS),Windows_NT)
@@ -15,7 +15,7 @@ endif
 
 all: build test
 
-build: build-rust #build-go
+build: build-rust
 
 build-rust: build-rust-release
 
@@ -26,6 +26,3 @@ build-rust-debug:
 build-rust-release:
 	cargo build --release
 	cp target/release/$(SHARED_LIB) tallyvm/$(SHARED_LIB_DST)
-
-# build-go:
-# 	(cd tallyvm && go build .)
