@@ -1,10 +1,6 @@
 package tallyvm
 
-/*
-#cgo CFLAGS: -Itallyvm
-#cgo LDFLAGS: -Wl,-rpath,${SRCDIR} -L${SRCDIR} -lseda_tally_vm
-#include <libseda_tally_vm.h>
-*/
+// #include <libseda_tally_vm.h>
 import "C"
 
 import (

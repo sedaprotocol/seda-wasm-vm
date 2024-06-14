@@ -34,7 +34,7 @@ build-rust-release:
 
 
 ###############################################################################
-##                             Shared Library                                ##
+##                        Building Shared Libraries                          ##
 ###############################################################################
 docker-image-centos7:
 	docker build --pull . --platform linux/x86_64 -t seda-wasm-vm-builder-centos7 -f ./Dockerfile.centos7
@@ -49,7 +49,7 @@ release-build-centos7:
 
 
 ###############################################################################
-##                             Static Library                                ##
+##                        Building Static Libraries                          ##
 ###############################################################################
 docker-image-alpine:
 	docker build . -t seda-wasm-vm-builder-alpine
