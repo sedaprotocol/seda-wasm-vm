@@ -34,12 +34,27 @@ build-rust-release:
 
 
 ###############################################################################
+##                             Shared Library                                ##
+###############################################################################
+docker-image-centos7:
+	docker build --pull . --platform linux/x86_64 -t seda-wasm-vm-builder-centos7 -f ./Dockerfile.centos7
+
+# For building glibc Linux shared libraries (.so)
+release-build-centos7:
+	rm -rf target/x86_64-unknown-linux-gnu/release
+	rm -rf target/aarch64-unknown-linux-gnu/release
+	docker run --rm -u $(USER_ID):$(USER_GROUP) -v $(shell pwd):/code seda-wasm-vm-builder-centos7 build_linux.sh
+	cp target/x86_64-unknown-linux-gnu/release/libseda_tally_vm.so tallyvm/libseda_tally_vm.x86_64.so
+	cp target/aarch64-unknown-linux-gnu/release/libseda_tally_vm.so tallyvm/libseda_tally_vm.aarch64.so
+
+
+###############################################################################
 ##                             Static Library                                ##
 ###############################################################################
 docker-image-alpine:
 	docker build . -t seda-wasm-vm-builder-alpine
 
-# For building the static library for Alpine Linux (.a)
+# For building musl Linux static libraries (.a)
 release-build-alpine:
 	rm -rf target/aarch64-unknown-linux-musl/release
 	rm -rf target/x86_64-unknown-linux-musl/release
