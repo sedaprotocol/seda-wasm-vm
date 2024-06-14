@@ -17,6 +17,7 @@ incremental = true
 lto = "thin"
 panic = "abort"
 strip = true
+rpath = true
 
 [workspace.dependencies]
 actix = "0.13"
