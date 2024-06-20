@@ -51,7 +51,8 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 	resultLen := int(result.result_len)
 	resultBytes := make([]byte, resultLen)
 	if resultLen > 0 {
-		resultBytes = (*[1 << 30]byte)(unsafe.Pointer(result.result_ptr))[:resultLen:resultLen]
+		resultSrc := (*[1 << 30]byte)(unsafe.Pointer(result.result_ptr))[:resultLen:resultLen]
+		copy(resultBytes, resultSrc)
 	}
 
 	stdoutLen := int(result.stdout_len)
