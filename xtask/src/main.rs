@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::{Context, Ok, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use xshell::{cmd, Shell};
@@ -77,10 +79,14 @@ struct Compile {
 impl Compile {
     fn handle(self, sh: &Shell) -> Result<()> {
         let target = self.arch.as_ref();
-        let profile = if self.debug { "debug" } else { "release" };
+        let (build_type, path) = if self.debug {
+            ("build", "debug")
+        } else {
+            ("build --release", "release")
+        };
 
         add_target_if_needed(sh, target)?;
-        match self.arch {
+        let rename = match self.arch {
             Arch::Aarch64 => {
                 std::env::set_var("CC", "clang");
                 std::env::set_var("CXX", "clang++");
@@ -93,17 +99,27 @@ impl Compile {
                     "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER",
                     "qemu-aarch64 -L /usr/aarch64-linux-gnu",
                 );
+
+                "libseda_tally_vm.aarch64.a"
             }
             Arch::X86_64 => {
                 std::env::set_var("CC", "clang");
                 std::env::set_var("CXX", "clang++");
+                "libseda_tally_vm.x86_64.a"
             }
             Arch::StaticAarch64 => {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
+                "libseda_tally_vm.aarch64.static.a"
             }
-            Arch::StaticX86_64 => {}
-        }
-        cmd!(sh, "cargo build --profile {profile} --lib --target {target} --locked").run()?;
+            Arch::StaticX86_64 => "libseda_tally_vm.x86_64.static.a",
+        };
+        cmd!(sh, "cargo {build_type} --lib --target {target} --locked").run()?;
+
+        let target_dir = PathBuf::from("target");
+        std::fs::rename(
+            target_dir.join(target).join(path).join("libseda_tally_vm.a"),
+            target_dir.join(rename),
+        )?;
         Ok(())
     }
 }
