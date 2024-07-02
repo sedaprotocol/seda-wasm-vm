@@ -2,6 +2,7 @@ use std::{
     collections::BTreeMap,
     ffi::{CStr, CString, c_char},
     mem,
+    path::{Path, PathBuf},
     ptr,
 };
 
@@ -142,6 +143,7 @@ impl From<VmResult> for FfiVmResult {
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn execute_tally_vm(
+    sedad_home: *const c_char,
     wasm_bytes: *const u8,
     wasm_bytes_len: usize,
     args_ptr: *const *const c_char,
@@ -150,7 +152,11 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_values_ptr: *const *const c_char,
     env_count: usize,
 ) -> FfiVmResult {
-    let _guard = init_logger();
+    let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
+    let sedad_home = PathBuf::from(sedad_home);
+    let _guard = init_logger(&sedad_home);
+
+    tracing::info!("execute_tally_vm");
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
     let args: Vec<String> = (0..args_count)
@@ -171,7 +177,7 @@ pub unsafe extern "C" fn execute_tally_vm(
         envs.insert(key, value);
     }
 
-    match _execute_tally_vm(wasm_bytes, args, envs) {
+    match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs) {
         Ok(vm_result) => vm_result.into(),
         Err(_) => FfiVmResult {
             stdout_ptr: ptr::null(),
@@ -190,7 +196,12 @@ pub unsafe extern "C" fn execute_tally_vm(
 
 const DEFAULT_GAS_LIMIT_ENV_VAR: &str = "DR_GAS_LIMIT";
 
-fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<String, String>) -> Result<VmResult> {
+fn _execute_tally_vm(
+    sedad_home: &Path,
+    wasm_bytes: Vec<u8>,
+    args: Vec<String>,
+    envs: BTreeMap<String, String>,
+) -> Result<VmResult> {
     let wasm_hash = wasm_cache_id(&wasm_bytes);
     let env_vars = envs.clone();
     let gas_limit = env_vars
@@ -210,7 +221,7 @@ fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<Stri
         gas_limit: Some(gas_limit.parse::<u64>()?),
     };
 
-    let runtime_context = RuntimeContext::new(&call_data)?;
+    let runtime_context = RuntimeContext::new(sedad_home, &call_data)?;
     let result = start_runtime(call_data, runtime_context);
 
     Ok(result)
@@ -230,7 +241,14 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
 
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testHttpSuccess")], envs).unwrap();
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![hex::encode("testHttpSuccess")],
+            envs,
+        )
+        .unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 
@@ -246,7 +264,15 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testProxyHttpFetch")], envs).unwrap();
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![hex::encode("testProxyHttpFetch")],
+            envs,
+        )
+        .unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 
@@ -261,7 +287,9 @@ mod test {
         let wasm_bytes = include_bytes!("../../tally.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], envs).unwrap();
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
     }
@@ -273,7 +301,14 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert("DR_GAS_LIMIT".to_string(), "1000".to_string());
 
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testHttpSuccess")], envs).unwrap();
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![hex::encode("testHttpSuccess")],
+            envs,
+        )
+        .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(result.exit_info.exit_code, 250)
@@ -286,7 +321,9 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
 
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testKeccak256")], envs).unwrap();
+        let tempdir = std::env::temp_dir();
+        let result =
+            _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![hex::encode("testKeccak256")], envs).unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(

@@ -37,7 +37,8 @@ void free_ffi_vm_result(struct FfiVmResult *vm_result);
 /**
  * # Safety
  */
-struct FfiVmResult execute_tally_vm(const uint8_t *wasm_bytes,
+struct FfiVmResult execute_tally_vm(const char *sedad_home,
+                                    const uint8_t *wasm_bytes,
                                     uintptr_t wasm_bytes_len,
                                     const char *const *args_ptr,
                                     uintptr_t args_count,

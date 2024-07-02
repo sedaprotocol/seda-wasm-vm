@@ -1,4 +1,8 @@
-use std::{fs::File, io::Write, path::PathBuf};
+use std::{
+    fs::File,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use sha3::{Digest, Keccak256};
 use wasmer::{Module, Store};
@@ -7,8 +11,8 @@ use crate::{errors::Result, resources_dir::resources_home_dir};
 
 pub const WASM_CACHE_FOLDER_NAME: &str = "wasm_cache";
 
-fn create_cache_path<ID: ToString>(id: ID) -> Result<PathBuf> {
-    let mut wasm_cache_path = resources_home_dir();
+fn create_cache_path<ID: ToString>(sedad_home: &Path, id: ID) -> Result<PathBuf> {
+    let mut wasm_cache_path = resources_home_dir(sedad_home);
     wasm_cache_path.push(WASM_CACHE_FOLDER_NAME);
 
     std::fs::create_dir_all(&wasm_cache_path)?;
@@ -23,8 +27,13 @@ pub fn wasm_cache_id<T: AsRef<[u8]>>(wasm_binary: T) -> String {
     hex::encode(hash.finalize())
 }
 
-pub fn wasm_cache_store<ID: ToString, T: AsRef<[u8]>>(store: &Store, id: ID, wasm_binary: T) -> Result<Module> {
-    let wasm_cache_path = create_cache_path(id)?;
+pub fn wasm_cache_store<ID: ToString, T: AsRef<[u8]>>(
+    sedad_home: &Path,
+    store: &Store,
+    id: ID,
+    wasm_binary: T,
+) -> Result<Module> {
+    let wasm_cache_path = create_cache_path(sedad_home, id)?;
     let module = Module::new(&store, &wasm_binary)?;
 
     let mut file = File::create(wasm_cache_path)?;
@@ -34,8 +43,8 @@ pub fn wasm_cache_store<ID: ToString, T: AsRef<[u8]>>(store: &Store, id: ID, was
     Ok(module)
 }
 
-pub fn wasm_cache_load<ID: ToString>(store: &Store, id: ID) -> Result<Module> {
-    let wasm_cache_path = create_cache_path(id)?;
+pub fn wasm_cache_load<ID: ToString>(sedad_home: &Path, store: &Store, id: ID) -> Result<Module> {
+    let wasm_cache_path = create_cache_path(sedad_home, id)?;
 
     unsafe {
         let ret = Module::deserialize_from_file(&store, wasm_cache_path.clone());

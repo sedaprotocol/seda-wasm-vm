@@ -2,7 +2,7 @@ use std::io::Read;
 
 use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
-use wasmer_middlewares::metering::{get_remaining_points, MeteringPoints};
+use wasmer_middlewares::metering::{MeteringPoints, get_remaining_points};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
 
 use crate::{context::VmContext, runtime_context::RuntimeContext, vm_imports::create_wasm_imports};
@@ -101,6 +101,7 @@ fn internal_run_vm(
     } else {
         0
     };
+    tracing::debug!("VM completed or timed out");
 
     let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
 
@@ -126,11 +127,13 @@ fn internal_run_vm(
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {
+    tracing::info!("Starting runtime");
     let mut stdout: Vec<String> = vec![];
     let mut stderr: Vec<String> = vec![];
 
     let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
 
+    tracing::info!("VM execution completed");
     match vm_execution_result {
         Ok((result, exit_code, gas_used)) => VmResult {
             stdout,

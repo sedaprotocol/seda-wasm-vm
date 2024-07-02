@@ -1,4 +1,4 @@
-use std::{fs, sync::Arc};
+use std::{fs, path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
 use wasmer::{CompilerConfig, EngineBuilder, Module, Singlepass, Store};
@@ -17,7 +17,7 @@ pub struct RuntimeContext {
 }
 
 impl RuntimeContext {
-    pub fn new(call_data: &VmCallData) -> Result<Self> {
+    pub fn new(sedad_home: &Path, call_data: &VmCallData) -> Result<Self> {
         let mut engine = Singlepass::default();
 
         if let Some(gas_limit) = call_data.gas_limit {
@@ -32,13 +32,13 @@ impl RuntimeContext {
 
         let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
-                let wasm_id = wasm_cache_id(&wasm_bytes);
+                let wasm_id = wasm_cache_id(wasm_bytes);
                 let wasm_module = Module::new(&store, wasm_bytes)?;
 
                 (wasm_module, wasm_id)
             }
             WasmId::Id(wasm_id) => {
-                let wasm_module = wasm_cache_load(&store, wasm_id)?;
+                let wasm_module = wasm_cache_load(sedad_home, &store, wasm_id)?;
 
                 (wasm_module, wasm_id.to_string())
             }
@@ -46,11 +46,11 @@ impl RuntimeContext {
                 let wasm_bytes = fs::read(wasm_path)?;
                 let wasm_id = wasm_cache_id(&wasm_bytes);
 
-                let wasm_module = match wasm_cache_load(&store, &wasm_id) {
+                let wasm_module = match wasm_cache_load(sedad_home, &store, &wasm_id) {
                     Ok(module) => module,
                     // The binary didn't exist in cache when we loaded it, so we cache it now
                     // to speed up future executions
-                    Err(_) => wasm_cache_store(&store, &wasm_id, &wasm_bytes)?,
+                    Err(_) => wasm_cache_store(sedad_home, &store, &wasm_id, &wasm_bytes)?,
                 };
 
                 (wasm_module, wasm_id)

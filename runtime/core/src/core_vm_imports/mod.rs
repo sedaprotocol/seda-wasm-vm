@@ -1,5 +1,5 @@
 use secp256_k1::secp256k1_verify_import_obj;
-use wasmer::{imports, FunctionEnv, Imports, Store};
+use wasmer::{FunctionEnv, Imports, Store, imports};
 
 use crate::context::VmContext;
 
@@ -15,7 +15,7 @@ pub fn create_custom_core_imports(store: &mut Store, vm_context: &FunctionEnv<Vm
             "call_result_length" => call_result::call_result_value_length_import_obj(store, vm_context),
             "execution_result" => execution_result::execution_result_import_obj(store, vm_context),
             "secp256k1_verify" => secp256k1_verify_import_obj(store, vm_context),
-            "keccak256" => keccak256::keccak256_import_obj(store, &vm_context)
+            "keccak256" => keccak256::keccak256_import_obj(store, vm_context)
         }
     };
 

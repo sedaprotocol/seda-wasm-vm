@@ -4,6 +4,7 @@ package tallyvm
 import "C"
 
 import (
+	"os"
 	"unsafe"
 )
 
@@ -20,6 +21,10 @@ type VmResult struct {
 }
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
+	// convert config dir to C string
+	config_dir := os.Getenv("SEDAD_TALLYVM_HOME")
+	configDirC := C.CString(config_dir)
+
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {
 		argsC[i] = C.CString(s)
@@ -56,6 +61,7 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 	}
 
 	result := C.execute_tally_vm(
+		configDirC,
 		bytesPtr, C.uintptr_t(len(bytes)),
 		argsPtr, C.uintptr_t(len(args)),
 		keysPtr, valuesPtr, C.uintptr_t(len(envs)),

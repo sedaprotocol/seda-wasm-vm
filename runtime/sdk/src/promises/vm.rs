@@ -87,6 +87,16 @@ impl Default for VmCallData {
     }
 }
 
+impl fmt::Display for VmCallData {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "VmCallData {{ call_id: {:?}, args: {:?}, envs: {:?}, program_name: {:?}, start_func: {:?}, vm_type: {:?} }}",
+            self.call_id, self.args, self.envs, self.program_name, self.start_func, self.vm_type
+        )
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ExitInfo {
     pub exit_message: String,
