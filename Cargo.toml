@@ -35,6 +35,8 @@ sha3 = "0.10.8"
 thiserror = "1.0"
 tokio = { version = "1.21", default-features = false }
 tracing = { version = "0.1", features = ["log-always"] }
+tracing-subscriber = "0.3"
+tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
 wasmer = { version = "4.2.4", default-features = false }
 wasmer-middlewares = "4.2.4"
