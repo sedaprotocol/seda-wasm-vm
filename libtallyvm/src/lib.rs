@@ -6,7 +6,7 @@ use std::{
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
-use seda_wasm_vm::{start_runtime, RuntimeContext, VmCallData, VmResult};
+use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, VmCallData, VmResult};
 
 use crate::errors::Result;
 
@@ -142,6 +142,7 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_values_ptr: *const *const c_char,
     env_count: usize,
 ) -> FfiVmResult {
+    let _guard = init_logger();
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
     let args: Vec<String> = (0..args_count)
