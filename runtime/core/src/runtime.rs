@@ -12,6 +12,7 @@ fn internal_run_vm(
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
 ) -> ExecutionResult<(Vec<u8>, i32)> {
+    tracing::debug!("Running VM with call data: {:?}", call_data);
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
 
@@ -99,6 +100,7 @@ fn internal_run_vm(
 
         Ok((execution_result.clone(), exit_code))
     });
+    tracing::debug!("Waiting for VM to complete or timeout");
 
     // Wait for the function to complete or timeout.
     let execution_result = match receiver.recv_timeout(dr_timeout) {
@@ -113,6 +115,7 @@ fn internal_run_vm(
             handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?
         }
     };
+    tracing::debug!("VM completed or timed out");
 
     let mut stdout_buffer = String::new();
     stdout_rx

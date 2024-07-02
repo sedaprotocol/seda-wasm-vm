@@ -143,6 +143,7 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_count: usize,
 ) -> FfiVmResult {
     let _guard = init_logger();
+    tracing::debug!("execute_tally_vm");
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
     let args: Vec<String> = (0..args_count)
@@ -184,6 +185,7 @@ fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: HashMap<Strin
     let wasm_id = WasmId::Bytes(wasm_bytes);
     let runtime_context = RuntimeContext::new(&wasm_id)?;
 
+    tracing::debug!("starting runtime");
     let result = start_runtime(
         VmCallData {
             call_id: None,
