@@ -64,12 +64,12 @@ jobs:
         run: |
           cargo xtask ci-install ${{ github.event.inputs.architecture }}
 
-      - name: 🔨 Build Debug Library
+      - name: 🔨 Build Debug Library For ${{ github.event.inputs.architecture }}
         if: ${{ github.event.inputs.debug }}
         run: |
           cargo xtask compile ${{ github.event.inputs.architecture }} --debug
       
-      - name: 🔨 Build Library
+      - name: 🔨 Build Library For ${{ github.event.inputs.architecture }}
         if: ${{ !github.event.inputs.debug }}
         run: |
           cargo xtask compile ${{ github.event.inputs.architecture }}
@@ -77,5 +77,6 @@ jobs:
       - name: 📤 Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
+          name: ${{ github.event.inputs.architecture }}
           path: target/libseda_tally_vm*.a
           overwrite: true
