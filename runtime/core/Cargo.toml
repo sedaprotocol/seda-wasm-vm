@@ -17,5 +17,5 @@ sha3 = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
-wasmer = { workspace = true }
+wasmer = { workspace = true, features = ["singlepass"] }
 wasmer-wasix = { workspace = true }
