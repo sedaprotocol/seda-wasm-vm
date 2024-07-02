@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 default-members = ["libtallyvm"]
-members = ["libtallyvm", "runtime/core", "runtime/sdk", "runtime/core"]
+members = ["libtallyvm", "runtime/core", "runtime/sdk", "xtask"]
 
 [workspace.package]
 rust-version = "1.77.0"
@@ -20,15 +20,12 @@ strip = true
 rpath = true
 
 [workspace.dependencies]
-actix = "0.13"
-async-trait = "0.1"
-bn254 = { git = "https://github.com/sedaprotocol/bn254", branch = "main" }
+anyhow = "1.0"
 cbindgen = "0.26"
 hex = "0.4"
 home = "0.5.5"
 lazy_static = "1.4"
 parking_lot = "0.12"
-seda-common = { path = "./runtime/common" }
 seda-runtime-sdk = { path = "./runtime/sdk" }
 seda-wasm-vm = { path = "./runtime/core" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }

@@ -1,8 +1,7 @@
 use std::{num::ParseIntError, string::FromUtf8Error};
 
-use seda_runtime_sdk::{p2p::P2PCommand, SDKError};
+use seda_runtime_sdk::SDKError;
 use thiserror::Error;
-use tokio::sync::mpsc::error::SendError;
 use wasmer::{CompileError, ExportError, InstantiationError};
 use wasmer_wasix::{FsError, WasiError, WasiStateCreationError};
 
@@ -40,9 +39,6 @@ pub enum RuntimeError {
     // TODO this is scuffed and not true for test_host.
     #[error("Node Error: {0}")]
     NodeError(String),
-
-    #[error("P2P Command Channel Error: {0}")]
-    P2PCommandChannelError(#[from] SendError<P2PCommand>),
 
     #[error("SDK Error: {0}")]
     SDKError(#[from] SDKError),

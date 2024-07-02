@@ -1,0 +1,74 @@
+name: Manual Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      password:
+        required: true
+      architecture:
+        required: true
+        description: 'The architecture to build for'
+        type: choice
+        options:
+          - aarch64
+          - x86-64
+          - static-aarch64
+          - static-x86-64
+      debug:
+        required: true
+        description: 'Enable debug mode'
+        type: boolean
+
+# Don't allow multiple of the same job to run
+concurrency:
+  group: "manual_build"
+  cancel-in-progress: false
+
+jobs:
+  check_pass:
+    name: Check password
+    runs-on: ubuntu-latest
+    outputs:
+      is_allowed: ${{ steps.check.outputs.is_allowed }}
+    steps:
+      - id: check
+        run: |
+          password=${{ secrets.CI_PASSWORD }}
+          if [[ "${{ github.event.inputs.password }}" == "${password}" ]]; then
+            echo "is_allowed=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_allowed=false" >> $GITHUB_OUTPUT
+          fi
+
+  test_release:
+    needs: check_pass
+    if: ${{ needs.check_pass.outputs.is_allowed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🫙 Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: cache-v1
+          cache-on-failure: true
+      
+      - name: 🛠️ Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📥 Install Dependencies
+        run: |
+          cargo xtask ci-install ${{ github.event.inputs.architecture }}
+
+      - name: 🔨 Build Debug Library
+        if: ${{ github.event.inputs.debug }}
+        run: |
+          cargo xtask compile ${{ github.event.inputs.architecture }} --debug
+      
+      - name: 🔨 Build Library
+        if: ${{ !github.event.inputs.debug }}
+        run: |
+          cargo xtask compile ${{ github.event.inputs.architecture }} --debug

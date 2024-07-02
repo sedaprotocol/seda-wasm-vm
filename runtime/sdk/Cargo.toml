@@ -10,11 +10,7 @@ wasm = []
 full = []
 
 [dependencies]
-bn254 = { workspace = true }
-lazy_static = { workspace = true }
 serde = { workspace = true, features = ["std"] }
 serde_json = { workspace = true, features = ["std"] }
 thiserror = { workspace = true }
-tracing = { workspace = true }
 url = { workspace = true, features = ["serde"] }
-seda-common = { workspace = true }

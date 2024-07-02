@@ -1,12 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{p2p::P2PMessage, promises::VmCallData};
+use crate::promises::VmCallData;
 
 pub type EventId = String;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum EventData {
-    P2PMessage(P2PMessage),
     Vm(VmCallData),
 }
 
