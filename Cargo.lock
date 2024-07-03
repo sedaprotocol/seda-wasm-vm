@@ -732,6 +732,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 
 [[package]]
+<<<<<<< HEAD
+=======
+name = "fuchsia-cprng"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a06f77d526c1a601b7c4cdd98f54b5eaabffc14d5f2f0296febdc7f357c6d3ba"
+
+[[package]]
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -952,6 +961,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+<<<<<<< HEAD
 name = "home"
 version = "0.5.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -961,6 +971,8 @@ dependencies = [
 ]
 
 [[package]]
+=======
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 name = "http"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1456,13 +1468,33 @@ checksum = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09"
 
 [[package]]
 name = "rand"
+<<<<<<< HEAD
+=======
+version = "0.4.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "552840b97013b1a26992c11eac34bdd778e464601a4c2054b5f0bff7c6761293"
+dependencies = [
+ "fuchsia-cprng",
+ "libc",
+ "rand_core 0.3.1",
+ "rdrand",
+ "winapi",
+]
+
+[[package]]
+name = "rand"
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
 dependencies = [
  "libc",
  "rand_chacha",
+<<<<<<< HEAD
  "rand_core",
+=======
+ "rand_core 0.6.4",
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 ]
 
 [[package]]
@@ -1472,11 +1504,33 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
 dependencies = [
  "ppv-lite86",
+<<<<<<< HEAD
  "rand_core",
+=======
+ "rand_core 0.6.4",
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 ]
 
 [[package]]
 name = "rand_core"
+<<<<<<< HEAD
+=======
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a6fdeb83b075e8266dcc8762c22776f6877a63111121f5f8c7411e5be7eed4b"
+dependencies = [
+ "rand_core 0.4.2",
+]
+
+[[package]]
+name = "rand_core"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c33a3c44ca05fa6f1807d8e6743f3824e8509beca625669633be0acbdf509dc"
+
+[[package]]
+name = "rand_core"
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
@@ -1505,6 +1559,18 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+name = "rdrand"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "678054eb77286b51581ba43620cc911abf02758c91f93f479767aed0f90458b2"
+dependencies = [
+ "rand_core 0.3.1",
+]
+
+[[package]]
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 name = "redox_syscall"
 version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1579,6 +1645,18 @@ dependencies = [
 ]
 
 [[package]]
+<<<<<<< HEAD
+=======
+name = "remove_dir_all"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3acd125665422973a33ac9d3dd2df85edad0f4ae9b00dafb1a05e43a9f5ef8e7"
+dependencies = [
+ "winapi",
+]
+
+[[package]]
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 name = "rend"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1708,6 +1786,10 @@ dependencies = [
  "cbindgen",
  "seda-runtime-sdk",
  "seda-wasm-vm",
+<<<<<<< HEAD
+=======
+ "tempdir",
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
  "thiserror",
  "tracing",
 ]
@@ -1717,7 +1799,10 @@ name = "seda-wasm-vm"
 version = "0.0.1-rc"
 dependencies = [
  "hex",
+<<<<<<< HEAD
  "home",
+=======
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
  "lazy_static",
  "parking_lot",
  "seda-runtime-sdk",
@@ -1988,6 +2073,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e1fc403891a21bcfb7c37834ba66a547a8f402146eba7265b5a6d88059c9ff2f"
 
 [[package]]
+<<<<<<< HEAD
+=======
+name = "tempdir"
+version = "0.3.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "15f2b5fb00ccdf689e0149d1b1b3c03fead81c2b37735d812fa8bddbbf41b6d8"
+dependencies = [
+ "rand 0.4.6",
+ "remove_dir_all",
+]
+
+[[package]]
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 name = "tempfile"
 version = "3.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2096,9 +2194,15 @@ dependencies = [
 
 [[package]]
 name = "tinyvec"
+<<<<<<< HEAD
 version = "1.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ce6b6a2fb3a985e99cebfaefa9faa3024743da73304ca1c683a36429613d3d22"
+=======
+version = "1.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c55115c6fbe2d2bef26eb09ad74bde02d8255476fc0c7b515ef09fbb35742d82"
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
 dependencies = [
  "tinyvec_macros",
 ]
@@ -2805,7 +2909,11 @@ dependencies = [
  "once_cell",
  "petgraph",
  "pin-project",
+<<<<<<< HEAD
  "rand",
+=======
+ "rand 0.8.5",
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
  "rusty_pool",
  "semver",
  "serde",
@@ -2906,7 +3014,11 @@ dependencies = [
  "lexical-sort",
  "once_cell",
  "path-clean",
+<<<<<<< HEAD
  "rand",
+=======
+ "rand 0.8.5",
+>>>>>>> d8d23c8 (refactor: put files in chain dir)
  "semver",
  "serde",
  "serde_cbor",

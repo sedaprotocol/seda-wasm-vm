@@ -12,7 +12,7 @@ fn internal_run_vm(
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
 ) -> ExecutionResult<(Vec<u8>, i32)> {
-    tracing::debug!("Running VM with call data: {:?}", call_data);
+    tracing::debug!("Running VM with call data: {}", call_data);
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
 

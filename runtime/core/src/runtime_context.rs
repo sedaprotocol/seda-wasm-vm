@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path::Path};
 
 use seda_runtime_sdk::WasmId;
 use wasmer::{Module, Store};
@@ -15,24 +15,24 @@ pub struct RuntimeContext {
 }
 
 impl RuntimeContext {
-    pub fn new(wasm_id: &WasmId) -> Result<Self> {
+    pub fn new(sedad_home: &Path, wasm_id: &WasmId) -> Result<Self> {
         let store = Store::default();
 
         let (wasm_module, wasm_hash) = match wasm_id {
             WasmId::Bytes(wasm_bytes) => {
                 let wasm_id = wasm_cache_id(wasm_bytes);
 
-                let wasm_module = match wasm_cache_load(&store, &wasm_id) {
+                let wasm_module = match wasm_cache_load(sedad_home, &store, &wasm_id) {
                     Ok(module) => module,
                     // The binary didn't exist in cache when we loaded it, so we cache it now
                     // to speed up future executions
-                    Err(_) => wasm_cache_store(&store, &wasm_id, wasm_bytes)?,
+                    Err(_) => wasm_cache_store(sedad_home, &store, &wasm_id, wasm_bytes)?,
                 };
 
                 (wasm_module, wasm_id)
             }
             WasmId::Id(wasm_id) => {
-                let wasm_module = wasm_cache_load(&store, wasm_id)?;
+                let wasm_module = wasm_cache_load(sedad_home, &store, wasm_id)?;
 
                 (wasm_module, wasm_id.to_string())
             }
@@ -40,11 +40,11 @@ impl RuntimeContext {
                 let wasm_bytes = fs::read(wasm_path)?;
                 let wasm_id = wasm_cache_id(&wasm_bytes);
 
-                let wasm_module = match wasm_cache_load(&store, &wasm_id) {
+                let wasm_module = match wasm_cache_load(sedad_home, &store, &wasm_id) {
                     Ok(module) => module,
                     // The binary didn't exist in cache when we loaded it, so we cache it now
                     // to speed up future executions
-                    Err(_) => wasm_cache_store(&store, &wasm_id, &wasm_bytes)?,
+                    Err(_) => wasm_cache_store(sedad_home, &store, &wasm_id, &wasm_bytes)?,
                 };
 
                 (wasm_module, wasm_id)

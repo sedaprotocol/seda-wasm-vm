@@ -15,3 +15,6 @@ tracing.workspace = true
 
 [build-dependencies]
 cbindgen.workspace = true
+
+[dev-dependencies]
+tempdir.workspace = true

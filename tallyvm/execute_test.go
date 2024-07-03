@@ -20,7 +20,12 @@ func TestTallyBinary(t *testing.T) {
 	reveals := "[{\"salt\":[1],\"exit_code\":0,\"gas_used\":\"200\",\"reveal\":[2]},{\"salt\":[3],\"exit_code\":0,\"gas_used\":\"201\",\"reveal\":[5]},{\"salt\":[4],\"exit_code\":0,\"gas_used\":\"202\",\"reveal\":[6]}]"
 	reveals_filter := "[0,0,0]"
 
-	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
+	tmpdir, err := os.MkdirTemp("", "sedad_home")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res := tallyvm.ExecuteTallyVm(tmpdir, data, []string{"input_here", reveals, reveals_filter}, map[string]string{
 		"CONSENSUS": "true",
 		"VM_MODE":   "tally",
 	})
