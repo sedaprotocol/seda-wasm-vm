@@ -10,8 +10,11 @@ struct Cli {
     subcmd: Command,
 }
 
+// TODO how to handle mac OS
+/// The architecture to compile for.
 #[derive(Clone, Debug, ValueEnum)]
 enum Arch {
+    All,
     Aarch64,
     X86_64,
     StaticAarch64,
@@ -25,24 +28,44 @@ impl AsRef<str> for Arch {
             Arch::X86_64 => "x86_64-unknown-linux-gnu",
             Arch::StaticAarch64 => "aarch64-unknown-linux-musl",
             Arch::StaticX86_64 => "x86_64-unknown-linux-musl",
+            Arch::All => unreachable!(),
         }
     }
 }
 
+impl Arch {
+    fn filename(&self) -> &'static str {
+        match self {
+            Arch::Aarch64 | Arch::X86_64 => "libseda_tally_vm.so",
+            Arch::StaticAarch64 | Arch::StaticX86_64 => "libseda_tally_vm.a",
+            Arch::All => unreachable!(),
+        }
+    }
+}
+
+/// The commands that can be run.
 #[derive(Debug, Subcommand)]
 enum Command {
-    CiInstall(CiInstall),
+    AptInstall(AptInstall),
     Compile(Compile),
 }
 
+/// Installs the necessary packages for the given architecture using apt.
 #[derive(Debug, Args)]
-struct CiInstall {
+struct AptInstall {
     arch: Arch,
 }
 
-impl CiInstall {
+impl AptInstall {
     fn handle(self, sh: &Shell) -> Result<()> {
         match self.arch {
+            Arch::All => {
+                cmd!(
+                    sh,
+                    "sudo apt-get install -y clang llvm gcc-aarch64-linux-gnu qemu-user-static musl-tools"
+                )
+                .run()?;
+            }
             Arch::Aarch64 => {
                 cmd!(
                     sh,
@@ -70,6 +93,7 @@ fn add_target_if_needed(sh: &Shell, target: &str) -> Result<()> {
     Ok(())
 }
 
+/// Compiles the libtallyvm for the given architecture.
 #[derive(Debug, Args)]
 struct Compile {
     #[clap(short, long)]
@@ -78,15 +102,23 @@ struct Compile {
 }
 impl Compile {
     fn handle(self, sh: &Shell) -> Result<()> {
-        let target = self.arch.as_ref();
-        let (build_type, path) = if self.debug {
-            ("build", "debug")
+        if let Arch::All = self.arch {
+            Self::handle_arch(sh, Arch::Aarch64, self.debug)?;
+            Self::handle_arch(sh, Arch::X86_64, self.debug)?;
+            Self::handle_arch(sh, Arch::StaticAarch64, self.debug)?;
+            Self::handle_arch(sh, Arch::StaticX86_64, self.debug)?;
         } else {
-            ("build --release", "release")
-        };
+            Self::handle_arch(sh, self.arch, self.debug)?;
+        }
+        Ok(())
+    }
+
+    fn handle_arch(sh: &Shell, arch: Arch, debug: bool) -> Result<()> {
+        let target = arch.as_ref();
 
         add_target_if_needed(sh, target)?;
-        let rename = match self.arch {
+        let rename = match arch {
+            Arch::All => unreachable!(),
             Arch::Aarch64 => {
                 std::env::set_var("CC", "clang");
                 std::env::set_var("CXX", "clang++");
@@ -100,12 +132,12 @@ impl Compile {
                     "qemu-aarch64 -L /usr/aarch64-linux-gnu",
                 );
 
-                "libseda_tally_vm.aarch64.a"
+                "libseda_tally_vm.aarch64.so"
             }
             Arch::X86_64 => {
                 std::env::set_var("CC", "clang");
                 std::env::set_var("CXX", "clang++");
-                "libseda_tally_vm.x86_64.a"
+                "libseda_tally_vm.x86_64.so"
             }
             Arch::StaticAarch64 => {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
@@ -113,11 +145,18 @@ impl Compile {
             }
             Arch::StaticX86_64 => "libseda_tally_vm.x86_64.static.a",
         };
-        cmd!(sh, "cargo {build_type} --lib --target {target} --locked").run()?;
+
+        let path = if debug {
+            cmd!(sh, "cargo build --lib --target {target} --locked").run()?;
+            "debug"
+        } else {
+            cmd!(sh, "cargo build --release --lib --target {target}  --locked").run()?;
+            "release"
+        };
 
         let target_dir = PathBuf::from("target");
         std::fs::rename(
-            target_dir.join(target).join(path).join("libseda_tally_vm.a"),
+            target_dir.join(target).join(path).join(arch.filename()),
             target_dir.join(rename),
         )?;
         Ok(())
@@ -145,8 +184,8 @@ fn try_main() -> Result<()> {
     let args = Cli::parse();
 
     match args.subcmd {
-        Command::CiInstall(ci_install) => {
-            ci_install.handle(&sh)?;
+        Command::AptInstall(apt_install) => {
+            apt_install.handle(&sh)?;
         }
         Command::Compile(compile) => {
             compile.handle(&sh)?;

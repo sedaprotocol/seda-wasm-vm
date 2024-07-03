@@ -77,6 +77,6 @@ jobs:
       - name: 📤 Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.event.inputs.architecture }}
-          path: target/libseda_tally_vm*.a
+          name: ${{ github.event.inputs.architecture }}-debug-${{ github.event.inputs.debug }}
+          path: target/libseda_tally_vm*.*
           overwrite: true
