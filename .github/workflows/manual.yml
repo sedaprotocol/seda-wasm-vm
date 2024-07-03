@@ -74,10 +74,14 @@ jobs:
         if:  ${{ github.event.inputs.debug == 'false' }}
         run: |
           cargo xtask compile ${{ github.event.inputs.architecture }}
+
+      - name: 📝 Set Branch Name
+        id: set_branch
+        run:  echo "FORMATTED_REF=${{ github.ref }}" | sed 's/\//-/g' >> $GITHUB_OUTPUT
       
       - name: 📤 Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: branch-${{ github.ref }}arch-${{ github.event.inputs.architecture }}-debug-${{ github.event.inputs.debug }}
+          name: branch-${{ steps.set_branch.outputs.FORMATTED_REF }}-arch-${{ github.event.inputs.architecture }}-debug-${{ github.event.inputs.debug }}
           path: target/libseda_tally_vm*.*
           overwrite: true
