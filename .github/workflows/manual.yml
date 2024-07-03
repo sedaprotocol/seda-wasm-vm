@@ -63,7 +63,7 @@ jobs:
 
       - name: 📥 Install Dependencies
         run: |
-          cargo xtask ci-install ${{ github.event.inputs.architecture }}
+          cargo xtask apt-install ${{ github.event.inputs.architecture }}
 
       - name: 🔨 Build Debug Library For ${{ github.event.inputs.architecture }}
         if: ${{ github.event.inputs.debug }}
