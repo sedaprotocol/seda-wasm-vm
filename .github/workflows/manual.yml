@@ -66,12 +66,12 @@ jobs:
           cargo xtask apt-install ${{ github.event.inputs.architecture }}
 
       - name: 🔨 Build Debug Library For ${{ github.event.inputs.architecture }}
-        if: ${{ github.event.inputs.debug }}
+        if: ${{ github.event.inputs.debug == 'true' }}
         run: |
           cargo xtask compile ${{ github.event.inputs.architecture }} --debug
       
       - name: 🔨 Build Library For ${{ github.event.inputs.architecture }}
-        if: ${{ !github.event.inputs.debug }}
+        if:  ${{ github.event.inputs.debug == 'false' }}
         run: |
           cargo xtask compile ${{ github.event.inputs.architecture }}
       
