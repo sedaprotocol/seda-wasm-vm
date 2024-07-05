@@ -141,9 +141,20 @@ impl Compile {
             }
             Arch::StaticAarch64 => {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
+                std::env::set_var(
+                    "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
+                    "-C target-feature=+crt-static -C link-args=-static -lm -lc",
+                );
                 "libseda_tally_vm_muslc.aarch64.a"
             }
-            Arch::StaticX86_64 => "libseda_tally_vm_muslc.x86_64.a",
+            Arch::StaticX86_64 => {
+                std::env::set_var("CC", "musl-gcc");
+                std::env::set_var(
+                    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
+                    "-C target-feature=+crt-static -C link-args=-static -lm -lc",
+                );
+                "libseda_tally_vm_muslc.x86_64.a"
+            }
         };
 
         let path = if debug {
