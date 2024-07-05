@@ -9,8 +9,10 @@ fn main() {
         .write_to_file("../tallyvm/libseda_tally_vm.h");
 
     // Set the linker flags for static linking with musl
-    // if env::var("TARGET").unwrap().contains("musl") {
-    //     println!("cargo:rustc-link-lib=static=m");
-    //     println!("cargo:rustc-link-lib=static=c");
-    // }
+    if env::var("TARGET").unwrap().contains("musl") {
+        println!("cargo:rustc-link-lib=static=m");
+        println!("cargo:rustc-link-lib=static=c");
+        // println!("cargo:rustc-link-search=/usr/aarch64-linux-gnu/lib");
+        // println!("cargo:rustc-link-search=/usr/lib/x86_64-linux-musl");
+    }
 }

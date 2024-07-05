@@ -143,7 +143,7 @@ impl Compile {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
                 std::env::set_var(
                     "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -lm -lc",
+                    "-C target-feature=+crt-static -C link-args=-static -L/usr/aarch64-linux-gnu/lib -lm -lc",
                 );
                 "libseda_tally_vm_muslc.aarch64.a"
             }
@@ -151,10 +151,11 @@ impl Compile {
                 std::env::set_var("CC", "musl-gcc");
                 std::env::set_var(
                     "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -lm -lc",
+                    "-C target-feature=+crt-static -C link-args=-static -L/usr/lib/x86_64-linux-gnu -lm -lc",
                 );
                 "libseda_tally_vm_muslc.x86_64.a"
             }
+            
         };
 
         let path = if debug {
