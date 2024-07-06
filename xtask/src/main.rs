@@ -78,6 +78,13 @@ impl AptInstall {
             }
             Arch::StaticAarch64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
+                cmd!(
+                    sh,
+                    "wget https://musl.cc/aarch64-linux-musl-cross.tgz
+                    tar -xzf aarch64-linux-musl-cross.tgz
+                    sudo mv aarch64-linux-musl-cross /opt/"
+                )
+                .run()?;
             }
             Arch::StaticX86_64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
@@ -155,7 +162,6 @@ impl Compile {
                 );
                 "libseda_tally_vm_muslc.x86_64.a"
             }
-            
         };
 
         let path = if debug {
