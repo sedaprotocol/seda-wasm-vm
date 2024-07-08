@@ -158,7 +158,7 @@ impl Compile {
                 std::env::set_var("CC", "musl-gcc");
                 std::env::set_var(
                     "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -L/usr/lib/x86_64-linux-gnu -lm -lc",
+                    "-C target-feature=+crt-static -C link-args=-static",
                 );
                 "libseda_tally_vm_muslc.x86_64.a"
             }
