@@ -78,13 +78,9 @@ impl AptInstall {
             }
             Arch::StaticAarch64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
-                cmd!(
-                    sh,
-                    "wget https://musl.cc/aarch64-linux-musl-cross.tgz
-                    tar -xzf aarch64-linux-musl-cross.tgz
-                    sudo mv aarch64-linux-musl-cross /opt/"
-                )
-                .run()?;
+                cmd!(sh, "wget https://musl.cc/aarch64-linux-musl-cross.tgz").run()?;
+                cmd!(sh, "tar -xzf aarch64-linux-musl-cross.tgz").run()?;
+                cmd!(sh, "sudo mv aarch64-linux-musl-cross /opt/").run()?;
             }
             Arch::StaticX86_64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
