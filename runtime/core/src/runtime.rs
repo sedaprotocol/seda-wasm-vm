@@ -12,6 +12,7 @@ fn internal_run_vm(
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
 ) -> ExecutionResult<(Vec<u8>, i32)> {
+    tracing::debug!("Running VM with call data: {}", call_data);
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
 
@@ -26,6 +27,7 @@ fn internal_run_vm(
     // we could use the tokio::time::timeout function to wrap the execution but that takes a future
     // or we could use actix to time this
     let handle = thread::spawn(move || {
+        tracing::debug!("Thread spawned");
         // leftovers from upgrading to wasmer 4.2.4...
         // there has to be a cleaner way to do this
         // maybe actix to spawn a future that times out???
@@ -53,9 +55,12 @@ fn internal_run_vm(
             &call_data,
         )
         .map_err(|_| VmResultStatus::FailedToCreateVMImports)?;
+        tracing::debug!("WASM imports loaded");
 
+        tracing::debug!("Creating WASM instance");
         let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
             .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string()))?;
+        tracing::debug!("WASM instance created");
 
         let env_mut = vm_context.as_mut(&mut context.wasm_store);
         env_mut.memory = Some(
@@ -70,13 +75,18 @@ fn internal_run_vm(
             .initialize(&mut context.wasm_store, wasmer_instance.clone())
             .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
+        tracing::debug!("Getting main WASM function");
         let main_func = wasmer_instance
             .exports
             .get_function(&function_name)
             .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
+        tracing::debug!("Main WASM function found");
 
+        tracing::debug!("Calling main WASM function");
         let runtime_result = main_func.call(&mut context.wasm_store, &[]);
+        tracing::debug!("Main WASM function called");
 
+        tracing::debug!("Cleaning up WASI env");
         wasi_env.cleanup(&mut context.wasm_store, None);
         drop(_guard);
 
@@ -91,6 +101,7 @@ fn internal_run_vm(
             }
         }
 
+        tracing::debug!("Locking VM result");
         let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
 
         if let Err(e) = sender.send(()) {
@@ -99,6 +110,7 @@ fn internal_run_vm(
 
         Ok((execution_result.clone(), exit_code))
     });
+    tracing::debug!("Waiting for VM to complete or timeout");
 
     // Wait for the function to complete or timeout.
     let execution_result = match receiver.recv_timeout(dr_timeout) {
@@ -113,6 +125,7 @@ fn internal_run_vm(
             handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?
         }
     };
+    tracing::debug!("VM completed or timed out");
 
     let mut stdout_buffer = String::new();
     stdout_rx
@@ -136,11 +149,13 @@ fn internal_run_vm(
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {
+    tracing::info!("Starting runtime");
     let mut stdout: Vec<String> = vec![];
     let mut stderr: Vec<String> = vec![];
 
     let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
 
+    tracing::info!("VM execution completed");
     match vm_execution_result {
         Ok((result, exit_code)) => VmResult {
             stdout,

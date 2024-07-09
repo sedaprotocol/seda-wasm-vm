@@ -6,7 +6,6 @@ rust-version.workspace = true
 
 [dependencies]
 hex = { workspace = true }
-home = { workspace = true }
 lazy_static = { workspace = true }
 parking_lot = { workspace = true }
 seda-runtime-sdk = { workspace = true }
@@ -15,5 +14,7 @@ sha3 = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+tracing-appender.workspace = true
 wasmer = { workspace = true, features = ["singlepass"] }
 wasmer-wasix = { workspace = true }

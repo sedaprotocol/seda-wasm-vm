@@ -19,7 +19,10 @@ type VmResult struct {
 	ExitInfo ExitInfo
 }
 
-func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
+func ExecuteTallyVm(config_dir string, bytes []byte, args []string, envs map[string]string) VmResult {
+	// convert config dir to C string
+	configDirC := C.CString(config_dir)
+
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {
 		argsC[i] = C.CString(s)
@@ -39,6 +42,7 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 	}
 
 	result := C.execute_tally_vm(
+		configDirC,
 		(*C.uint8_t)(unsafe.Pointer(&bytes[0])), C.uintptr_t(len(bytes)),
 		(**C.char)(unsafe.Pointer(&argsC[0])), C.uintptr_t(len(args)),
 		(**C.char)(unsafe.Pointer(&keys[0])), (**C.char)(unsafe.Pointer(&values[0])), C.uintptr_t(len(envs)),

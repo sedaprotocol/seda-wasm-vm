@@ -2,11 +2,12 @@ use std::{
     collections::HashMap,
     ffi::{c_char, CStr, CString},
     mem,
+    path::{Path, PathBuf},
     ptr,
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
-use seda_wasm_vm::{start_runtime, RuntimeContext, VmCallData, VmResult};
+use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, VmCallData, VmResult};
 
 use crate::errors::Result;
 
@@ -134,6 +135,7 @@ impl From<VmResult> for FfiVmResult {
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn execute_tally_vm(
+    sedad_path: *const c_char,
     wasm_bytes: *const u8,
     wasm_bytes_len: usize,
     args_ptr: *const *const c_char,
@@ -142,6 +144,11 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_values_ptr: *const *const c_char,
     env_count: usize,
 ) -> FfiVmResult {
+    let sedad_home = CStr::from_ptr(sedad_path).to_string_lossy().into_owned();
+    let sedad_home = PathBuf::from(sedad_home);
+
+    let _guard = init_logger(&sedad_home);
+    tracing::info!("execute_tally_vm");
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
     let args: Vec<String> = (0..args_count)
@@ -162,7 +169,7 @@ pub unsafe extern "C" fn execute_tally_vm(
         envs.insert(key, value);
     }
 
-    match _execute_tally_vm(wasm_bytes, args, envs) {
+    match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs) {
         Ok(vm_result) => vm_result.into(),
         Err(_) => FfiVmResult {
             stdout_ptr: ptr::null(),
@@ -179,10 +186,16 @@ pub unsafe extern "C" fn execute_tally_vm(
     }
 }
 
-fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: HashMap<String, String>) -> Result<VmResult> {
+fn _execute_tally_vm(
+    sedad_home: &Path,
+    wasm_bytes: Vec<u8>,
+    args: Vec<String>,
+    envs: HashMap<String, String>,
+) -> Result<VmResult> {
     let wasm_id = WasmId::Bytes(wasm_bytes);
-    let runtime_context = RuntimeContext::new(&wasm_id)?;
+    let runtime_context = RuntimeContext::new(sedad_home, &wasm_id)?;
 
+    tracing::debug!("starting runtime");
     let result = start_runtime(
         VmCallData {
             call_id: None,
@@ -208,7 +221,10 @@ mod test {
     #[test]
     fn test_execute_tally_vm() {
         let wasm_bytes = include_bytes!("../../debug.wasm");
+        // create temp directory
+        let temp_dir = tempdir::TempDir::new("test").unwrap();
         let result = _execute_tally_vm(
+            temp_dir.path(),
             wasm_bytes.to_vec(),
             vec!["testHttpSuccess".to_string()],
             HashMap::default(),
