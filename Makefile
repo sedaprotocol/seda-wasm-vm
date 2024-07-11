@@ -2,21 +2,21 @@
 
 SHARED_LIB = ""
 ifeq ($(OS),Windows_NT)
-	SHARED_LIB = seda_tally_vm.dll
+	SHARED_LIB = wasmvm.dll
 else
 	UNAME_S := $(shell uname -s)
 	ifeq ($(UNAME_S),Linux)
-		SHARED_LIB = libseda_tally_vm.so
+		SHARED_LIB = libwasmvm.so
 	endif
 	ifeq ($(UNAME_S),Darwin)
-		SHARED_LIB = libseda_tally_vm.dylib
+		SHARED_LIB = libwasmvm.dylib
 	endif
 endif
 
 USER_ID := $(shell id -u)
 USER_GROUP = $(shell id -g)
 
-# TODO Update libseda_tally_vm.h?
+# TODO Update libwasmvm.h?
 
 all: build test
 
@@ -44,8 +44,8 @@ release-build-centos7:
 	rm -rf target/x86_64-unknown-linux-gnu/release
 	rm -rf target/aarch64-unknown-linux-gnu/release
 	docker run --rm -u $(USER_ID):$(USER_GROUP) -v $(shell pwd):/code seda-wasm-vm-builder-centos7 build_linux.sh
-	cp target/x86_64-unknown-linux-gnu/release/libseda_tally_vm.so tallyvm/libseda_tally_vm.x86_64.so
-	cp target/aarch64-unknown-linux-gnu/release/libseda_tally_vm.so tallyvm/libseda_tally_vm.aarch64.so
+	cp target/x86_64-unknown-linux-gnu/release/libwasmvm.so tallyvm/libwasmvm.x86_64.so
+	cp target/aarch64-unknown-linux-gnu/release/libwasmvm.so tallyvm/libwasmvm.aarch64.so
 
 
 ###############################################################################
@@ -59,7 +59,7 @@ release-build-alpine:
 	rm -rf target/aarch64-unknown-linux-musl/release
 	rm -rf target/x86_64-unknown-linux-musl/release
 	docker run --rm -u $(USER_ID):$(USER_GROUP) -v $(shell pwd):/code seda-wasm-vm-builder-alpine
-	cp target/aarch64-unknown-linux-musl/release/libseda_tally_vm.a tallyvm/libseda_tally_vm.aarch64.a
-	cp target/x86_64-unknown-linux-musl/release/libseda_tally_vm.a tallyvm/libseda_tally_vm.x86_64.a
+	cp target/aarch64-unknown-linux-musl/release/libwasmvm.a tallyvm/libwasmvm.aarch64.a
+	cp target/x86_64-unknown-linux-musl/release/libwasmvm.a tallyvm/libwasmvm.x86_64.a
 
 .PHONY: docker-image-alpine release-build-alpine

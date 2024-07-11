@@ -6,7 +6,7 @@ fn main() {
 
     cbindgen::generate(crate_dir)
         .expect("Unable to generate bindings")
-        .write_to_file("../tallyvm/libseda_tally_vm.h");
+        .write_to_file("../tallyvm/libwasmvm.h");
 
     // Set the linker flags for static linking with musl
     // if env::var("TARGET").unwrap().contains("musl") {

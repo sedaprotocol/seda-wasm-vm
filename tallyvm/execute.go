@@ -1,6 +1,6 @@
 package tallyvm
 
-// #include <libseda_tally_vm.h>
+// #include <libwasmvm.h>
 import "C"
 
 import (

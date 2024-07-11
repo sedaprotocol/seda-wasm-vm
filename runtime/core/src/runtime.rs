@@ -26,106 +26,106 @@ fn internal_run_vm(
     // An approach to handle the runtime execution having a timeout
     // we could use the tokio::time::timeout function to wrap the execution but that takes a future
     // or we could use actix to time this
-    let handle = thread::spawn(move || {
-        tracing::debug!("Thread spawned");
-        // leftovers from upgrading to wasmer 4.2.4...
-        // there has to be a cleaner way to do this
-        // maybe actix to spawn a future that times out???
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let _guard = runtime.enter();
+    // let handle = thread::spawn(move || {
+    // tracing::debug!("Thread spawned");
+    // leftovers from upgrading to wasmer 4.2.4...
+    // there has to be a cleaner way to do this
+    // maybe actix to spawn a future that times out???
+    let runtime = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let _guard = runtime.enter();
 
-        let mut wasi_env = WasiEnv::builder(function_name.clone())
-            .envs(call_data.envs.clone())
-            .args(call_data.args.clone())
-            .stdout(Box::new(stdout_tx))
-            .stderr(Box::new(stderr_tx))
-            .finalize(&mut context.wasm_store)
-            .map_err(|_| VmResultStatus::WasiEnvInitializeFailure)?;
+    let mut wasi_env = WasiEnv::builder(function_name.clone())
+        .envs(call_data.envs.clone())
+        .args(call_data.args.clone())
+        .stdout(Box::new(stdout_tx))
+        .stderr(Box::new(stderr_tx))
+        .finalize(&mut context.wasm_store)
+        .map_err(|_| VmResultStatus::WasiEnvInitializeFailure)?;
 
-        let vm_context = VmContext::create_vm_context(&mut context.wasm_store, wasi_env.env.clone());
+    let vm_context = VmContext::create_vm_context(&mut context.wasm_store, wasi_env.env.clone());
 
-        let imports = create_wasm_imports(
-            &mut context.wasm_store,
-            &vm_context,
-            &wasi_env,
-            &context.wasm_module,
-            &call_data,
-        )
-        .map_err(|_| VmResultStatus::FailedToCreateVMImports)?;
-        tracing::debug!("WASM imports loaded");
+    let imports = create_wasm_imports(
+        &mut context.wasm_store,
+        &vm_context,
+        &wasi_env,
+        &context.wasm_module,
+        &call_data,
+    )
+    .map_err(|_| VmResultStatus::FailedToCreateVMImports)?;
+    tracing::debug!("WASM imports loaded");
 
-        tracing::debug!("Creating WASM instance");
-        let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
-            .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string()))?;
-        tracing::debug!("WASM instance created");
+    tracing::debug!("Creating WASM instance");
+    let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
+        .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string()))?;
+    tracing::debug!("WASM instance created");
 
-        let env_mut = vm_context.as_mut(&mut context.wasm_store);
-        env_mut.memory = Some(
-            wasmer_instance
-                .exports
-                .get_memory("memory")
-                .map_err(|_| VmResultStatus::FailedToGetWASMMemory)?
-                .clone(),
-        );
-
-        wasi_env
-            .initialize(&mut context.wasm_store, wasmer_instance.clone())
-            .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
-
-        tracing::debug!("Getting main WASM function");
-        let main_func = wasmer_instance
+    let env_mut = vm_context.as_mut(&mut context.wasm_store);
+    env_mut.memory = Some(
+        wasmer_instance
             .exports
-            .get_function(&function_name)
-            .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
-        tracing::debug!("Main WASM function found");
+            .get_memory("memory")
+            .map_err(|_| VmResultStatus::FailedToGetWASMMemory)?
+            .clone(),
+    );
 
-        tracing::debug!("Calling main WASM function");
-        let runtime_result = main_func.call(&mut context.wasm_store, &[]);
-        tracing::debug!("Main WASM function called");
+    wasi_env
+        .initialize(&mut context.wasm_store, wasmer_instance.clone())
+        .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
-        tracing::debug!("Cleaning up WASI env");
-        wasi_env.cleanup(&mut context.wasm_store, None);
-        drop(_guard);
+    tracing::debug!("Getting main WASM function");
+    let main_func = wasmer_instance
+        .exports
+        .get_function(&function_name)
+        .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
+    tracing::debug!("Main WASM function found");
 
-        let mut exit_code: i32 = 0;
+    tracing::debug!("Calling main WASM function");
+    let runtime_result = main_func.call(&mut context.wasm_store, &[]);
+    tracing::debug!("Main WASM function called");
 
-        if let Err(err) = runtime_result {
-            // we convert the error to a wasix error
-            let wasix_error = WasiRuntimeError::from(err);
+    tracing::debug!("Cleaning up WASI env");
+    wasi_env.cleanup(&mut context.wasm_store, None);
+    drop(_guard);
 
-            if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
-                exit_code = wasi_exit_code.raw();
-            }
+    let mut exit_code: i32 = 0;
+
+    if let Err(err) = runtime_result {
+        // we convert the error to a wasix error
+        let wasix_error = WasiRuntimeError::from(err);
+
+        if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
+            exit_code = wasi_exit_code.raw();
         }
+    }
 
-        tracing::debug!("Locking VM result");
-        let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
+    tracing::debug!("Locking VM result");
+    let execution_result = vm_context.as_ref(&context.wasm_store).result.lock().clone();
 
-        if let Err(e) = sender.send(()) {
-            tracing::error!("Failed to send result: {:?}", e);
-        }
+    if let Err(e) = sender.send(()) {
+        tracing::error!("Failed to send result: {:?}", e);
+    }
 
-        Ok((execution_result.clone(), exit_code))
-    });
-    tracing::debug!("Waiting for VM to complete or timeout");
+    // Ok((execution_result.clone(), exit_code))
+    // });
+    // tracing::debug!("Waiting for VM to complete or timeout");
 
     // Wait for the function to complete or timeout.
-    let execution_result = match receiver.recv_timeout(dr_timeout) {
-        Ok(_) => handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?,
-        Err(mpsc::RecvTimeoutError::Timeout) => {
-            // Handle the timeout case.
-            Err(VmResultStatus::ExecutionTimeout)
-        }
-        Err(mpsc::RecvTimeoutError::Disconnected) => {
-            // Handle the case where the thread panicked or the channel was disconnected.
-            // This is caused by an error occuring in the thread
-            handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?
-        }
-    };
-    tracing::debug!("VM completed or timed out");
+    // let execution_result = match receiver.recv_timeout(dr_timeout) {
+    //     Ok(_) => handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?,
+    //     Err(mpsc::RecvTimeoutError::Timeout) => {
+    //         // Handle the timeout case.
+    //         Err(VmResultStatus::ExecutionTimeout)
+    //     }
+    //     Err(mpsc::RecvTimeoutError::Disconnected) => {
+    //         // Handle the case where the thread panicked or the channel was disconnected.
+    //         // This is caused by an error occuring in the thread
+    //         handle.join().map_err(|_| VmResultStatus::FailedToJoinThread)?
+    //     }
+    // };
+    // tracing::debug!("VM completed or timed out");
 
     let mut stdout_buffer = String::new();
     stdout_rx
@@ -145,7 +145,7 @@ fn internal_run_vm(
         stderr.push(stderr_buffer);
     }
 
-    execution_result
+    Ok((execution_result, exit_code))
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {

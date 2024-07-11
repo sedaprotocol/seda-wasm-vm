@@ -38,8 +38,8 @@ tracing = { version = "0.1", features = ["log-always"] }
 tracing-subscriber = "0.3"
 tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
-wasmer = { version = "4.2.4", default-features = false }
-wasmer-wasix = { version = "0.17", default-features = false, features = [
+wasmer = { version = "4.2.2", default-features = false }
+wasmer-wasix = { version = "0.15", default-features = false, features = [
 	"sys",
 	"logging",
 	"host-fs",
@@ -47,4 +47,5 @@ wasmer-wasix = { version = "0.17", default-features = false, features = [
 	"sys-poll",
 	"host-threads",
 ] }
+wasmvm = { git = "https://github.com/CosmWasm/wasmvm.git", tag = "v1.5.2" }
 xshell = "0.2"

@@ -12,6 +12,7 @@ seda-wasm-vm = { workspace = true }
 seda-runtime-sdk = { workspace = true }
 thiserror = { workspace = true }
 tracing.workspace = true
+wasmvm.workspace = true
 
 [build-dependencies]
 cbindgen.workspace = true

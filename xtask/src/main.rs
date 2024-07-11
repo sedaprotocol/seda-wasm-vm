@@ -135,12 +135,12 @@ impl Compile {
                     "qemu-aarch64 -L /usr/aarch64-linux-gnu",
                 );
 
-                "libseda_tally_vm.aarch64.so"
+                "libwasmvm.aarch64.so"
             }
             Arch::X86_64 => {
                 std::env::set_var("CC", "clang");
                 std::env::set_var("CXX", "clang++");
-                "libseda_tally_vm.x86_64.so"
+                "libwasmvm.x86_64.so"
             }
             Arch::StaticAarch64 => {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
@@ -148,15 +148,15 @@ impl Compile {
                     "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
                     "-C target-feature=+crt-static -C link-args=-static -L/usr/aarch64-linux-gnu/lib -lm -lc",
                 );
-                "libseda_tally_vm_muslc.aarch64.a"
+                "libwasmvm.aarch64.a"
             }
             Arch::StaticX86_64 => {
                 std::env::set_var("CC", "x86_64-linux-musl-gcc");
-                std::env::set_var(
-                    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -L/usr/lib -lm -lc",
-                );
-                "libseda_tally_vm_muslc.x86_64.a"
+                // std::env::set_var(
+                //     "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
+                //     "-C target-feature=+crt-static -C link-args=-static -L/usr/lib -lm -lc",
+                // );
+                "libwasmvm.x86_64.a"
             }
         };
 

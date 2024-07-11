@@ -8,6 +8,7 @@ use std::{
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
 use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, VmCallData, VmResult};
+pub use wasmvm;
 
 use crate::errors::Result;
 
