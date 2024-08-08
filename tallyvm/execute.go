@@ -38,10 +38,27 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 		i++
 	}
 
+	var bytesPtr *C.uint8_t
+	if len(bytes) > 0 {
+		bytesPtr = (*C.uint8_t)(unsafe.Pointer(&bytes[0]))
+	}
+
+	var argsPtr **C.char
+	if len(args) > 0 {
+		argsPtr = &argsC[0]
+	}
+
+	var keysPtr **C.char
+	var valuesPtr **C.char
+	if len(envs) > 0 {
+		keysPtr = &keys[0]
+		valuesPtr = &values[0]
+	}
+
 	result := C.execute_tally_vm(
-		(*C.uint8_t)(unsafe.Pointer(&bytes[0])), C.uintptr_t(len(bytes)),
-		(**C.char)(unsafe.Pointer(&argsC[0])), C.uintptr_t(len(args)),
-		(**C.char)(unsafe.Pointer(&keys[0])), (**C.char)(unsafe.Pointer(&values[0])), C.uintptr_t(len(envs)),
+		bytesPtr, C.uintptr_t(len(bytes)),
+		argsPtr, C.uintptr_t(len(args)),
+		keysPtr, valuesPtr, C.uintptr_t(len(envs)),
 	)
 	exitMessage := C.GoString(result.exit_info.exit_message)
 	exitCode := int(result.exit_info.exit_code)

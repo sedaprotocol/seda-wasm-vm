@@ -206,7 +206,7 @@ mod test {
     use crate::_execute_tally_vm;
 
     #[test]
-    fn test_execute_tally_vm() {
+    fn execute_tally_vm() {
         let wasm_bytes = include_bytes!("../../debug.wasm");
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
@@ -214,6 +214,16 @@ mod test {
             HashMap::default(),
         )
         .unwrap();
+
+        result.stdout.iter().for_each(|line| print!("{}", line));
+
+        dbg!(result);
+    }
+
+    #[test]
+    fn execute_tally_vm_no_args() {
+        let wasm_bytes = include_bytes!("../../tally.wasm");
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], HashMap::default()).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 

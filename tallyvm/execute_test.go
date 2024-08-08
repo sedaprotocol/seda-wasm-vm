@@ -33,3 +33,24 @@ func TestTallyBinary(t *testing.T) {
 	fmt.Println(res)
 	t.Log(res)
 }
+
+func TestTallyBinaryNoArgs(t *testing.T) {
+	file := "../tally.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
+		"CONSENSUS": "true",
+		"VM_MODE":   "tally",
+	})
+
+	assert.Equal(t, "", res.ExitInfo.ExitMessage)
+	assert.Equal(t, 255, res.ExitInfo.ExitCode)
+	assert.Empty(t, res.Result)
+	assert.NotEmpty(t, res.Stderr)
+	assert.NotEmpty(t, res.Stdout)
+	fmt.Println(res)
+	t.Log(res)
+}
