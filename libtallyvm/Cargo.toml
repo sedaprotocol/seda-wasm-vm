@@ -11,6 +11,7 @@ crate-type = ["cdylib", "staticlib"]
 seda-wasm-vm = { workspace = true }
 seda-runtime-sdk = { workspace = true }
 thiserror = { workspace = true }
+hex = { workspace = true }
 
 [build-dependencies]
 cbindgen.workspace = true

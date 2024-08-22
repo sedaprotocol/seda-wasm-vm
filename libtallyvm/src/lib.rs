@@ -1,8 +1,7 @@
 use std::{
     collections::HashMap,
     ffi::{c_char, CStr, CString},
-    mem,
-    ptr,
+    mem, ptr,
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
@@ -16,7 +15,7 @@ mod errors;
 #[repr(C)]
 pub struct FfiExitInfo {
     exit_message: *const c_char,
-    exit_code:    i32,
+    exit_code: i32,
 }
 
 /// # Safety
@@ -32,7 +31,7 @@ impl From<ExitInfo> for FfiExitInfo {
     fn from(exit_info: ExitInfo) -> Self {
         FfiExitInfo {
             exit_message: CString::new(exit_info.exit_message).unwrap().into_raw(),
-            exit_code:    exit_info.exit_code,
+            exit_code: exit_info.exit_code,
         }
     }
 }
@@ -46,7 +45,7 @@ pub struct FfiVmResult {
     stderr_len: usize,
     result_ptr: *const u8,
     result_len: usize,
-    exit_info:  FfiExitInfo,
+    exit_info: FfiExitInfo,
 }
 
 /// # Safety
@@ -171,9 +170,9 @@ pub unsafe extern "C" fn execute_tally_vm(
             stderr_len: 0,
             result_ptr: ptr::null(),
             result_len: 0,
-            exit_info:  FfiExitInfo {
+            exit_info: FfiExitInfo {
                 exit_message: CString::new("Error executing VM").unwrap().into_raw(),
-                exit_code:    -1,
+                exit_code: -1,
             },
         },
     }
@@ -207,17 +206,38 @@ mod test {
 
     #[test]
     fn execute_tally_vm() {
-        let wasm_bytes = include_bytes!("../../debug.wasm");
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
-            vec!["testHttpSuccess".to_string()],
+            vec![hex::encode("testHttpSuccess")],
             HashMap::default(),
         )
         .unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 
-        dbg!(result);
+        assert_eq!(
+            result.exit_info.exit_message,
+            "http_fetch is not allowed in tally".to_string()
+        )
+    }
+
+    #[test]
+    fn execute_tally_vm_proxy_http_fetch() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let result = _execute_tally_vm(
+            wasm_bytes.to_vec(),
+            vec![hex::encode("testProxyHttpFetch")],
+            HashMap::default(),
+        )
+        .unwrap();
+
+        result.stdout.iter().for_each(|line| print!("{}", line));
+
+        assert_eq!(
+            result.exit_info.exit_message,
+            "proxy_http_fetch is not allowed in tally".to_string()
+        )
     }
 
     #[test]
@@ -226,7 +246,5 @@ mod test {
         let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], HashMap::default()).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
-
-        dbg!(result);
     }
 }
