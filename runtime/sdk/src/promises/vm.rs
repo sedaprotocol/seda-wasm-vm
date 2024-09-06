@@ -1,5 +1,5 @@
 use core::fmt;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
@@ -51,7 +51,7 @@ pub struct VmCallData {
     pub args: Vec<String>,
 
     /// Environment variables you want to pass to the WASM binary
-    pub envs: HashMap<String, String>,
+    pub envs: BTreeMap<String, String>,
 
     /// Name of the binary, ex. "consensus", "fisherman", etc
     pub program_name: String,
@@ -69,7 +69,7 @@ impl Default for VmCallData {
             vm_type:      VmType::Tally,
             args:         vec![],
             call_id:      None,
-            envs:         HashMap::default(),
+            envs:         Default::default(),
             program_name: "default".to_string(),
             start_func:   None,
             wasm_id:      WasmId::Bytes(vec![]),

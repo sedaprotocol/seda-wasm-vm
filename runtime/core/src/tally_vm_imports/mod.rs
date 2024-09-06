@@ -9,11 +9,16 @@ use lazy_static::lazy_static;
 
 lazy_static! {
     pub static ref SAFE_TALLY_IMPORTS: Vec<String> = {
-        ["execution_result", "http_fetch", "proxy_http_fetch", "call_result_write"]
-            .iter()
-            .map(|import| import.to_string())
-            .chain(SAFE_WASI_IMPORTS.to_vec())
-            .collect()
+        [
+            "execution_result",
+            "http_fetch",
+            "proxy_http_fetch",
+            "call_result_write",
+        ]
+        .iter()
+        .map(|import| import.to_string())
+        .chain(SAFE_WASI_IMPORTS.to_vec())
+        .collect()
     };
 }
 
@@ -23,7 +28,10 @@ pub fn create_custom_tally_imports(store: &mut Store, vm_context: &FunctionEnv<V
     let mut final_imports = Imports::new();
 
     tally_exports.insert("http_fetch", http_fetch::http_fetch_import_obj(store, vm_context));
-    tally_exports.insert("proxy_http_fetch", proxy_http_fetch::proxy_http_fetch_import_obj(store, vm_context));
+    tally_exports.insert(
+        "proxy_http_fetch",
+        proxy_http_fetch::proxy_http_fetch_import_obj(store, vm_context),
+    );
 
     if let Some(core_exports) = core_imports.get_namespace_exports("seda_v1") {
         for (export_name, export) in core_exports.iter() {

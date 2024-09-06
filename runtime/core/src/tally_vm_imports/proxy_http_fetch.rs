@@ -8,7 +8,11 @@ use crate::{errors::Result, VmContext};
 /// Mostly a polyfill, otherwise the tally and dr binary cannot be one and the same
 /// It simply errors but allows the WASM binary to continue.
 pub fn proxy_http_fetch_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
-    fn proxy_http_fetch(env: FunctionEnvMut<'_, VmContext>, _result_ptr: WasmPtr<u8>, _result_length: i32) -> Result<u32> {
+    fn proxy_http_fetch(
+        env: FunctionEnvMut<'_, VmContext>,
+        _result_ptr: WasmPtr<u8>,
+        _result_length: i32,
+    ) -> Result<u32> {
         let ctx = env.data();
 
         let message = "proxy_http_fetch is not allowed in tally".as_bytes().to_vec();

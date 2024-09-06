@@ -1,7 +1,8 @@
 use std::{
-    collections::HashMap,
+    collections::BTreeMap,
     ffi::{c_char, CStr, CString},
-    mem, ptr,
+    mem,
+    ptr,
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
@@ -15,7 +16,7 @@ mod errors;
 #[repr(C)]
 pub struct FfiExitInfo {
     exit_message: *const c_char,
-    exit_code: i32,
+    exit_code:    i32,
 }
 
 /// # Safety
@@ -31,7 +32,7 @@ impl From<ExitInfo> for FfiExitInfo {
     fn from(exit_info: ExitInfo) -> Self {
         FfiExitInfo {
             exit_message: CString::new(exit_info.exit_message).unwrap().into_raw(),
-            exit_code: exit_info.exit_code,
+            exit_code:    exit_info.exit_code,
         }
     }
 }
@@ -45,7 +46,7 @@ pub struct FfiVmResult {
     stderr_len: usize,
     result_ptr: *const u8,
     result_len: usize,
-    exit_info: FfiExitInfo,
+    exit_info:  FfiExitInfo,
 }
 
 /// # Safety
@@ -150,7 +151,7 @@ pub unsafe extern "C" fn execute_tally_vm(
         })
         .collect();
 
-    let mut envs = HashMap::new();
+    let mut envs = BTreeMap::new();
     for i in 0..env_count {
         let key_ptr = *env_keys_ptr.add(i);
         let value_ptr = *env_values_ptr.add(i);
@@ -170,15 +171,15 @@ pub unsafe extern "C" fn execute_tally_vm(
             stderr_len: 0,
             result_ptr: ptr::null(),
             result_len: 0,
-            exit_info: FfiExitInfo {
+            exit_info:  FfiExitInfo {
                 exit_message: CString::new("Error executing VM").unwrap().into_raw(),
-                exit_code: -1,
+                exit_code:    -1,
             },
         },
     }
 }
 
-fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: HashMap<String, String>) -> Result<VmResult> {
+fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<String, String>) -> Result<VmResult> {
     let wasm_id = WasmId::Bytes(wasm_bytes);
     let runtime_context = RuntimeContext::new(&wasm_id)?;
 
@@ -210,7 +211,7 @@ mod test {
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
             vec![hex::encode("testHttpSuccess")],
-            HashMap::default(),
+            Default::default(),
         )
         .unwrap();
 
@@ -228,7 +229,7 @@ mod test {
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
             vec![hex::encode("testProxyHttpFetch")],
-            HashMap::default(),
+            Default::default(),
         )
         .unwrap();
 
@@ -243,7 +244,7 @@ mod test {
     #[test]
     fn execute_tally_vm_no_args() {
         let wasm_bytes = include_bytes!("../../tally.wasm");
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], HashMap::default()).unwrap();
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], Default::default()).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
     }
