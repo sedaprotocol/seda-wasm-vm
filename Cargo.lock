@@ -1615,7 +1615,7 @@ checksum = "1c107b6f4780854c8b126e228ea8869f4d7b71260f962fefb57b996b8959ba6b"
 
 [[package]]
 name = "seda-runtime-sdk"
-version = "0.0.1-rc"
+version = "1.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1625,7 +1625,7 @@ dependencies = [
 
 [[package]]
 name = "seda-tally-vm"
-version = "0.0.1-rc"
+version = "1.1.1"
 dependencies = [
  "cbindgen",
  "hex",
@@ -1636,7 +1636,7 @@ dependencies = [
 
 [[package]]
 name = "seda-wasm-vm"
-version = "0.0.1-rc"
+version = "1.1.1"
 dependencies = [
  "hex",
  "home",
@@ -3049,7 +3049,7 @@ checksum = "9d422e8e38ec76e2f06ee439ccc765e9c6a9638b9e7c9f2e8255e4d41e8bd852"
 
 [[package]]
 name = "xtask"
-version = "0.0.1-rc"
+version = "1.1.1"
 dependencies = [
  "anyhow",
  "clap 4.5.8",
