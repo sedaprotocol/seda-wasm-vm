@@ -201,15 +201,20 @@ fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<Stri
 
 #[cfg(test)]
 mod test {
+    use std::collections::BTreeMap;
+
     use crate::_execute_tally_vm;
 
     #[test]
     fn execute_tally_vm() {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        // VM_MODE dr to force the http_fetch path
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
             vec![hex::encode("testHttpSuccess")],
-            Default::default(),
+            envs,
         )
         .unwrap();
 
@@ -224,10 +229,12 @@ mod test {
     #[test]
     fn execute_tally_vm_proxy_http_fetch() {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
         let result = _execute_tally_vm(
             wasm_bytes.to_vec(),
             vec![hex::encode("testProxyHttpFetch")],
-            Default::default(),
+            envs,
         )
         .unwrap();
 
