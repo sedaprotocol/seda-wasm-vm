@@ -54,6 +54,9 @@ pub enum RuntimeError {
 
     #[error(transparent)]
     Utf8(#[from] FromUtf8Error),
+
+    #[error(transparent)]
+    Ecdsa(#[from] k256::ecdsa::Error),
 }
 
 impl From<InstantiationError> for RuntimeError {

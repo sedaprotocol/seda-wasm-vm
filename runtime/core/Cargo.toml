@@ -7,6 +7,7 @@ rust-version.workspace = true
 [dependencies]
 hex = { workspace = true }
 home = { workspace = true }
+k256 = { workspace = true }
 lazy_static = { workspace = true }
 parking_lot = { workspace = true }
 seda-runtime-sdk = { workspace = true }

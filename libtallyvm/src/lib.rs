@@ -201,8 +201,6 @@ fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<Stri
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashMap;
-
     use crate::_execute_tally_vm;
 
     #[test]
