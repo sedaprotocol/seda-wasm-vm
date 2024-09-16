@@ -6,7 +6,7 @@ use std::{
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
-use seda_wasm_vm::{start_runtime, RuntimeContext, VmCallData, VmResult};
+use seda_wasm_vm::{start_runtime, wasm_cache::wasm_cache_id, RuntimeContext, RuntimeError, VmCallData, VmResult};
 
 use crate::errors::Result;
 
@@ -179,22 +179,30 @@ pub unsafe extern "C" fn execute_tally_vm(
     }
 }
 
-fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<String, String>) -> Result<VmResult> {
-    let wasm_id = WasmId::Bytes(wasm_bytes);
-    let runtime_context = RuntimeContext::new(&wasm_id)?;
+const DEFAULT_GAS_LIMIT_ENV_VAR: &str = "DR_GAS_LIMIT";
 
-    let result = start_runtime(
-        VmCallData {
-            call_id: None,
-            wasm_id,
-            args,
-            envs,
-            program_name: runtime_context.wasm_hash.to_string(),
-            start_func: None,
-            vm_type: VmType::Tally,
-        },
-        runtime_context,
-    );
+fn _execute_tally_vm(wasm_bytes: Vec<u8>, args: Vec<String>, envs: BTreeMap<String, String>) -> Result<VmResult> {
+    let wasm_hash = wasm_cache_id(&wasm_bytes);
+    let env_vars = envs.clone();
+    let gas_limit = env_vars
+        .get(DEFAULT_GAS_LIMIT_ENV_VAR)
+        .ok_or(RuntimeError::NodeError(format!(
+            "{DEFAULT_GAS_LIMIT_ENV_VAR} is required to be set as an env variable"
+        )))?;
+
+    let call_data = VmCallData {
+        call_id: None,
+        wasm_id: WasmId::Bytes(wasm_bytes),
+        args,
+        envs,
+        program_name: wasm_hash,
+        start_func: None,
+        vm_type: VmType::Tally,
+        gas_limit: Some(gas_limit.parse::<u64>()?),
+    };
+
+    let runtime_context = RuntimeContext::new(&call_data)?;
+    let result = start_runtime(call_data, runtime_context);
 
     Ok(result)
 }
@@ -211,12 +219,9 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         // VM_MODE dr to force the http_fetch path
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        let result = _execute_tally_vm(
-            wasm_bytes.to_vec(),
-            vec![hex::encode("testHttpSuccess")],
-            envs,
-        )
-        .unwrap();
+        envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
+
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testHttpSuccess")], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 
@@ -231,12 +236,8 @@ mod test {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        let result = _execute_tally_vm(
-            wasm_bytes.to_vec(),
-            vec![hex::encode("testProxyHttpFetch")],
-            envs,
-        )
-        .unwrap();
+        envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testProxyHttpFetch")], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
 
@@ -249,8 +250,28 @@ mod test {
     #[test]
     fn execute_tally_vm_no_args() {
         let wasm_bytes = include_bytes!("../../tally.wasm");
-        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], Default::default()).unwrap();
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
+    }
+
+    #[test]
+    fn execute_tally_vm_with_low_gas_limit() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert("DR_GAS_LIMIT".to_string(), "1000".to_string());
+
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testHttpSuccess")], envs).unwrap();
+        dbg!(&result);
+
+        result.stdout.iter().for_each(|line| print!("{}", line));
+
+        assert_eq!(
+            result.exit_info.exit_code,
+            250
+        )
     }
 }

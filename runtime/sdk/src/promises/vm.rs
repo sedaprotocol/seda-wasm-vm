@@ -38,6 +38,12 @@ pub enum VmType {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum WasmEngine {
+    Cranelift,
+    Singlepass,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct VmCallData {
     /// Identifier for differentiating between processes
     /// If assigned, the runtime will queue the call if there is already a process running with that id
@@ -59,6 +65,9 @@ pub struct VmCallData {
     /// The function we need to execute, defaults to the WASI default ("_start")
     pub start_func: Option<String>,
 
+    /// Amount of gas units the VM is allowed to use, None means infinite
+    pub gas_limit: Option<u64>,
+
     /// Which VM context you want to run in
     pub vm_type: VmType,
 }
@@ -73,6 +82,7 @@ impl Default for VmCallData {
             program_name: "default".to_string(),
             start_func:   None,
             wasm_id:      WasmId::Bytes(vec![]),
+            gas_limit:    None,
         }
     }
 }
@@ -105,6 +115,7 @@ pub struct VmResult {
     pub stderr:    Vec<String>,
     pub result:    Option<Vec<u8>>,
     pub exit_info: ExitInfo,
+    pub gas_used:  u64,
 }
 
 impl VmResult {
@@ -117,6 +128,7 @@ impl VmResult {
                 exit_message: message.to_string(),
                 exit_code,
             },
+            gas_used:  0,
         }
     }
 }

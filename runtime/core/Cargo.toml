@@ -17,4 +17,5 @@ thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
 wasmer = { workspace = true, features = ["singlepass"] }
+wasmer-middlewares = { workspace = true }
 wasmer-wasix = { workspace = true }

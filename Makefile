@@ -16,8 +16,13 @@ endif
 USER_ID := $(shell id -u)
 USER_GROUP = $(shell id -g)
 
-# TODO Update libseda_tally_vm.h?
+fmt:
+	cargo +nightly fmt --all
 
+check:
+	cargo clippy --all-features --locked -- -D warnings
+
+# TODO Update libseda_tally_vm.h?
 all: build test
 
 build: build-rust

@@ -1,10 +1,12 @@
-use std::fs;
+use std::{fs, sync::Arc};
 
-use seda_runtime_sdk::WasmId;
-use wasmer::{Module, Store};
+use seda_runtime_sdk::{VmCallData, WasmId};
+use wasmer::{CompilerConfig, EngineBuilder, Module, Singlepass, Store};
+use wasmer_middlewares::Metering;
 
 use crate::{
     errors::Result,
+    metering::get_wasm_operation_cost,
     wasm_cache::{wasm_cache_id, wasm_cache_load, wasm_cache_store},
 };
 
@@ -15,19 +17,23 @@ pub struct RuntimeContext {
 }
 
 impl RuntimeContext {
-    pub fn new(wasm_id: &WasmId) -> Result<Self> {
-        let store = Store::default();
+    pub fn new(call_data: &VmCallData) -> Result<Self> {
+        let mut engine = Singlepass::default();
 
-        let (wasm_module, wasm_hash) = match wasm_id {
+        if let Some(gas_limit) = call_data.gas_limit {
+            let max_dr_gas_limit = 5_000_000_000;
+            let gas_limit = gas_limit.clamp(0, max_dr_gas_limit);
+
+            let metering = Arc::new(Metering::new(gas_limit, get_wasm_operation_cost));
+            engine.push_middleware(metering);
+        }
+
+        let store = Store::new(EngineBuilder::new(engine));
+
+        let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
-                let wasm_id = wasm_cache_id(wasm_bytes);
-
-                let wasm_module = match wasm_cache_load(&store, &wasm_id) {
-                    Ok(module) => module,
-                    // The binary didn't exist in cache when we loaded it, so we cache it now
-                    // to speed up future executions
-                    Err(_) => wasm_cache_store(&store, &wasm_id, wasm_bytes)?,
-                };
+                let wasm_id = wasm_cache_id(&wasm_bytes);
+                let wasm_module = Module::new(&store, wasm_bytes)?;
 
                 (wasm_module, wasm_id)
             }

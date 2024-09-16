@@ -21,8 +21,9 @@ func TestTallyBinary(t *testing.T) {
 	reveals_filter := "[0,0,0]"
 
 	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
-		"CONSENSUS": "true",
-		"VM_MODE":   "tally",
+		"CONSENSUS":    "true",
+		"VM_MODE":      "tally",
+		"DR_GAS_LIMIT": "2000000",
 	})
 
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
@@ -42,8 +43,9 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	}
 
 	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
-		"CONSENSUS": "true",
-		"VM_MODE":   "tally",
+		"CONSENSUS":    "true",
+		"VM_MODE":      "tally",
+		"DR_GAS_LIMIT": "2000000",
 	})
 
 	assert.Equal(t, "", res.ExitInfo.ExitMessage)
@@ -51,6 +53,27 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
+	fmt.Println(res)
+	t.Log(res)
+}
+
+func TestTallyGasExceeded(t *testing.T) {
+	file := "../tally.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
+		"CONSENSUS":    "true",
+		"VM_MODE":      "tally",
+		"DR_GAS_LIMIT": "123",
+	})
+
+	assert.Equal(t, "", res.ExitInfo.ExitMessage)
+	assert.Equal(t, 250, res.ExitInfo.ExitCode)
+	assert.Empty(t, res.Result)
+	assert.NotEmpty(t, res.Stderr)
 	fmt.Println(res)
 	t.Log(res)
 }
