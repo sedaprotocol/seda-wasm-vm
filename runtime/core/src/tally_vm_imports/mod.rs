@@ -15,6 +15,7 @@ lazy_static! {
             "proxy_http_fetch",
             "call_result_write",
             "secp256k1_verify",
+            "keccak256",
         ]
         .iter()
         .map(|import| import.to_string())

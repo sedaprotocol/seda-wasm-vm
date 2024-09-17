@@ -9,7 +9,7 @@ pub enum TallyVmError {
     RuntimeError(#[from] RuntimeError),
 
     #[error(transparent)]
-    ParseInt(#[from] ParseIntError)
+    ParseInt(#[from] ParseIntError),
 }
 
 pub type Result<T, E = TallyVmError> = core::result::Result<T, E>;

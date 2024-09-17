@@ -265,13 +265,25 @@ mod test {
         envs.insert("DR_GAS_LIMIT".to_string(), "1000".to_string());
 
         let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testHttpSuccess")], envs).unwrap();
-        dbg!(&result);
+        result.stdout.iter().for_each(|line| print!("{}", line));
 
+        assert_eq!(result.exit_info.exit_code, 250)
+    }
+
+    #[test]
+    fn execute_tally_keccak256() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert("DR_GAS_LIMIT".to_string(), "2000000".to_string());
+
+        let result = _execute_tally_vm(wasm_bytes.to_vec(), vec![hex::encode("testKeccak256")], envs).unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(
-            result.exit_info.exit_code,
-            250
+            String::from_utf8(result.result.unwrap()).unwrap(),
+            // "testKeccak256" hashed
+            "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
         )
     }
 }

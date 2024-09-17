@@ -16,3 +16,8 @@
 7. Click the download icon next to the artifact name and it will download as a zip file.
 8. Place those files in the `tallyvm` directory overwriting the files.
 	1. Note this does not update the macOS one. To build that one on a macOS machine run `cargo build --release`, and copy the produced `.dylib` file to the `tallyvm` directory.
+
+
+## Integration tests
+
+The file `./integration-test.wasm` is taken from the SEDA-SDK integration tests: https://github.com/sedaprotocol/seda-sdk/tree/main/libs/as-sdk-integration-tests
