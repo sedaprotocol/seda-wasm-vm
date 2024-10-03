@@ -5,21 +5,8 @@ import "C"
 
 import (
 	"os"
-	"sync"
 	"unsafe"
 )
-
-var logOnce sync.Once
-
-func initLoggingOnce() {
-	logOnce.Do(func() {
-		config_dir := os.Getenv("SEDAD_TALLYVM_HOME")
-		configDirC := C.CString(config_dir)
-
-		// Ensure this C function is called only once
-		C.init_tally_logging(configDirC)
-	})
-}
 
 type ExitInfo struct {
 	ExitMessage string
@@ -35,8 +22,7 @@ type VmResult struct {
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
-	config_dir := os.Getenv("SEDAD_TALLYVM_HOME")
-	configDirC := C.CString(config_dir)
+	configDirC := C.CString(os.Getenv("SEDAD_TALLYVM_HOME"))
 
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {

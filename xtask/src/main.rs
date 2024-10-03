@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Ok, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use xshell::{cmd, Shell};
+use xshell::{Shell, cmd};
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -78,9 +78,6 @@ impl AptInstall {
             }
             Arch::StaticAarch64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
-                cmd!(sh, "wget https://musl.cc/aarch64-linux-musl-cross.tgz").run()?;
-                cmd!(sh, "tar -xzf aarch64-linux-musl-cross.tgz").run()?;
-                cmd!(sh, "sudo mv aarch64-linux-musl-cross /opt/").run()?;
             }
             Arch::StaticX86_64 => {
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
@@ -144,20 +141,9 @@ impl Compile {
             }
             Arch::StaticAarch64 => {
                 std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
-                std::env::set_var(
-                    "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -L/usr/aarch64-linux-gnu/lib -lm -lc",
-                );
                 "libseda_tally_vm_muslc.aarch64.a"
             }
-            Arch::StaticX86_64 => {
-                std::env::set_var("CC", "x86_64-linux-musl-gcc");
-                std::env::set_var(
-                    "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_RUSTFLAGS",
-                    "-C target-feature=+crt-static -C link-args=-static -L/usr/lib -lm -lc",
-                );
-                "libseda_tally_vm_muslc.x86_64.a"
-            }
+            Arch::StaticX86_64 => "libseda_tally_vm_muslc.x86_64.a",
         };
 
         let path = if debug {
