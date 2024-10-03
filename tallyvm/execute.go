@@ -5,8 +5,21 @@ import "C"
 
 import (
 	"os"
+	"sync"
 	"unsafe"
 )
+
+var logOnce sync.Once
+
+func initLoggingOnce() {
+	logOnce.Do(func() {
+		config_dir := os.Getenv("SEDAD_TALLYVM_HOME")
+		configDirC := C.CString(config_dir)
+
+		// Ensure this C function is called only once
+		C.init_tally_logging(configDirC)
+	})
+}
 
 type ExitInfo struct {
 	ExitMessage string

@@ -4,6 +4,7 @@ use std::{
     mem,
     path::{Path, PathBuf},
     ptr,
+    sync::OnceLock,
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
@@ -152,9 +153,10 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_values_ptr: *const *const c_char,
     env_count: usize,
 ) -> FfiVmResult {
+    static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
     let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
     let sedad_home = PathBuf::from(sedad_home);
-    let _guard = init_logger(&sedad_home);
+    let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
 
     tracing::info!("execute_tally_vm");
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
