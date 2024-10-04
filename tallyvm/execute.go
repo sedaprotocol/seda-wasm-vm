@@ -4,7 +4,6 @@ package tallyvm
 import "C"
 
 import (
-	"os"
 	"unsafe"
 )
 
@@ -20,9 +19,11 @@ type VmResult struct {
 	ExitInfo ExitInfo
 }
 
+var LogDir string
+
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
-	configDirC := C.CString(os.Getenv("SEDAD_TALLYVM_HOME"))
+	configDirC := C.CString(LogDir)
 
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {

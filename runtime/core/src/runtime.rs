@@ -65,6 +65,7 @@ fn internal_run_vm(
         .initialize(&mut context.wasm_store, wasmer_instance.clone())
         .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
+    tracing::debug!("Calling WASM entrypoint");
     let main_func = wasmer_instance
         .exports
         .get_function(&function_name)
@@ -78,6 +79,7 @@ fn internal_run_vm(
     let mut exit_code: i32 = 0;
 
     if let Err(err) = runtime_result {
+        tracing::error!("Error running WASM: {err:?}");
         // we convert the error to a wasix error
         let wasix_error = WasiRuntimeError::from(err);
 
@@ -101,7 +103,7 @@ fn internal_run_vm(
     } else {
         0
     };
-    tracing::debug!("VM completed or timed out");
+    tracing::debug!("VM completed or out of gas");
 
     let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
 
@@ -127,27 +129,30 @@ fn internal_run_vm(
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {
-    tracing::info!("Starting runtime");
+    tracing::debug!("Starting runtime");
     let mut stdout: Vec<String> = vec![];
     let mut stderr: Vec<String> = vec![];
 
     let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
 
-    tracing::info!("VM execution completed");
+    tracing::info!("TALLY VM execution completed");
     match vm_execution_result {
-        Ok((result, exit_code, gas_used)) => VmResult {
-            stdout,
-            stderr,
-            gas_used,
-            exit_info: ExitInfo {
-                exit_code,
-                exit_message: match exit_code {
-                    0 => "Ok".to_string(),
-                    _ => String::from_utf8_lossy(&result).to_string(),
+        Ok((result, exit_code, gas_used)) => {
+            tracing::info!("TALLY VM gas used: {gas_used}");
+            VmResult {
+                stdout,
+                stderr,
+                gas_used,
+                exit_info: ExitInfo {
+                    exit_code,
+                    exit_message: match exit_code {
+                        0 => "Ok".to_string(),
+                        _ => String::from_utf8_lossy(&result).to_string(),
+                    },
                 },
-            },
-            result: Some(result),
-        },
+                result: Some(result),
+            }
+        }
         Err(error) => VmResult {
             stdout,
             stderr,

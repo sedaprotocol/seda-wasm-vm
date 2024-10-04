@@ -154,11 +154,11 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_count: usize,
 ) -> FfiVmResult {
     static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
+    tracing::debug!("Extracting C values");
     let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
     let sedad_home = PathBuf::from(sedad_home);
     let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
 
-    tracing::info!("execute_tally_vm");
     let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
     let args: Vec<String> = (0..args_count)
@@ -204,6 +204,7 @@ fn _execute_tally_vm(
     args: Vec<String>,
     envs: BTreeMap<String, String>,
 ) -> Result<VmResult> {
+    tracing::info!("Executing Tally VM");
     let wasm_hash = wasm_cache_id(&wasm_bytes);
     let env_vars = envs.clone();
     let gas_limit = env_vars

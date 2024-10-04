@@ -15,13 +15,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	os.Setenv("SEDAD_TALLYVM_HOME", tempdir)
+	tallyvm.LogDir = tempdir
 }
 
 func cleanup() {
-	tempdir := os.Getenv("SEDAD_TALLYVM_HOME")
-	os.RemoveAll(tempdir)
-	os.Unsetenv("SEDAD_TALLYVM_HOME")
+	os.RemoveAll(tallyvm.LogDir)
 }
 
 func TestTallyBinaryWorks(t *testing.T) {
