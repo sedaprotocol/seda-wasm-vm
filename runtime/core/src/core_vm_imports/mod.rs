@@ -1,5 +1,5 @@
 use secp256_k1::secp256k1_verify_import_obj;
-use wasmer::{FunctionEnv, Imports, Store, imports};
+use wasmer::{imports, FunctionEnv, Imports, Store};
 
 use crate::context::VmContext;
 

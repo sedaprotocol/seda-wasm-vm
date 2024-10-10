@@ -1,0 +1,103 @@
+name: Tests & Checks
+on: [pull_request]
+
+env:
+  GO_VERSION: 1.21.3
+  # https://releases.rs/docs/1.80.0/ branch date
+  NIGHTLY_TOOLCHAIN: nightly-2024-06-07
+  RUST_BACKTRACE: 1
+
+jobs:
+  go_fmt:
+    name: Go Fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 📥 Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+
+      - name: 📋 Lint Check
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --timeout 10m --tests=false
+          working-directory: tallyvm
+
+  go_test:
+    name: Go Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 📥 Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          check-latest: true
+
+      - name: 🧪 Test
+        run: cd tallyvm && go test -v ./...
+
+  rust_fmt:
+    name: Rust Fmt
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 📥 Install Rust Nightly
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: nightly
+          components: rustfmt
+
+      - name: 📋 Format Check
+        run: cargo fmt --all -- --check
+
+  rust_test_and_lint:
+    name: Rust Test & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: ⚡ Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+
+      - name: 🥬 Use Mold Linker
+        uses: rui314/setup-mold@v1
+
+      - name: 📥 Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
+          components: clippy rustc-codegen-cranelift-preview
+
+      - name: ☁️ Install Nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: 🧪 Test
+        env:
+          RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
+        run: cargo nextest run --failure-output immediate --success-output immediate --no-fail-fast
+
+      - name: 📋 Clippy Check
+        env:
+          RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
+        run: cargo clippy --all-features --locked -- -D warnings

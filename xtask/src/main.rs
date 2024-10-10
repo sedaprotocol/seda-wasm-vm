@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::{Context, Ok, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
-use xshell::{Shell, cmd};
+use xshell::{cmd, Shell};
 
 #[derive(Debug, Parser)]
 struct Cli {
