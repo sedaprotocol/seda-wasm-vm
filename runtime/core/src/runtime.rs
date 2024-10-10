@@ -2,7 +2,7 @@ use std::io::Read;
 
 use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
-use wasmer_middlewares::metering::{MeteringPoints, get_remaining_points};
+use wasmer_middlewares::metering::{get_remaining_points, MeteringPoints};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
 
 use crate::{context::VmContext, runtime_context::RuntimeContext, vm_imports::create_wasm_imports};

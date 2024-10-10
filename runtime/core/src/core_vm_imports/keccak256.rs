@@ -1,7 +1,7 @@
 use sha3::{Digest, Keccak256};
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{VmContext, errors::Result};
+use crate::{errors::Result, VmContext};
 
 pub fn keccak256_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
     fn keccak256(env: FunctionEnvMut<'_, VmContext>, message_ptr: WasmPtr<u8>, message_length: u32) -> Result<u32> {

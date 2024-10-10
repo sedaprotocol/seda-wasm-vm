@@ -1,6 +1,6 @@
 use std::{
     collections::BTreeMap,
-    ffi::{CStr, CString, c_char},
+    ffi::{c_char, CStr, CString},
     mem,
     path::{Path, PathBuf},
     ptr,
@@ -9,13 +9,13 @@ use std::{
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
 use seda_wasm_vm::{
+    init_logger,
+    start_runtime,
+    wasm_cache::wasm_cache_id,
     RuntimeContext,
     RuntimeError,
     VmCallData,
     VmResult,
-    init_logger,
-    start_runtime,
-    wasm_cache::wasm_cache_id,
 };
 
 use crate::errors::Result;
