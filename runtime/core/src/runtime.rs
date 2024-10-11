@@ -73,7 +73,7 @@ fn internal_run_vm(
 
     let runtime_result = main_func.call(&mut context.wasm_store, &[]);
 
-    wasi_env.cleanup(&mut context.wasm_store, None);
+    wasi_env.on_exit(&mut context.wasm_store, None);
     drop(_guard);
 
     let mut exit_code: i32 = 0;

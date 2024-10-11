@@ -1,7 +1,7 @@
 use std::{fs, path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
-use wasmer::{CompilerConfig, EngineBuilder, Module, Singlepass, Store};
+use wasmer::{sys::EngineBuilder, CompilerConfig, Module, Singlepass, Store};
 use wasmer_middlewares::Metering;
 
 use crate::{
