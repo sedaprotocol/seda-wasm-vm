@@ -57,9 +57,17 @@ struct AptInstall {
 }
 
 impl AptInstall {
+    fn install_aarch64_musl_gcc(sh: &Shell) -> Result<()> {
+        cmd!(sh, "wget https://musl.cc/aarch64-linux-musl-cross.tgz").run()?;
+        cmd!(sh, "tar -xvf aarch64-linux-musl-cross.tgz").run()?;
+        cmd!(sh, "sudo mv aarch64-linux-musl-cross /opt").run()?;
+        Ok(())
+    }
+
     fn handle(self, sh: &Shell) -> Result<()> {
         match self.arch {
             Arch::All => {
+                Self::install_aarch64_musl_gcc(sh)?;
                 cmd!(
                     sh,
                     "sudo apt-get install -y clang llvm gcc-aarch64-linux-gnu qemu-user-static musl-tools"
@@ -77,6 +85,7 @@ impl AptInstall {
                 cmd!(sh, "sudo apt-get install -y clang llvm").run()?;
             }
             Arch::StaticAarch64 => {
+                Self::install_aarch64_musl_gcc(sh)?;
                 cmd!(sh, "sudo apt-get install -y musl-tools").run()?;
             }
             Arch::StaticX86_64 => {
@@ -100,6 +109,7 @@ struct Compile {
     debug: bool,
     arch:  Arch,
 }
+
 impl Compile {
     fn handle(self, sh: &Shell) -> Result<()> {
         if let Arch::All = self.arch {
@@ -159,6 +169,8 @@ impl Compile {
             target_dir.join(target).join(path).join(arch.filename()),
             target_dir.join(rename),
         )?;
+        std::env::remove_var("CC");
+        std::env::remove_var("CXX");
         Ok(())
     }
 }
