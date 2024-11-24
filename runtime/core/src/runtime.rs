@@ -75,6 +75,7 @@ fn internal_run_vm(
 
     wasi_env.on_exit(&mut context.wasm_store, None);
     drop(_guard);
+    drop(runtime);
 
     let mut exit_code: i32 = 0;
 
