@@ -2,12 +2,15 @@ use std::io::Read;
 
 use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
-use wasmer_middlewares::metering::{get_remaining_points, MeteringPoints};
+use wasmer_middlewares::metering::{get_remaining_points, set_remaining_points, MeteringPoints};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
 
-use crate::{context::VmContext, runtime_context::RuntimeContext, vm_imports::create_wasm_imports};
-
-const MAX_DR_GAS_LIMIT: u64 = 5_000_000_000;
+use crate::{
+    context::VmContext,
+    metering::{GAS_PER_BYTE, GAS_STARTUP},
+    runtime_context::RuntimeContext,
+    vm_imports::create_wasm_imports,
+};
 
 fn internal_run_vm(
     call_data: VmCallData,
@@ -38,7 +41,7 @@ fn internal_run_vm(
         .finalize(&mut context.wasm_store)
         .map_err(|_| VmResultStatus::WasiEnvInitializeFailure)?;
 
-    let vm_context = VmContext::create_vm_context(&mut context.wasm_store, wasi_env.env.clone());
+    let vm_context = VmContext::create_vm_context(&mut context.wasm_store, wasi_env.env.clone(), call_data.clone());
 
     let imports = create_wasm_imports(
         &mut context.wasm_store,
@@ -51,6 +54,8 @@ fn internal_run_vm(
 
     let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
         .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string()))?;
+
+    vm_context.as_mut(&mut context.wasm_store).instance = Some(wasmer_instance.clone());
 
     let env_mut = vm_context.as_mut(&mut context.wasm_store);
     env_mut.memory = Some(
@@ -71,6 +76,19 @@ fn internal_run_vm(
         .get_function(&function_name)
         .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
+    // Apply arguments gas cost
+    if let Some(gas_limit) = call_data.gas_limit {
+        let args_bytes_total = call_data.args.iter().fold(0, |acc, v| acc + v.len());
+        // Gas startup costs (for spinning up the VM)
+        let gas_cost = (GAS_PER_BYTE * args_bytes_total as u64) + GAS_STARTUP;
+
+        if gas_cost < gas_limit {
+            set_remaining_points(&mut context.wasm_store, &wasmer_instance, gas_limit - gas_cost);
+        } else {
+            set_remaining_points(&mut context.wasm_store, &wasmer_instance, 0);
+        }
+    }
+
     let runtime_result = main_func.call(&mut context.wasm_store, &[]);
 
     wasi_env.on_exit(&mut context.wasm_store, None);
@@ -90,8 +108,6 @@ fn internal_run_vm(
     }
 
     let gas_used: u64 = if let Some(gas_limit) = call_data.gas_limit {
-        let gas_limit = gas_limit.clamp(0, MAX_DR_GAS_LIMIT);
-
         match get_remaining_points(&mut context.wasm_store, &wasmer_instance) {
             MeteringPoints::Exhausted => {
                 stderr.push("Ran out of gas".to_string());

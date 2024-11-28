@@ -57,6 +57,9 @@ pub enum RuntimeError {
 
     #[error(transparent)]
     Ecdsa(#[from] k256::ecdsa::Error),
+
+    #[error("Out of gas")]
+    OutOfGas,
 }
 
 impl From<InstantiationError> for RuntimeError {

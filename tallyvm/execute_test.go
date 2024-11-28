@@ -35,9 +35,9 @@ func TestTallyBinaryWorks(t *testing.T) {
 	reveals_filter := "[0,0,0]"
 
 	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
-		"CONSENSUS":    "true",
-		"VM_MODE":      "tally",
-		"DR_GAS_LIMIT": "2000000",
+		"CONSENSUS":          "true",
+		"VM_MODE":            "tally",
+		"DR_TALLY_GAS_LIMIT": "300000000000000",
 	})
 
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
@@ -59,9 +59,9 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	}
 
 	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
-		"CONSENSUS":    "true",
-		"VM_MODE":      "tally",
-		"DR_GAS_LIMIT": "2000000",
+		"CONSENSUS":          "true",
+		"VM_MODE":            "tally",
+		"DR_TALLY_GAS_LIMIT": "300000000000000",
 	})
 
 	assert.Equal(t, "", res.ExitInfo.ExitMessage)
@@ -83,9 +83,9 @@ func TestTallyGasExceeded(t *testing.T) {
 	}
 
 	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
-		"CONSENSUS":    "true",
-		"VM_MODE":      "tally",
-		"DR_GAS_LIMIT": "123",
+		"CONSENSUS":          "true",
+		"VM_MODE":            "tally",
+		"DR_TALLY_GAS_LIMIT": "123",
 	})
 
 	assert.Equal(t, "", res.ExitInfo.ExitMessage)

@@ -1,7 +1,8 @@
 mod context;
 mod core_vm_imports;
 mod errors;
-mod metering;
+
+pub mod metering;
 mod resources_dir;
 mod runtime;
 mod runtime_context;

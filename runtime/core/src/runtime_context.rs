@@ -6,7 +6,7 @@ use wasmer_middlewares::Metering;
 
 use crate::{
     errors::Result,
-    metering::get_wasm_operation_cost,
+    metering::get_wasm_operation_gas_cost,
     wasm_cache::{wasm_cache_id, wasm_cache_load, wasm_cache_store},
 };
 
@@ -21,10 +21,7 @@ impl RuntimeContext {
         let mut engine = Singlepass::default();
 
         if let Some(gas_limit) = call_data.gas_limit {
-            let max_dr_gas_limit = 5_000_000_000;
-            let gas_limit = gas_limit.clamp(0, max_dr_gas_limit);
-
-            let metering = Arc::new(Metering::new(gas_limit, get_wasm_operation_cost));
+            let metering = Arc::new(Metering::new(gas_limit, get_wasm_operation_gas_cost));
             engine.push_middleware(metering);
         }
 

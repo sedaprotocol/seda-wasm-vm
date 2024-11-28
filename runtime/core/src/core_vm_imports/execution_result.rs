@@ -1,9 +1,18 @@
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{context::VmContext, errors::Result};
+use crate::{context::VmContext, errors::Result, metering::apply_gas_cost};
 
 pub fn execution_result_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
-    fn execution_result(env: FunctionEnvMut<'_, VmContext>, result_ptr: WasmPtr<u8>, result_length: i32) -> Result<()> {
+    fn execution_result(
+        mut env: FunctionEnvMut<'_, VmContext>,
+        result_ptr: WasmPtr<u8>,
+        result_length: i32,
+    ) -> Result<()> {
+        apply_gas_cost(
+            crate::metering::ExternalCallType::ExecutionResult(result_length as u64),
+            &mut env,
+        )?;
+
         let ctx = env.data();
         let memory = ctx.memory_view(&env);
 

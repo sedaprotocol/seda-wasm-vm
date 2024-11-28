@@ -1,10 +1,15 @@
 use sha3::{Digest, Keccak256};
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{errors::Result, VmContext};
+use crate::{errors::Result, metering::apply_gas_cost, VmContext};
 
 pub fn keccak256_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
-    fn keccak256(env: FunctionEnvMut<'_, VmContext>, message_ptr: WasmPtr<u8>, message_length: u32) -> Result<u32> {
+    fn keccak256(mut env: FunctionEnvMut<'_, VmContext>, message_ptr: WasmPtr<u8>, message_length: u32) -> Result<u32> {
+        apply_gas_cost(
+            crate::metering::ExternalCallType::Keccak256(message_length as u64),
+            &mut env,
+        )?;
+
         let ctx = env.data();
         let memory = ctx.memory_view(&env);
 

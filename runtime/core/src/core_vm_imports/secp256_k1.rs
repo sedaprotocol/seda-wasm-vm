@@ -2,7 +2,7 @@ use k256::ecdsa::{signature::hazmat::PrehashVerifier, Signature, VerifyingKey};
 use sha3::{Digest, Keccak256};
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{context::VmContext, errors::Result};
+use crate::{context::VmContext, errors::Result, metering::apply_gas_cost};
 
 /// Verifies a `Secp256k1` ECDSA signature.
 ///
@@ -15,7 +15,7 @@ use crate::{context::VmContext, errors::Result};
 ///     - u8 (boolean, 1 for true)
 pub fn secp256k1_verify_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
     fn secp256k1_verify(
-        env: FunctionEnvMut<'_, VmContext>,
+        mut env: FunctionEnvMut<'_, VmContext>,
         message: WasmPtr<u8>,
         message_length: i64,
         signature: WasmPtr<u8>,
@@ -23,6 +23,11 @@ pub fn secp256k1_verify_import_obj(store: &mut Store, vm_context: &FunctionEnv<V
         public_key: WasmPtr<u8>,
         public_key_length: i32,
     ) -> Result<u8> {
+        apply_gas_cost(
+            crate::metering::ExternalCallType::Secp256k1Verify(message_length as u64),
+            &mut env,
+        )?;
+
         let ctx = env.data();
         let memory = ctx.memory_view(&env);
 

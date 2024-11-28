@@ -1,14 +1,16 @@
 use std::sync::Arc;
 
 use parking_lot::{Mutex, RwLock};
-use wasmer::{AsStoreRef, FunctionEnv, Memory, MemoryView, Store};
+use seda_runtime_sdk::VmCallData;
+use wasmer::{AsStoreRef, FunctionEnv, Instance, Memory, MemoryView, Store};
 use wasmer_wasix::WasiEnv;
 
 #[derive(Clone)]
 pub struct VmContext {
-    pub result:   Arc<Mutex<Vec<u8>>>,
-    pub memory:   Option<Memory>,
-    pub wasi_env: FunctionEnv<WasiEnv>,
+    pub call_data: VmCallData,
+    pub result:    Arc<Mutex<Vec<u8>>>,
+    pub memory:    Option<Memory>,
+    pub wasi_env:  FunctionEnv<WasiEnv>,
 
     /// Used for internal use only
     /// This is used to temp store a result of an action
@@ -19,11 +21,16 @@ pub struct VmContext {
     /// use these 3 calls in sequental we are fine, but it could crash if the
     /// order changes.
     pub call_result_value: Arc<RwLock<Vec<u8>>>,
+    pub instance:          Option<Instance>,
 }
 
 impl VmContext {
     #[allow(clippy::too_many_arguments)]
-    pub fn create_vm_context(store: &mut Store, wasi_env: FunctionEnv<WasiEnv>) -> FunctionEnv<VmContext> {
+    pub fn create_vm_context(
+        store: &mut Store,
+        wasi_env: FunctionEnv<WasiEnv>,
+        call_data: VmCallData,
+    ) -> FunctionEnv<VmContext> {
         FunctionEnv::new(
             store,
             VmContext {
@@ -31,6 +38,8 @@ impl VmContext {
                 memory: None,
                 wasi_env,
                 call_result_value: Arc::new(RwLock::new(Vec::new())),
+                instance: None,
+                call_data,
             },
         )
     }
