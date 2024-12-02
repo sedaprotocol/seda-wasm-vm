@@ -180,6 +180,8 @@ pub enum VmResultStatus {
     FailedToGetWASMMemory,
     ExecutionTimeout,
     FailedToJoinThread,
+    /// When the execution result size exceeds the maximum allowed size
+    ResultSizeExceeded,
 }
 
 impl From<VmResultStatus> for ExitInfo {
@@ -205,6 +207,9 @@ impl From<VmResultStatus> for ExitInfo {
             VmResultStatus::FailedToGetWASMMemory => ("Error: Failed to get memory export from WASM".into(), 10).into(),
             VmResultStatus::ExecutionTimeout => ("Error: Execution Timeout".into(), 11).into(),
             VmResultStatus::FailedToJoinThread => ("Error: Failed to join thread".into(), 12).into(),
+            VmResultStatus::ResultSizeExceeded => {
+                ("Error: Execution result size exceeds maximum allowed size".into(), 13).into()
+            }
         }
     }
 }

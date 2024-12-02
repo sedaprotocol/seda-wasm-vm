@@ -12,6 +12,10 @@ use crate::{
     vm_imports::create_wasm_imports,
 };
 
+/// Maximum size in bytes for VM execution results.
+/// Prevents Wasmer runtime errors when values become too large during execution.
+const MAX_VM_RESULT_SIZE_BYTES: usize = 96000;
+
 fn internal_run_vm(
     call_data: VmCallData,
     mut context: RuntimeContext,
@@ -123,6 +127,16 @@ fn internal_run_vm(
     tracing::debug!("VM completed or out of gas");
 
     let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
+
+    // Add size check for execution result
+    if execution_result.len() > MAX_VM_RESULT_SIZE_BYTES {
+        stderr.push(format!(
+            "Result size ({} bytes) exceeds maximum allowed size ({} bytes)",
+            execution_result.len(),
+            MAX_VM_RESULT_SIZE_BYTES
+        ));
+        return Err(VmResultStatus::ResultSizeExceeded);
+    }
 
     let mut stdout_buffer = String::new();
     stdout_rx
