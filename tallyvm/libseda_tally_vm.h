@@ -22,6 +22,7 @@ typedef struct FfiVmResult {
   const uint8_t *result_ptr;
   uintptr_t result_len;
   struct FfiExitInfo exit_info;
+  uint64_t gas_used;
 } FfiVmResult;
 
 /**

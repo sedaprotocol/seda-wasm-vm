@@ -57,6 +57,7 @@ pub struct FfiVmResult {
     result_ptr: *const u8,
     result_len: usize,
     exit_info:  FfiExitInfo,
+    gas_used:   u64,
 }
 
 /// # Safety
@@ -137,6 +138,7 @@ impl From<VmResult> for FfiVmResult {
             result_ptr,
             result_len,
             exit_info: vm_result.exit_info.into(),
+            gas_used: vm_result.gas_used,
         }
     }
 }
@@ -192,6 +194,7 @@ pub unsafe extern "C" fn execute_tally_vm(
                 exit_message: CString::new("Error executing VM").unwrap().into_raw(),
                 exit_code:    -1,
             },
+            gas_used:   0,
         },
     }
 }

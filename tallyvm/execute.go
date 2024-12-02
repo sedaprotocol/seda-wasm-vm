@@ -17,6 +17,7 @@ type VmResult struct {
 	Stderr   []string
 	Result   []byte
 	ExitInfo ExitInfo
+	gas_used uint64
 }
 
 var LogDir string
@@ -104,5 +105,6 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 			ExitMessage: exitMessage,
 			ExitCode:    exitCode,
 		},
+		gas_used: uint64(result.gas_used),
 	}
 }
