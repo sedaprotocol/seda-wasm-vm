@@ -7,7 +7,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/sedaprotocol/seda-wasm-vm/tallyvm"
+	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
 )
 
 func init() {
