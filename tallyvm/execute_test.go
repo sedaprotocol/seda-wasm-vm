@@ -1,7 +1,6 @@
 package tallyvm_test
 
 import (
-	"fmt"
 	"os"
 	"testing"
 
@@ -40,13 +39,14 @@ func TestTallyBinaryWorks(t *testing.T) {
 		"DR_TALLY_GAS_LIMIT": "300000000000000",
 	})
 
+	t.Log(res)
+
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 0, res.ExitInfo.ExitCode)
 	assert.NotEmpty(t, res.Result)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	fmt.Println(res)
-	t.Log(res)
+	assert.Equal(t, uint64(5002255745075), res.GasUsed)
 }
 
 func TestTallyBinaryNoArgs(t *testing.T) {
@@ -64,13 +64,14 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 		"DR_TALLY_GAS_LIMIT": "300000000000000",
 	})
 
+	t.Log(res)
+
 	assert.Equal(t, "", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 255, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	fmt.Println(res)
-	t.Log(res)
+	assert.Equal(t, uint64(5000005633275), res.GasUsed)
 }
 
 func TestTallyGasExceeded(t *testing.T) {
@@ -88,10 +89,11 @@ func TestTallyGasExceeded(t *testing.T) {
 		"DR_TALLY_GAS_LIMIT": "123",
 	})
 
+	t.Log(res)
+
 	assert.Equal(t, "", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 250, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
-	fmt.Println(res)
-	t.Log(res)
+	assert.Equal(t, uint64(123), res.GasUsed)
 }

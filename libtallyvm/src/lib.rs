@@ -261,7 +261,8 @@ mod test {
         assert_eq!(
             result.exit_info.exit_message,
             "http_fetch is not allowed in tally".to_string()
-        )
+        );
+        assert_eq!(result.gas_used, 5001589256245);
     }
 
     #[test]
@@ -285,7 +286,8 @@ mod test {
         assert_eq!(
             result.exit_info.exit_message,
             "proxy_http_fetch is not allowed in tally".to_string()
-        )
+        );
+        assert_eq!(result.gas_used, 5005670298145);
     }
 
     #[test]
@@ -298,6 +300,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
+        assert_eq!(result.gas_used, 5000004190715);
     }
 
     #[test]
@@ -317,7 +320,8 @@ mod test {
         .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
-        assert_eq!(result.exit_info.exit_code, 250)
+        assert_eq!(result.exit_info.exit_code, 250);
+        assert_eq!(result.gas_used, 1000);
     }
 
     #[test]
@@ -336,6 +340,7 @@ mod test {
             String::from_utf8(result.result.unwrap()).unwrap(),
             // "testKeccak256" hashed
             "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
-        )
+        );
+        assert_eq!(result.gas_used, 5000710408730);
     }
 }
