@@ -48,6 +48,7 @@ impl Arch {
 enum Command {
     AptInstall(AptInstall),
     Compile(Compile),
+    Cov(Cov),
 }
 
 /// Installs the necessary packages for the given architecture using apt.
@@ -175,6 +176,27 @@ impl Compile {
     }
 }
 
+#[derive(Debug, Args)]
+struct Cov {
+    #[clap(short, long)]
+    ci: bool,
+}
+
+impl Cov {
+    fn handle(self, sh: &Shell) -> Result<()> {
+        if !self.ci {
+            cmd!(sh, "cargo llvm-cov -p seda-tally-vm --locked nextest -P ci").run()?;
+        } else {
+            cmd!(
+                sh,
+                "cargo llvm-cov -p seda-tally-vm --lcov --output-path lcov.info --locked nextest -P ci"
+            )
+            .run()?;
+        }
+        Ok(())
+    }
+}
+
 fn main() {
     if let Err(e) = try_main() {
         eprintln!("{e}");
@@ -201,6 +223,9 @@ fn try_main() -> Result<()> {
         }
         Command::Compile(compile) => {
             compile.handle(&sh)?;
+        }
+        Command::Cov(cov) => {
+            cov.handle(&sh)?;
         }
     }
 

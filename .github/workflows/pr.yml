@@ -89,15 +89,28 @@ jobs:
           toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
           components: clippy rustc-codegen-cranelift-preview
 
+      - name: 📋 Clippy Check
+        env:
+          RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
+        run: cargo clippy --all-features --locked -- -D warnings
+
       - name: ☁️ Install Nextest
         uses: taiki-e/install-action@nextest
 
       - name: 🧪 Test
         env:
           RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
-        run: cargo nextest run --failure-output immediate --success-output immediate --no-fail-fast
+        run: cargo nextest run --locked -P ci
 
-      - name: 📋 Clippy Check
-        env:
-          RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
-        run: cargo clippy --all-features --locked -- -D warnings
+      - name: ☁️ Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: 📊 Test Coverage
+        run: cargo cov-ci
+
+      - name: 📤 Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true

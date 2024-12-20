@@ -1,2 +1,6 @@
 [alias]
+apt-install = "run --package xtask -- apt-install"
+compile = "run --package xtask -- compile"
+cov = "run --package xtask -- cov"
+cov-ci = "run --package xtask -- cov -c"
 xtask = "run --package xtask --"
