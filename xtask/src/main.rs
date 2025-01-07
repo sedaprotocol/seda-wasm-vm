@@ -189,7 +189,7 @@ impl Cov {
         } else {
             cmd!(
                 sh,
-                "cargo llvm-cov -p seda-tally-vm --lcov --output-path lcov.info --locked nextest -P ci"
+                "cargo llvm-cov -p seda-tally-vm --cobertura --output-path cobertura.xml --locked nextest -P ci"
             )
             .run()?;
         }
