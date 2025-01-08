@@ -235,7 +235,10 @@ fn _execute_tally_vm(
 
 #[cfg(test)]
 mod test {
-    use std::collections::BTreeMap;
+    use std::{
+        collections::BTreeMap,
+        ffi::{c_char, CString},
+    };
 
     use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
@@ -263,6 +266,64 @@ mod test {
             "http_fetch is not allowed in tally".to_string()
         );
         assert_eq!(result.gas_used, 5001589256245);
+    }
+
+    #[test]
+    fn execute_c_tally_vm() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+
+        let args = [hex::encode("testHttpSuccess")];
+        let arg_cstrings: Vec<CString> = args
+            .iter()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        // VM_MODE dr to force the http_fetch path
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        let env_key_cstrings: Vec<CString> = envs
+            .keys()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
+        let env_value_cstrings: Vec<CString> = envs
+            .values()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let tempdir = std::env::temp_dir().display().to_string();
+        let mut result = unsafe {
+            super::execute_tally_vm(
+                CString::new(tempdir).unwrap().into_raw(),
+                wasm_bytes.as_ptr(),
+                wasm_bytes.len(),
+                arg_ptrs.as_ptr(),
+                args.len(),
+                env_key_ptrs.as_ptr(),
+                env_value_ptrs.as_ptr(),
+                envs.len(),
+            )
+        };
+
+        unsafe {
+            assert_eq!(
+                std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+                    .to_string_lossy()
+                    .into_owned(),
+                "http_fetch is not allowed in tally".to_string()
+            );
+        }
+        assert_eq!(result.gas_used, 5001589256245);
+
+        unsafe {
+            super::free_ffi_vm_result(&mut result);
+        }
     }
 
     #[test]
