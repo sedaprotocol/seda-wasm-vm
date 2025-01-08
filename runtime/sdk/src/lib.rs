@@ -23,7 +23,6 @@ pub use promises::{
     MainChainCallAction,
     MainChainQueryAction,
     MainChainViewAction,
-    P2PBroadcastAction,
     Promise,
     PromiseAction,
     PromiseStatus,
@@ -34,3 +33,10 @@ pub use promises::{
     VmType,
     WasmId,
 };
+
+#[path = ""]
+#[cfg(test)]
+mod test {
+    use super::bytes::*;
+    mod bytes_tests;
+}

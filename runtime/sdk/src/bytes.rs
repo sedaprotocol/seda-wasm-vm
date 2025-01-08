@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{errors, Result};
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub struct Bytes(Vec<u8>);
 
 impl Bytes {
@@ -96,6 +97,10 @@ impl FromBytes for String {
 
 impl FromBytes for bool {
     fn from_bytes(bytes: &[u8]) -> Result<Self> {
+        if bytes.len() != 1 {
+            return Err(errors::SDKError::InvalidValue);
+        }
+
         match bytes[0] {
             0 => Ok(false),
             1 => Ok(true),

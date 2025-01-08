@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{Bytes, ToBytes};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub enum ConsensusType {
     Executor,
     Relayer,
@@ -21,16 +22,20 @@ impl fmt::Display for ConsensusType {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub enum WasmId {
-    /// The ID of the WASM file, loads from cache
-    Id(String),
-    /// The path on disk of the WASM file
-    Path(String),
+    // Doesn't exist for Singlepass compiler
+    // /// The ID of the WASM file, loads from cache
+    // Id(String),
+    // Unlikely to be used for tallyvm?
+    // /// The path on disk of the WASM file
+    // Path(String),
     /// The bytes of the binary
     Bytes(Vec<u8>),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub enum VmType {
     Tally,
     DataRequest,
@@ -44,6 +49,7 @@ pub enum WasmEngine {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub struct VmCallData {
     /// Identifier for differentiating between processes
     /// If assigned, the runtime will queue the call if there is already a process running with that id
@@ -98,6 +104,7 @@ impl fmt::Display for VmCallData {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub struct ExitInfo {
     pub exit_message: String,
     pub exit_code:    i32,
@@ -120,6 +127,7 @@ impl From<(String, i32)> for ExitInfo {
 
 /// Represents the result of a Vm instance
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub struct VmResult {
     pub stdout:    Vec<String>,
     pub stderr:    Vec<String>,
@@ -153,6 +161,7 @@ impl ToBytes for VmResult {
 // TODO create a readme of all these once its better established
 /// The possible statuses of a [VmResult]
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub enum VmResultStatus {
     /// When the Vm has nothing in the promise queue to run
     EmptyQueue,

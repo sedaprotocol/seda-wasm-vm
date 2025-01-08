@@ -3,7 +3,11 @@ use std::collections::HashMap;
 use seda_runtime_sdk::{HttpFetchResponse, PromiseStatus};
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{errors::Result, metering::apply_gas_cost, VmContext};
+use crate::{
+    errors::{Result, VmHostError},
+    metering::apply_gas_cost,
+    VmContext,
+};
 
 /// Mostly a polyfill, otherwise the tally and dr binary cannot be one and the same
 /// It simply errors but allows the WASM binary to continue.
@@ -26,10 +30,11 @@ pub fn http_fetch_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmConte
                 bytes:          message,
             };
 
-            let result: PromiseStatus = PromiseStatus::Rejected(serde_json::to_vec(&http_response)?);
+            let result: PromiseStatus =
+                PromiseStatus::Rejected(serde_json::to_vec(&http_response).map_err(VmHostError::from)?);
 
             let mut call_value = ctx.call_result_value.write();
-            *call_value = serde_json::to_vec(&result)?;
+            *call_value = serde_json::to_vec(&result).map_err(VmHostError::from)?;
 
             call_value.len()
         };

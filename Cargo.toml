@@ -21,12 +21,15 @@ rpath = true
 
 [workspace.dependencies]
 anyhow = "1.0"
+arbitrary = { version = "1.4", features = ["derive"] }
 cbindgen = "0.26"
 hex = "0.4"
 home = "0.5.5"
 k256 = "0.13.3"
 lazy_static = "1.4"
 parking_lot = "0.12"
+paste = "1.0"
+rand = "0.8"
 seda-runtime-sdk = { path = "./runtime/sdk" }
 seda-wasm-vm = { path = "./runtime/core" }
 serde = { version = "1.0", default-features = false, features = ["derive"] }

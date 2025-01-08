@@ -7,6 +7,7 @@ use crate::ToBytes;
 
 // TODO: Fulfilled and Rejected could now just be our Bytes type.
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub enum PromiseStatus {
     /// The promise completed
     Fulfilled(Option<Vec<u8>>),
@@ -32,7 +33,7 @@ impl PromiseStatus {
     pub fn parse<T>(self) -> Result<T, T::Error>
     where
         T: TryFrom<Vec<u8>>,
-        T: TryFrom<Vec<u8>, Error = serde_json::Error>,
+        T: TryFrom<Vec<u8>, Error = crate::SDKError>,
     {
         let value = self.fulfilled();
 
@@ -59,10 +60,69 @@ impl<T: crate::ToBytes, E: std::error::Error> From<Result<Option<T>, E>> for Pro
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub struct Promise {
     /// The name of the action we should execute
     pub action: PromiseAction,
 
     /// The status of the promise, will include the result if it's fulfilled
     pub status: PromiseStatus,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::SDKError;
+
+    #[test]
+    #[should_panic]
+    fn test_promise_status_panics_if_rejected() {
+        let status = PromiseStatus::Rejected("error".to_string().into_bytes());
+        status.fulfilled();
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_promise_status_panics_if_none() {
+        let status = PromiseStatus::Fulfilled(None);
+        status.fulfilled();
+    }
+
+    #[test]
+    fn promise_status_from_result() {
+        let success: Result<String, SDKError> = Ok("hello".to_string());
+        let promise_status: PromiseStatus = success.into();
+        assert_eq!(
+            promise_status,
+            PromiseStatus::Fulfilled(Some("hello".to_string().into_bytes()))
+        );
+
+        let error: Result<String, SDKError> = Err(SDKError::InvalidValue);
+        let promise_status: PromiseStatus = error.into();
+        assert_eq!(
+            promise_status,
+            PromiseStatus::Rejected(SDKError::InvalidValue.to_string().into_bytes())
+        );
+    }
+
+    #[test]
+    fn promise_status_from_result_option() {
+        let success_some: Result<Option<String>, SDKError> = Ok(Some("hello".to_string()));
+        let promise_status: PromiseStatus = success_some.into();
+        assert_eq!(
+            promise_status,
+            PromiseStatus::Fulfilled(Some("hello".to_string().into_bytes()))
+        );
+
+        let success_none: Result<Option<String>, SDKError> = Ok(None);
+        let promise_status: PromiseStatus = success_none.into();
+        assert_eq!(promise_status, PromiseStatus::Fulfilled(None));
+
+        let error: Result<Option<String>, SDKError> = Err(SDKError::InvalidValue);
+        let promise_status: PromiseStatus = error.into();
+        assert_eq!(
+            promise_status,
+            PromiseStatus::Rejected(SDKError::InvalidValue.to_string().into_bytes())
+        );
+    }
 }

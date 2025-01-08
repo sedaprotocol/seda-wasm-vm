@@ -185,11 +185,15 @@ struct Cov {
 impl Cov {
     fn handle(self, sh: &Shell) -> Result<()> {
         if !self.ci {
-            cmd!(sh, "cargo llvm-cov -p seda-tally-vm --locked nextest -P ci").run()?;
+            cmd!(
+                sh,
+                "cargo llvm-cov -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci"
+            )
+            .run()?;
         } else {
             cmd!(
                 sh,
-                "cargo llvm-cov -p seda-tally-vm --cobertura --output-path cobertura.xml --locked nextest -P ci"
+                "cargo llvm-cov -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --cobertura --output-path cobertura.xml --locked nextest -P ci"
             )
             .run()?;
         }

@@ -1,7 +1,11 @@
 use wasmer::{wasmparser::Operator, FunctionEnvMut, WASM_PAGE_SIZE};
 use wasmer_middlewares::metering::{get_remaining_points, set_remaining_points, MeteringPoints};
 
-use crate::{errors::Result, RuntimeError, VmContext};
+use crate::{
+    errors::{Result, VmHostError},
+    RuntimeError,
+    VmContext,
+};
 
 pub fn is_accounting(operator: &Operator) -> bool {
     matches!(
@@ -92,9 +96,7 @@ pub fn check_enough_gas(gas_cost: u64, remaining_gas: u64, gas_limit: u64) -> Re
 pub fn apply_gas_cost(external_call_type: ExternalCallType, env: &mut FunctionEnvMut<'_, VmContext>) -> Result<()> {
     let context: &VmContext = env.data();
     let instance = match &context.instance {
-        None => Err(RuntimeError::VmHostError(
-            "Instance on VmContext was not set".to_string(),
-        )),
+        None => Err(VmHostError::InstanceNotSet),
         Some(v) => Ok(v.clone()),
     }?;
 

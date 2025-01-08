@@ -5,11 +5,13 @@ use crate::promises::VmCallData;
 pub type EventId = String;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub enum EventData {
     Vm(VmCallData),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(test, derive(arbitrary::Arbitrary))]
 pub struct Event {
     pub id:               EventId,
     pub data:             EventData,
@@ -29,5 +31,20 @@ impl Event {
 
     pub fn set_check_duplicates(&mut self, check_duplicates: bool) {
         self.check_duplicates = check_duplicates;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_event() {
+        let mut event = Event::new("test", EventData::Vm(VmCallData::default()));
+        assert_eq!(event.id, "test");
+        assert_eq!(event.data, EventData::Vm(VmCallData::default()));
+        assert!(event.check_duplicates);
+        event.set_check_duplicates(false);
+        assert!(!event.check_duplicates);
     }
 }

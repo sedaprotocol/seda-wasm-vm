@@ -3,7 +3,8 @@ mod core_vm_imports;
 mod errors;
 
 pub mod metering;
-mod resources_dir;
+// not used with singlepass compiler
+// mod resources_dir;
 mod runtime;
 mod runtime_context;
 mod safe_wasi_imports;

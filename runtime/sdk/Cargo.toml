@@ -14,3 +14,8 @@ serde = { workspace = true, features = ["std"] }
 serde_json = { workspace = true, features = ["std"] }
 thiserror = { workspace = true }
 url = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+arbitrary.workspace = true
+paste.workspace = true
+rand.workspace = true
