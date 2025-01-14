@@ -151,7 +151,12 @@ impl Compile {
                 "libseda_tally_vm.x86_64.so"
             }
             Arch::StaticAarch64 => {
-                std::env::set_var("CC", "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc");
+                let cc_path = if which::which("aarch64-linux-musl-gcc").is_ok() {
+                    "aarch64-linux-musl-gcc"
+                } else {
+                    "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
+                };
+                std::env::set_var("CC", cc_path);
                 "libseda_tally_vm_muslc.aarch64.a"
             }
             Arch::StaticX86_64 => "libseda_tally_vm_muslc.x86_64.a",

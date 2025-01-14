@@ -7,4 +7,5 @@ version.workspace = true
 [dependencies]
 anyhow.workspace = true
 clap = { version = "4.5", features = ["derive"] }
+which.workspace = true
 xshell.workspace = true
