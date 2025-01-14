@@ -13,15 +13,16 @@ type ExitInfo struct {
 }
 
 type VmResult struct {
-	Stdout   []string
-	Stderr   []string
-	Result   []byte
-	ExitInfo ExitInfo
-	GasUsed  uint64
+	Stdout    []string
+	Stderr    []string
+	Result    *[]byte
+	ResultLen int
+	ExitInfo  ExitInfo
+	GasUsed   uint64
 }
 
 var LogDir string
-var TallyMaxBytes uint64
+var TallyMaxBytes uint
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
@@ -67,7 +68,7 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 		bytesPtr, C.uintptr_t(len(bytes)),
 		argsPtr, C.uintptr_t(len(args)),
 		keysPtr, valuesPtr, C.uintptr_t(len(envs)),
-		C.uint64_t(TallyMaxBytes),
+		C.uintptr_t(TallyMaxBytes),
 	)
 	exitMessage := C.GoString(result.exit_info.exit_message)
 	exitCode := int(result.exit_info.exit_code)
@@ -76,9 +77,13 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 
 	resultLen := int(result.result_len)
 	resultBytes := make([]byte, resultLen)
-	if resultLen > 0 {
+	if resultLen > 0 && exitCode != 255 {
 		resultSrc := (*[1 << 30]byte)(unsafe.Pointer(result.result_ptr))[:resultLen:resultLen]
 		copy(resultBytes, resultSrc)
+	}
+	var resultPtr *[]byte
+	if exitCode != 255 {
+		resultPtr = &resultBytes
 	}
 
 	stdoutLen := int(result.stdout_len)
@@ -100,9 +105,10 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 	}
 
 	return VmResult{
-		Stdout: stdout,
-		Stderr: stderr,
-		Result: resultBytes,
+		Stdout:    stdout,
+		Stderr:    stderr,
+		Result:    resultPtr,
+		ResultLen: resultLen,
 		ExitInfo: ExitInfo{
 			ExitMessage: exitMessage,
 			ExitCode:    exitCode,

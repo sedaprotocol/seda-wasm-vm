@@ -99,7 +99,7 @@ func TestTallyGasExceeded(t *testing.T) {
 	assert.Equal(t, uint64(123), res.GasUsed)
 }
 
-func TestTallyMaBytesExceeded(t *testing.T) {
+func TestTallyMaxBytesExceeded(t *testing.T) {
 	defer cleanup()
 	tallyvm.TallyMaxBytes = 1
 
@@ -120,9 +120,18 @@ func TestTallyMaBytesExceeded(t *testing.T) {
 
 	t.Log(res)
 
+	// t.Log(tallyvm.LogDir)
+	// // read file contents from LogDir/sedavm_logs/log.2025-01-14
+	// logfile, err := os.ReadFile(tallyvm.LogDir + "/sedavm_logs/log.2025-01-14")
+	// if err != nil {
+	// 	t.Fatal(err)
+	// }
+	// t.Log(string(logfile))
+
 	assert.Equal(t, "Result larger than 1bytes.", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 255, res.ExitInfo.ExitCode)
-	assert.Empty(t, res.Result)
+	assert.Nil(t, res.Result)
+	assert.NotZero(t, res.ResultLen)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
 	assert.Equal(t, uint64(5002255745075), res.GasUsed)

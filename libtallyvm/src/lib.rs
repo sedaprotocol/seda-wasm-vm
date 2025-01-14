@@ -174,7 +174,6 @@ pub unsafe extern "C" fn execute_tally_vm(
     max_result_bytes: usize,
 ) -> FfiVmResult {
     static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
-    tracing::debug!("Extracting C values");
     let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
     let sedad_home = PathBuf::from(sedad_home);
     let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
