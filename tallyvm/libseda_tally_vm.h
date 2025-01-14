@@ -45,4 +45,5 @@ struct FfiVmResult execute_tally_vm(const char *sedad_home,
                                     uintptr_t args_count,
                                     const char *const *env_keys_ptr,
                                     const char *const *env_values_ptr,
-                                    uintptr_t env_count);
+                                    uintptr_t env_count,
+                                    uintptr_t max_result_bytes);

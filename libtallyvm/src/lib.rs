@@ -60,6 +60,65 @@ pub struct FfiVmResult {
     gas_used:   u64,
 }
 
+impl FfiVmResult {
+    fn from_result(vm_result: VmResult, max_result_bytes: usize) -> Self {
+        let stdout: Vec<CString> = vm_result
+            .stdout
+            .iter()
+            .map(|s| CString::new(s.as_str()).unwrap())
+            .collect();
+        let stdout_storage: Vec<*const c_char> = stdout.into_iter().map(|s| s.into_raw() as *const _).collect();
+        let boxed_slice: Box<[*const c_char]> = stdout_storage.into_boxed_slice();
+        let stdout_ptr = boxed_slice.as_ptr();
+        let stdout_len = boxed_slice.len();
+        mem::forget(boxed_slice);
+
+        let stderr: Vec<CString> = vm_result
+            .stderr
+            .iter()
+            .map(|s| CString::new(s.as_str()).unwrap())
+            .collect();
+        let stderr_storage: Vec<*const c_char> = stderr.into_iter().map(|s| s.into_raw() as *const _).collect();
+        let boxed_slice: Box<[*const c_char]> = stderr_storage.into_boxed_slice();
+        let stderr_ptr = boxed_slice.as_ptr();
+        let stderr_len = boxed_slice.len();
+        mem::forget(boxed_slice);
+
+        let result = vm_result.result.unwrap_or_default().into_boxed_slice();
+        let result_ptr = result.as_ptr();
+        let result_len = result.len();
+        mem::forget(result);
+
+        if result_len > max_result_bytes {
+            FfiVmResult {
+                exit_info: FfiExitInfo {
+                    exit_message: CString::new(format!("Result larger than {max_result_bytes}bytes."))
+                        .unwrap()
+                        .into_raw(),
+                    exit_code:    255,
+                },
+                result_ptr: ptr::null(),
+                result_len,
+                gas_used: vm_result.gas_used,
+                stdout_ptr,
+                stdout_len,
+                stderr_ptr,
+                stderr_len,
+            }
+        } else {
+            FfiVmResult {
+                stdout_ptr,
+                stdout_len,
+                stderr_ptr,
+                stderr_len,
+                result_ptr,
+                result_len,
+                exit_info: vm_result.exit_info.into(),
+                gas_used: vm_result.gas_used,
+            }
+        }
+    }
+}
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn free_ffi_vm_result(vm_result: *mut FfiVmResult) {
@@ -101,48 +160,6 @@ pub unsafe extern "C" fn free_ffi_vm_result(vm_result: *mut FfiVmResult) {
     free_ffi_exit_info(&mut (*vm_result).exit_info);
 }
 
-impl From<VmResult> for FfiVmResult {
-    fn from(vm_result: VmResult) -> Self {
-        let stdout: Vec<CString> = vm_result
-            .stdout
-            .iter()
-            .map(|s| CString::new(s.as_str()).unwrap())
-            .collect();
-        let stdout_storage: Vec<*const c_char> = stdout.into_iter().map(|s| s.into_raw() as *const _).collect();
-        let boxed_slice: Box<[*const c_char]> = stdout_storage.into_boxed_slice();
-        let stdout_ptr = boxed_slice.as_ptr();
-        let stdout_len = boxed_slice.len();
-        mem::forget(boxed_slice);
-
-        let stderr: Vec<CString> = vm_result
-            .stderr
-            .iter()
-            .map(|s| CString::new(s.as_str()).unwrap())
-            .collect();
-        let stderr_storage: Vec<*const c_char> = stderr.into_iter().map(|s| s.into_raw() as *const _).collect();
-        let boxed_slice: Box<[*const c_char]> = stderr_storage.into_boxed_slice();
-        let stderr_ptr = boxed_slice.as_ptr();
-        let stderr_len = boxed_slice.len();
-        mem::forget(boxed_slice);
-
-        let result = vm_result.result.unwrap_or_default().into_boxed_slice();
-        let result_ptr = result.as_ptr();
-        let result_len = result.len();
-        mem::forget(result);
-
-        FfiVmResult {
-            stdout_ptr,
-            stdout_len,
-            stderr_ptr,
-            stderr_len,
-            result_ptr,
-            result_len,
-            exit_info: vm_result.exit_info.into(),
-            gas_used: vm_result.gas_used,
-        }
-    }
-}
-
 /// # Safety
 #[no_mangle]
 pub unsafe extern "C" fn execute_tally_vm(
@@ -154,6 +171,7 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_keys_ptr: *const *const c_char,
     env_values_ptr: *const *const c_char,
     env_count: usize,
+    max_result_bytes: usize,
 ) -> FfiVmResult {
     static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
     tracing::debug!("Extracting C values");
@@ -182,8 +200,10 @@ pub unsafe extern "C" fn execute_tally_vm(
     }
 
     match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs) {
-        Ok(vm_result) => vm_result.into(),
-        Err(_) => FfiVmResult {
+        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes),
+        // TODO: maybe we should consider exiting the process since its a vm error, not a user error?
+        // Not sure how that would work with the ffi though
+        Err(e) => FfiVmResult {
             stdout_ptr: ptr::null(),
             stdout_len: 0,
             stderr_ptr: ptr::null(),
@@ -191,8 +211,8 @@ pub unsafe extern "C" fn execute_tally_vm(
             result_ptr: ptr::null(),
             result_len: 0,
             exit_info:  FfiExitInfo {
-                exit_message: CString::new("Error executing VM").unwrap().into_raw(),
-                exit_code:    -1,
+                exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
+                exit_code:    e.exit_code(),
             },
             gas_used:   0,
         },
@@ -308,6 +328,7 @@ mod test {
                 env_key_ptrs.as_ptr(),
                 env_value_ptrs.as_ptr(),
                 envs.len(),
+                1024,
             )
         };
 
@@ -320,6 +341,66 @@ mod test {
             );
         }
         assert_eq!(result.gas_used, 5001589256245);
+
+        unsafe {
+            super::free_ffi_vm_result(&mut result);
+        }
+    }
+
+    #[test]
+    fn execute_c_tally_vm_exceeds_byte_limit() {
+        let wasm_bytes = include_bytes!("../../tally.wasm");
+
+        let args = [hex::encode("tally")];
+        let arg_cstrings: Vec<CString> = args
+            .iter()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        // VM_MODE dr to force the http_fetch path
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        let env_key_cstrings: Vec<CString> = envs
+            .keys()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
+        let env_value_cstrings: Vec<CString> = envs
+            .values()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let tempdir = std::env::temp_dir().display().to_string();
+        let mut result = unsafe {
+            super::execute_tally_vm(
+                CString::new(tempdir).unwrap().into_raw(),
+                wasm_bytes.as_ptr(),
+                wasm_bytes.len(),
+                arg_ptrs.as_ptr(),
+                args.len(),
+                env_key_ptrs.as_ptr(),
+                env_value_ptrs.as_ptr(),
+                envs.len(),
+                1,
+            )
+        };
+
+        unsafe {
+            assert_eq!(
+                std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+                    .to_string_lossy()
+                    .into_owned(),
+                "Result larger than 1bytes.".to_string()
+            );
+        }
+        assert_eq!(result.exit_info.exit_code, 255);
+        assert_eq!(result.gas_used, 5000125072945);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
