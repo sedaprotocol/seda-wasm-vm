@@ -47,7 +47,7 @@ func TestTallyBinaryWorks(t *testing.T) {
 	assert.NotEmpty(t, res.Result)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(5002255745075), res.GasUsed)
+	assert.Equal(t, uint64(5134779358125), res.GasUsed)
 }
 
 func TestTallyBinaryNoArgs(t *testing.T) {
@@ -72,7 +72,7 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(5000005633275), res.GasUsed)
+	assert.Equal(t, uint64(5013103341875), res.GasUsed)
 }
 
 func TestTallyGasExceeded(t *testing.T) {
@@ -126,7 +126,7 @@ func TestTallyMaxBytesExceeded(t *testing.T) {
 	assert.NotZero(t, res.ResultLen)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(5002255745075), res.GasUsed)
+	assert.Equal(t, uint64(5134779358125), res.GasUsed)
 }
 
 func TestDrMaxBytesExceededIsFine(t *testing.T) {
@@ -156,5 +156,5 @@ func TestDrMaxBytesExceededIsFine(t *testing.T) {
 	assert.NotZero(t, res.ResultLen)
 	assert.Empty(t, res.Stderr)
 	assert.Empty(t, res.Stdout)
-	assert.Equal(t, uint64(5000128688570), res.GasUsed)
+	assert.Equal(t, uint64(5016424321250), res.GasUsed)
 }
