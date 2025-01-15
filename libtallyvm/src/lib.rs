@@ -61,7 +61,7 @@ pub struct FfiVmResult {
 }
 
 impl FfiVmResult {
-    fn from_result(vm_result: VmResult, max_result_bytes: usize) -> Self {
+    fn from_result(vm_result: VmResult, max_result_bytes: usize, is_tally: bool) -> Self {
         let stdout: Vec<CString> = vm_result
             .stdout
             .iter()
@@ -89,7 +89,7 @@ impl FfiVmResult {
         let result_len = result.len();
         mem::forget(result);
 
-        if result_len > max_result_bytes {
+        if is_tally && result_len > max_result_bytes {
             FfiVmResult {
                 exit_info: FfiExitInfo {
                     exit_message: CString::new(format!("Result larger than {max_result_bytes}bytes."))
@@ -197,9 +197,15 @@ pub unsafe extern "C" fn execute_tally_vm(
 
         envs.insert(key, value);
     }
+    let is_tally = if let Some(mode) = envs.get("VM_MODE") {
+        mode == "tally"
+    } else {
+        // TODO should we default or return an error?
+        false
+    };
 
     match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs) {
-        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes),
+        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
         // TODO: maybe we should consider exiting the process since its a vm error, not a user error?
         // Not sure how that would work with the ffi though
         Err(e) => FfiVmResult {
@@ -350,7 +356,7 @@ mod test {
     fn execute_c_tally_vm_exceeds_byte_limit() {
         let wasm_bytes = include_bytes!("../../tally.wasm");
 
-        let args = [hex::encode("tally")];
+        let args = [hex::encode("tally"), hex::encode("[{\"salt\":[1],\"exit_code\":0,\"gas_used\":\"200\",\"reveal\":[2]},{\"salt\":[3],\"exit_code\":0,\"gas_used\":\"201\",\"reveal\":[5]},{\"salt\":[4],\"exit_code\":0,\"gas_used\":\"202\",\"reveal\":[6]}]"), hex::encode("[0,0,0]")];
         let arg_cstrings: Vec<CString> = args
             .iter()
             .cloned()
@@ -359,9 +365,9 @@ mod test {
         let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
 
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
-        // VM_MODE dr to force the http_fetch path
-        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert("CONSENSUS".to_string(), true.to_string());
         let env_key_cstrings: Vec<CString> = envs
             .keys()
             .cloned()
@@ -399,6 +405,65 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 255);
+        assert_eq!(result.gas_used, 5000042125770);
+
+        unsafe {
+            super::free_ffi_vm_result(&mut result);
+        }
+    }
+
+    #[test]
+    fn execute_c_tally_vm_exceeds_byte_limit_does_not_matter_for_dr_mode() {
+        let wasm_bytes = include_bytes!("../../tally.wasm");
+
+        let args = [hex::encode("tally")];
+        let arg_cstrings: Vec<CString> = args
+            .iter()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        let env_key_cstrings: Vec<CString> = envs
+            .keys()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
+        let env_value_cstrings: Vec<CString> = envs
+            .values()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let tempdir = std::env::temp_dir().display().to_string();
+        let mut result = unsafe {
+            super::execute_tally_vm(
+                CString::new(tempdir).unwrap().into_raw(),
+                wasm_bytes.as_ptr(),
+                wasm_bytes.len(),
+                arg_ptrs.as_ptr(),
+                args.len(),
+                env_key_ptrs.as_ptr(),
+                env_value_ptrs.as_ptr(),
+                envs.len(),
+                1,
+            )
+        };
+
+        unsafe {
+            assert_eq!(
+                std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+                    .to_string_lossy()
+                    .into_owned(),
+                "Ok".to_string()
+            );
+        }
+        assert_eq!(result.exit_info.exit_code, 0);
         assert_eq!(result.gas_used, 5000125072945);
 
         unsafe {

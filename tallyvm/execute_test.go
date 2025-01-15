@@ -120,14 +120,6 @@ func TestTallyMaxBytesExceeded(t *testing.T) {
 
 	t.Log(res)
 
-	// t.Log(tallyvm.LogDir)
-	// // read file contents from LogDir/sedavm_logs/log.2025-01-14
-	// logfile, err := os.ReadFile(tallyvm.LogDir + "/sedavm_logs/log.2025-01-14")
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	// t.Log(string(logfile))
-
 	assert.Equal(t, "Result larger than 1bytes.", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 255, res.ExitInfo.ExitCode)
 	assert.Nil(t, res.Result)
