@@ -36,20 +36,24 @@ pub fn is_accounting(operator: &Operator) -> bool {
     )
 }
 
-const GAS_PER_OPERATION: u64 = 115;
-const GAS_ACCOUNTING_MULTIPLIER: u64 = 14;
+const GAS_PER_OPERATION: u64 = 125 * 15;
+const GAS_ACCOUNTING_MULTIPLIER: u64 = 3_000;
 const GAS_MEMORY_GROW_BASE: u64 = 1_000_000;
 
 // Gas for reading and writing bytes
 pub const GAS_PER_BYTE: u64 = 10_000;
 const GAS_PER_BYTE_EXECUTION_RESULT: u64 = 10_000_000;
 
-const GAS_HTTP_FETCH_BASE: u64 = 1_000_000_000;
+const TERA_GAS: u64 = 1_000_000_000_000;
+// Makes it so you can do roughly 30 http requests with the current gas calculations.
+const GAS_HTTP_FETCH_BASE: u64 = TERA_GAS * 5;
+
 const GAS_BN254_VERIFY_BASE: u64 = 10_000_000;
-const GAS_PROXY_HTTP_FETCH_BASE: u64 = 5_000_000_000;
+// Makes it so you can do roughly 25 proxy http requests with the current gas calculations.
+const GAS_PROXY_HTTP_FETCH_BASE: u64 = TERA_GAS * 7;
 const GAS_SECP256K1_BASE: u64 = 10_000_000;
 const GAS_KECCAK256_BASE: u64 = 10_000_000;
-pub const GAS_STARTUP: u64 = 5_000_000_000_000;
+pub const GAS_STARTUP: u64 = TERA_GAS * 5;
 
 /// Gas cost for each operator
 pub fn get_wasm_operation_gas_cost(operator: &Operator) -> u64 {

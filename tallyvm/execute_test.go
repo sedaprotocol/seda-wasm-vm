@@ -37,7 +37,7 @@ func TestTallyBinaryWorks(t *testing.T) {
 	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
 		"CONSENSUS":          "true",
 		"VM_MODE":            "tally",
-		"DR_TALLY_GAS_LIMIT": "300000000000000",
+		"DR_TALLY_GAS_LIMIT": "150000000000000",
 	})
 
 	t.Log(res)
@@ -62,7 +62,7 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
 		"CONSENSUS":          "true",
 		"VM_MODE":            "tally",
-		"DR_TALLY_GAS_LIMIT": "300000000000000",
+		"DR_TALLY_GAS_LIMIT": "150000000000000",
 	})
 
 	t.Log(res)
@@ -115,7 +115,7 @@ func TestTallyMaxBytesExceeded(t *testing.T) {
 	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
 		"CONSENSUS":          "true",
 		"VM_MODE":            "tally",
-		"DR_TALLY_GAS_LIMIT": "300000000000000",
+		"DR_TALLY_GAS_LIMIT": "150000000000000",
 	})
 
 	t.Log(res)
@@ -145,7 +145,7 @@ func TestDrMaxBytesExceededIsFine(t *testing.T) {
 	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
 		"CONSENSUS":          "true",
 		"VM_MODE":            "dr",
-		"DR_TALLY_GAS_LIMIT": "300000000000000",
+		"DR_TALLY_GAS_LIMIT": "150000000000000",
 	})
 
 	t.Log(res)

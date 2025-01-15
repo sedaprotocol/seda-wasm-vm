@@ -273,7 +273,7 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         // VM_MODE dr to force the http_fetch path
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
         let result = _execute_tally_vm(
@@ -308,7 +308,7 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         // VM_MODE dr to force the http_fetch path
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
         let env_key_cstrings: Vec<CString> = envs
             .keys()
             .cloned()
@@ -366,7 +366,7 @@ mod test {
 
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
         envs.insert("CONSENSUS".to_string(), true.to_string());
         let env_key_cstrings: Vec<CString> = envs
             .keys()
@@ -426,7 +426,7 @@ mod test {
 
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
         let env_key_cstrings: Vec<CString> = envs
             .keys()
             .cloned()
@@ -476,7 +476,7 @@ mod test {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
         let result = _execute_tally_vm(
@@ -500,7 +500,7 @@ mod test {
     fn execute_tally_vm_no_args() {
         let wasm_bytes = include_bytes!("../../tally.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
@@ -535,7 +535,7 @@ mod test {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
         let result =
