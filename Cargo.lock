@@ -2142,7 +2142,7 @@ dependencies = [
 
 [[package]]
 name = "seda-runtime-sdk"
-version = "2.1.1"
+version = "2.2.0"
 dependencies = [
  "arbitrary",
  "paste",
@@ -2155,7 +2155,7 @@ dependencies = [
 
 [[package]]
 name = "seda-tally-vm"
-version = "2.1.1"
+version = "2.2.0"
 dependencies = [
  "cbindgen",
  "hex",
@@ -2169,7 +2169,7 @@ dependencies = [
 
 [[package]]
 name = "seda-wasm-vm"
-version = "2.1.1"
+version = "2.2.0"
 dependencies = [
  "hex",
  "home",
@@ -3770,7 +3770,7 @@ checksum = "9d422e8e38ec76e2f06ee439ccc765e9c6a9638b9e7c9f2e8255e4d41e8bd852"
 
 [[package]]
 name = "xtask"
-version = "2.1.1"
+version = "2.2.0"
 dependencies = [
  "anyhow",
  "clap 4.5.19",
