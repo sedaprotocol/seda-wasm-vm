@@ -103,11 +103,20 @@ fn internal_run_vm(
 
     if let Err(err) = runtime_result {
         tracing::error!("Error running WASM: {err:?}");
-        // we convert the error to a wasix error
-        let wasix_error = WasiRuntimeError::from(err);
 
-        if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
-            exit_code = wasi_exit_code.raw();
+        // TODO this makes me think that wasm host functions should
+        // return a different kind of error rather than a RuntimeError.
+        if err.is::<crate::errors::RuntimeError>() {
+            let runtime_error = err.downcast::<crate::errors::RuntimeError>().unwrap();
+            stderr.push(format!("Runtime error: {runtime_error}"));
+            exit_code = 252;
+        } else {
+            // we convert the error to a wasix error
+            let wasix_error = WasiRuntimeError::from(err);
+
+            if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
+                exit_code = wasi_exit_code.raw();
+            }
         }
     }
 

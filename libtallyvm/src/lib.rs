@@ -551,22 +551,35 @@ mod test {
     }
 
     #[test]
-    fn polyfill_does_not_crash_vm() {
+    fn simple_price_feed() {
         let wasm_bytes = include_bytes!("../../simplePriceFeed.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
-        envs.insert("VM_MODE".to_string(), "tally".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![hex::encode("btc:usdc")], envs).unwrap();
-        dbg!(&result);
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![hex::encode("btc-usdc")], envs).unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
-        // assert_eq!(
-        //     String::from_utf8(result.result.unwrap()).unwrap(),
-        //     // "testKeccak256" hashed
-        //     "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
-        // );
-        // assert_eq!(result.gas_used, 5157033460000);
+        assert_eq!(
+            result.exit_info.exit_message,
+            "Error while fetching price feed".to_string()
+        );
+    }
+
+    #[test]
+    fn polyfill_does_not_crash_vm() {
+        let wasm_bytes = include_bytes!("../../randomNumber.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
+
+        let tempdir = std::env::temp_dir().join("foo");
+        std::fs::create_dir_all(&tempdir).unwrap();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
+        result.stdout.iter().for_each(|line| print!("{}", line));
+
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert!(result.exit_info.exit_message.is_empty());
     }
 }

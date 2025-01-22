@@ -65,6 +65,9 @@ pub enum RuntimeError {
 
     #[error("Out of gas")]
     OutOfGas,
+
+    #[error("Polyfill for function {0} is not implemented in tally mode")]
+    Polyfilled(&'static str),
 }
 
 pub type Result<T, E = RuntimeError> = core::result::Result<T, E>;

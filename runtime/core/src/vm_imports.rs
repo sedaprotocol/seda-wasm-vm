@@ -1,5 +1,5 @@
 use seda_runtime_sdk::{VmCallData, VmType};
-use wasmer::{Exports, FunctionEnv, Imports, Module, Store};
+use wasmer::{Exports, FunctionEnv, Imports, Module, Store, WasmPtr};
 use wasmer_wasix::{get_wasi_version, WasiFunctionEnv};
 
 use crate::{
@@ -50,6 +50,17 @@ pub fn create_wasm_imports(
     final_imports.register_namespace("seda_v1", allowed_host_exports);
 
     if let Some(wasi_version) = wasi_version {
+        // additionally polyfill the "random_get" wasi import
+        allowed_wasi_exports.insert(
+            "random_get".to_string(),
+            // https://wasix.org/docs/api-reference/wasi/random_get
+            // https://docs.rs/wasix/latest/wasix/lib_generated64/fn.random_get.html
+            crate::generic_polyfill_import_obj!(
+                "random_get", i32,
+                _buf: WasmPtr<u8>,
+                _buf_len: i32
+            )(store, vm_context),
+        );
         final_imports.register_namespace(wasi_version.get_namespace_str(), allowed_wasi_exports);
     }
 
