@@ -187,7 +187,7 @@ pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult
                     exit_code,
                     exit_message: match exit_code {
                         0 => "Ok".to_string(),
-                        _ => String::from_utf8_lossy(&result).to_string(),
+                        _ => "Not ok".to_string(),
                     },
                 },
                 result: Some(result),

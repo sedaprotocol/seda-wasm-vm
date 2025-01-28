@@ -67,7 +67,7 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 
 	t.Log(res)
 
-	assert.Equal(t, "", res.ExitInfo.ExitMessage)
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 255, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
@@ -92,7 +92,7 @@ func TestTallyGasExceeded(t *testing.T) {
 
 	t.Log(res)
 
-	assert.Equal(t, "", res.ExitInfo.ExitMessage)
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 250, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
@@ -157,4 +157,33 @@ func TestDrMaxBytesExceededIsFine(t *testing.T) {
 	assert.Empty(t, res.Stderr)
 	assert.Empty(t, res.Stdout)
 	assert.Equal(t, uint64(5016424321250), res.GasUsed)
+}
+
+func TestUserlandNonZeroExitCode(t *testing.T) {
+	defer cleanup()
+
+	file := "../null_byte_string.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reveals := "[{\"reveal\":[123,34,98,108,111,99,107,72,97,115,104,34,58,34 ,48,120,57,50,55,55,98,53,53,55,48,48,100,97,57,48,53,48,98,53,53,97,97,54,55,52,48,55,49,57,101,50,53,98,48,48,102,51,57,97,99,99,49,53,102,49,49,98,54,52,48,99,98,56,50,101,52,48,100,97,56,102,56,54,48,100,34,44,34,98,108,111,99,107,78,117,109,98,101,114,34,58,34,48,120,49,52,50,98,98,55,56,34,44,34,102,114,111,109, 34,58,34,48,120,99,48,100,98,98,53,49,101,54,48,55,102,52,57,53,54,57,99,52,50,99,53,99,101,101,50,101,98,51,51,100,99,53,98,97,99,50,56,100,53,34,125],\"salt\":[211,175,124,217,173,184,107,223,93,111,189,56,113,215,248,115,214,157,229,183,30,213,237,186,209,254,246,247,222,155,241,183,157,123,93,180,213,253,57,211,19 0,56,125,189,120,247,93,116],\"id\":\"f495c06137a92787312086267884196ec4476f6faf4bd074eafb289b65de272f\",\"exit_code\":0,\"gas_used\":42369302985625,\"proxy_public_keys\":[]}]"
+	reveals_filter := "[0]"
+
+	tallyvm.TallyMaxBytes = 1024
+
+	res := tallyvm.ExecuteTallyVm(data, []string{"0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f", reveals, reveals_filter}, map[string]string{
+		"CONSENSUS":             "true",
+		"VM_MODE":               "tally",
+		"DR_TALLY_GAS_LIMIT":    "150000000000000",
+		"DR_REPLICATION_FACTOR": "1",
+	})
+
+	t.Log(res)
+
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
+	assert.Equal(t, 1, res.ExitInfo.ExitCode)
+	assert.NotEmpty(t, res.Result)
+	assert.Equal(t, uint64(5181575013125), res.GasUsed)
 }
