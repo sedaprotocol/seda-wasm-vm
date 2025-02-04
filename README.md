@@ -1,23 +1,43 @@
-# seda-wasm-vm
+<p align="center">
+  <a href="https://seda.xyz/">
+    <img width="90%" alt="seda-wasm-vm" src="https://www.seda.xyz/images/footer/footer-image.png">
+  </a>
+</p>
 
-## Updating The Library Files
+<h1 align="center">
+  SEDA Tally VM
+</h1>
 
-1. Go to the `Actions` tab on Github.
-2. Click `Manual Build` on the left hand side bar.
-3. Click `Run workflow`.
-	1. Select the branch.
-	2. Enter the CI password(note what you type is in plain text).
-	3. Make sure `all` is selected.
-	4. Do not click `Enable debug mode`.
-4. A build will show up in the `workflow runs` section.
-5. Once that has a green check mark next to it you can click on the `Manual Build` next to it.
-6. At the bottom of that page it shows `Artifacts`.
-	1. If you followed step 3 it should be named `branch-refs-heads-feat-proxy_http_fetch-import-arch-all-debug-false`.
-7. Click the download icon next to the artifact name and it will download as a zip file.
-8. Place those files in the `tallyvm` directory overwriting the files.
-	1. Note this does not update the macOS one. To build that one on a macOS machine run `cargo build --release`, and copy the produced `.dylib` file to the `tallyvm` directory.
+<!-- The line below is for once the repo has CI to show build status. -->
+<!-- [![Build Status][actions-badge]][actions-url] -->
+[![GitHub Stars][github-stars-badge]](https://github.com/sedaprotocol/seda-wasm-vm)
+[![GitHub Contributors][github-contributors-badge]](https://github.com/sedaprotocol/seda-wasm-vm/graphs/contributors)
+[![Discord chat][discord-badge]][discord-url]
+[![Twitter][twitter-badge]][twitter-url]
 
+<!-- The line below is for once the repo has CI to show build status. -->
+[actions-badge]: https://github.com/sedaprotocol/seda-wasm-vm/actions/workflows/push.yml/badge.svg
+[actions-url]: https://github.com/sedaprotocol/seda-wasm-vm/actions/workflows/push.yml+branch%3Amain
+[github-stars-badge]: https://img.shields.io/github/stars/sedaprotocol/seda-wasm-vm.svg?style=flat-square&label=github%20stars
+[github-contributors-badge]: https://img.shields.io/github/contributors/sedaprotocol/seda-wasm-vm.svg?style=flat-square
+[discord-badge]: https://img.shields.io/discord/500028886025895936.svg?logo=discord&style=flat-square
+[discord-url]: https://discord.gg/seda
+[twitter-badge]: https://img.shields.io/twitter/url/https/twitter.com/SedaProtocol.svg?style=social&label=Follow%20%40SedaProtocol
+[twitter-url]: https://twitter.com/SedaProtocol
 
-## Integration tests
+The SEDA Tally VM, is a CGO library used by the [seda-chain](https://github.com/sedaprotocol/seda-chain).
 
-The file `./integration-test.wasm` is taken from the SEDA-SDK integration tests: https://github.com/sedaprotocol/seda-sdk/tree/main/libs/as-sdk-integration-tests
+To learn how to build a local version, please read [developing](DEVELOPING.md).
+To learn how to contribute, please read [contributing](CONTRIBUTING.md).
+
+## Dependencies
+
+For building release builds you need the following software:
+
+- [make](https://www.gnu.org/software/make/)
+- [rustup](https://rustup.rs/): v1.70.0+
+- [golang](https://go.dev/): v1.22.0+
+
+## License
+
+Contents of this repository are open source under [GPLv3 License](LICENSE).
