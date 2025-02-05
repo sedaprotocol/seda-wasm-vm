@@ -30,6 +30,8 @@ The SEDA Tally VM, is a CGO library used by the [seda-chain](https://github.com/
 To learn how to build a local version, please read [developing](DEVELOPING.md).
 To learn how to contribute, please read [contributing](CONTRIBUTING.md).
 
+The WASM Virtual Machine (VM) allows users to create custom tally logic. The blockchain executes a user-defined WASM program and returns the resulting output. These WASM programs can be developed in any programming language, provided the compiled binary is compatible with the VM's required imports.
+
 ## Dependencies
 
 For building release builds you need the following software:
