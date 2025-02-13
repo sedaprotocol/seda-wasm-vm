@@ -290,7 +290,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 10656966303125);
+        assert_eq!(result.gas_used, 16566533911250);
     }
 
     #[test]
@@ -345,7 +345,7 @@ mod test {
                 "http_fetch is not allowed in tally".to_string()
             );
         }
-        assert_eq!(result.gas_used, 10656966303125);
+        assert_eq!(result.gas_used, 16566533911250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -405,7 +405,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 255);
-        assert_eq!(result.gas_used, 5047331531250);
+        assert_eq!(result.gas_used, 5473102192500);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -464,7 +464,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 0);
-        assert_eq!(result.gas_used, 5011577840625);
+        assert_eq!(result.gas_used, 5114697506250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -493,7 +493,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "proxy_http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 12711538074375);
+        assert_eq!(result.gas_used, 19111705503750);
     }
 
     #[test]
@@ -506,7 +506,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
-        assert_eq!(result.gas_used, 5009608596875);
+        assert_eq!(result.gas_used, 5096085968750);
     }
 
     #[test]
@@ -547,7 +547,7 @@ mod test {
             // "testKeccak256" hashed
             "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
         );
-        assert_eq!(result.gas_used, 5157033460000);
+        assert_eq!(result.gas_used, 6564481090000);
     }
 
     #[test]

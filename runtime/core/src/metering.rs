@@ -36,7 +36,8 @@ pub fn is_accounting(operator: &Operator) -> bool {
     )
 }
 
-const GAS_PER_OPERATION: u64 = 125 * 15;
+const GAS_MULTIPLIER: u64 = 150;
+const GAS_PER_OPERATION: u64 = 125 * GAS_MULTIPLIER;
 const GAS_ACCOUNTING_MULTIPLIER: u64 = 3_000;
 const GAS_MEMORY_GROW_BASE: u64 = 1_000_000;
 
