@@ -2,15 +2,17 @@ use std::sync::Arc;
 
 use parking_lot::{Mutex, RwLock};
 use seda_runtime_sdk::VmCallData;
-use wasmer::{AsStoreRef, FunctionEnv, Instance, Memory, MemoryView, Store};
-use wasmer_wasix::WasiEnv;
+use wasmer::{AsStoreRef, FunctionEnv, Imports, Instance, Memory, MemoryView, Store};
+use wasmer_wasix::{WasiEnv, WasiVersion};
 
 #[derive(Clone)]
 pub struct VmContext {
-    pub call_data: VmCallData,
-    pub result:    Arc<Mutex<Vec<u8>>>,
-    pub memory:    Option<Memory>,
-    pub wasi_env:  FunctionEnv<WasiEnv>,
+    pub call_data:    VmCallData,
+    pub result:       Arc<Mutex<Vec<u8>>>,
+    pub memory:       Option<Memory>,
+    pub wasi_env:     FunctionEnv<WasiEnv>,
+    pub wasi_imports: Option<Imports>,
+    pub wasi_version: Option<WasiVersion>,
 
     /// Used for internal use only
     /// This is used to temp store a result of an action
@@ -39,7 +41,9 @@ impl VmContext {
                 wasi_env,
                 call_result_value: Arc::new(RwLock::new(Vec::new())),
                 instance: None,
+                wasi_imports: None,
                 call_data,
+                wasi_version: None,
             },
         )
     }

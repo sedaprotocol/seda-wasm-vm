@@ -5,11 +5,16 @@ use wasmer_wasix::{get_wasi_version, WasiFunctionEnv};
 use crate::{
     errors::Result,
     tally_vm_imports::{create_custom_tally_imports, SAFE_TALLY_IMPORTS},
+    wasi_vm_imports::{
+        args_get::{args_get_import_obj, args_sizes_get_import_obj},
+        environ_get::{environ_get_import_obj, environ_sizes_get_import_obj},
+        fd_write::fd_write_import_obj,
+    },
     VmContext,
 };
 
 pub fn create_wasm_imports(
-    store: &mut Store,
+    mut store: &mut Store,
     vm_context: &FunctionEnv<VmContext>,
     wasi_env: &WasiFunctionEnv,
     wasm_module: &Module,
@@ -17,6 +22,11 @@ pub fn create_wasm_imports(
 ) -> Result<Imports> {
     let wasi_import_obj = wasi_env.import_object(store, wasm_module)?;
     let wasi_version = get_wasi_version(wasm_module, false);
+
+    let ctx = vm_context.as_mut(&mut store);
+    ctx.wasi_imports = Some(wasi_import_obj.clone());
+    ctx.wasi_version = wasi_version;
+
     let mut final_imports = Imports::new();
 
     let (allowed_imports, custom_imports) = match call_data.vm_type {
@@ -61,6 +71,18 @@ pub fn create_wasm_imports(
                 _buf_len: i32
             )(store, vm_context),
         );
+
+        allowed_wasi_exports.insert("args_get", args_get_import_obj(store, vm_context));
+        allowed_wasi_exports.insert("args_sizes_get", args_sizes_get_import_obj(store, vm_context));
+
+        allowed_wasi_exports.insert("environ_get", environ_get_import_obj(store, vm_context));
+        allowed_wasi_exports.insert("environ_sizes_get", environ_sizes_get_import_obj(store, vm_context));
+
+        allowed_wasi_exports.insert("fd_write", fd_write_import_obj(store, vm_context));
+
+        // proc_exit is the only one we don't meter since we immidiatly exit after that import is called. Plus the cost
+        // of proc_exit is included in the GAS_STARTUP.
+
         final_imports.register_namespace(wasi_version.get_namespace_str(), allowed_wasi_exports);
     }
 

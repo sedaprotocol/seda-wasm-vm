@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 default-members = ["libtallyvm"]
-members = ["libtallyvm", "runtime/core", "runtime/sdk", "xtask"]
+members = ["libtallyvm", "runtime/core", "runtime/sdk", "test-vm", "xtask", "test-vm"]
 
 [workspace.package]
 rust-version = "1.77.0"

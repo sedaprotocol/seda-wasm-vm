@@ -1,4 +1,4 @@
-.PHONY: all build build-rust
+.PHONY: all build build-rust build-test
 
 SHARED_LIB = ""
 ifeq ($(OS),Windows_NT)
@@ -28,6 +28,9 @@ all: build test
 build: build-rust
 
 build-rust: build-rust-release
+
+build-test: 
+	cargo build -p test-vm --target wasm32-wasip1;
 
 build-rust-debug:
 	cargo build

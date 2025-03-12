@@ -45,16 +45,23 @@ const GAS_MEMORY_GROW_BASE: u64 = 1_000_000;
 pub const GAS_PER_BYTE: u64 = 10_000;
 const GAS_PER_BYTE_EXECUTION_RESULT: u64 = 10_000_000;
 
-const TERA_GAS: u64 = 1_000_000_000_000;
+pub const TERA_GAS: u64 = 1_000_000_000_000;
 // Makes it so you can do roughly 30 http requests with the current gas calculations.
 const GAS_HTTP_FETCH_BASE: u64 = TERA_GAS * 5;
 
-const GAS_BN254_VERIFY_BASE: u64 = 10_000_000;
+const GAS_BN254_VERIFY_BASE: u64 = TERA_GAS;
 // Makes it so you can do roughly 25 proxy http requests with the current gas calculations.
 const GAS_PROXY_HTTP_FETCH_BASE: u64 = TERA_GAS * 7;
-const GAS_SECP256K1_BASE: u64 = 10_000_000;
-const GAS_KECCAK256_BASE: u64 = 10_000_000;
+const GAS_SECP256K1_BASE: u64 = TERA_GAS;
+const GAS_KECCAK256_BASE: u64 = TERA_GAS;
 pub const GAS_STARTUP: u64 = TERA_GAS * 5;
+
+// WASI Gas
+const GAS_ARGS_GET_BASE: u64 = TERA_GAS;
+const GAS_ARGS_SIZES_GET_BASE: u64 = TERA_GAS;
+const GAS_ENVIRON_GET_BASE: u64 = TERA_GAS;
+const GAS_ENVIRON_SIZES_GET_BASE: u64 = TERA_GAS;
+const GAS_FD_WRITE_BASE: u64 = TERA_GAS;
 
 /// Gas cost for each operator
 pub fn get_wasm_operation_gas_cost(operator: &Operator) -> u64 {
@@ -86,6 +93,14 @@ pub enum ExternalCallType {
     Secp256k1Verify(u64),
     /// Takes as argument the length of the message
     Keccak256(u64),
+
+    /// WASI Imports
+    ArgsGet(u64),
+    ArgsSizesGet(u64),
+    EnvironGet(u64),
+    EnvironSizesGet(u64),
+    /// Takes as argument the number of I/O vectors
+    FdWrite(u64),
 }
 
 pub fn check_enough_gas(gas_cost: u64, remaining_gas: u64, gas_limit: u64) -> Result<u64> {
@@ -123,6 +138,13 @@ pub fn apply_gas_cost(external_call_type: ExternalCallType, env: &mut FunctionEn
                 GAS_SECP256K1_BASE + GAS_KECCAK256_BASE + (GAS_PER_BYTE * bytes_length)
             }
             ExternalCallType::Keccak256(bytes_length) => GAS_KECCAK256_BASE + (GAS_PER_BYTE * bytes_length),
+            ExternalCallType::ArgsGet(bytes_length) => GAS_ARGS_GET_BASE + (GAS_PER_BYTE * bytes_length),
+            ExternalCallType::ArgsSizesGet(bytes_length) => GAS_ARGS_SIZES_GET_BASE + (GAS_PER_BYTE * bytes_length),
+            ExternalCallType::EnvironGet(bytes_length) => GAS_ENVIRON_GET_BASE + (GAS_PER_BYTE * bytes_length),
+            ExternalCallType::EnvironSizesGet(bytes_length) => {
+                GAS_ENVIRON_SIZES_GET_BASE + (GAS_PER_BYTE * bytes_length)
+            }
+            ExternalCallType::FdWrite(iovs_len) => GAS_FD_WRITE_BASE + (GAS_PER_BYTE * iovs_len),
         };
 
         let gas_left = check_enough_gas(gas_cost, remaining_gas, gas_limit)?;

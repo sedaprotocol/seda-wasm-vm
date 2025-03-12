@@ -11,6 +11,7 @@ mod runtime_context;
 mod safe_wasi_imports;
 mod tally_vm_imports;
 mod vm_imports;
+mod wasi_vm_imports;
 pub mod wasm_cache;
 
 use std::path::Path;

@@ -8,6 +8,11 @@ pub fn execution_result_import_obj(store: &mut Store, vm_context: &FunctionEnv<V
         result_ptr: WasmPtr<u8>,
         result_length: i32,
     ) -> Result<()> {
+        // Return error if length is negative
+        if result_length < 0 {
+            return Err(crate::RuntimeError::Unknown("Negative length provided".to_string()));
+        }
+
         apply_gas_cost(
             crate::metering::ExternalCallType::ExecutionResult(result_length as u64),
             &mut env,

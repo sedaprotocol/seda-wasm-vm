@@ -1,0 +1,11 @@
+[package]
+name = "test-vm"
+edition = "2021"
+rust-version.workspace = true
+version.workspace = true
+
+[dependencies]
+anyhow = "1.0.95"
+serde = { workspace = true }
+serde_json = { workspace = true }
+seda-sdk-rs = { git = "https://github.com/sedaprotocol/seda-sdk" }

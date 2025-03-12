@@ -266,6 +266,8 @@ mod test {
         ffi::{c_char, CString},
     };
 
+    use seda_runtime_sdk::ToBytes;
+
     use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
     #[test]
@@ -291,7 +293,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 16566533911250);
+        assert_eq!(result.gas_used, 20566535451250);
     }
 
     #[test]
@@ -346,7 +348,7 @@ mod test {
                 "http_fetch is not allowed in tally".to_string()
             );
         }
-        assert_eq!(result.gas_used, 16566533911250);
+        assert_eq!(result.gas_used, 20566535451250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -406,7 +408,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 255);
-        assert_eq!(result.gas_used, 5473102192500);
+        assert_eq!(result.gas_used, 29473111092500);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -465,7 +467,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 0);
-        assert_eq!(result.gas_used, 5114697506250);
+        assert_eq!(result.gas_used, 9114698646250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -494,7 +496,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "proxy_http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 19111705503750);
+        assert_eq!(result.gas_used, 23111707163750);
     }
 
     #[test]
@@ -507,7 +509,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
-        assert_eq!(result.gas_used, 5096085968750);
+        assert_eq!(result.gas_used, 10096086678750);
     }
 
     #[test]
@@ -548,7 +550,7 @@ mod test {
             // "testKeccak256" hashed
             "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
         );
-        assert_eq!(result.gas_used, 6564481090000);
+        assert_eq!(result.gas_used, 11564472550000);
     }
 
     #[test]
@@ -622,5 +624,48 @@ mod test {
 
         assert_eq!(result.exit_info.exit_code, 4);
         assert_eq!(result.exit_info.exit_message, "Error: Failed to create WASMER instance: Insufficient resources: Failed to create memory: A user-defined error occurred: Minimum exceeds the allowed memory limit".to_string());
+    }
+
+    #[test]
+    fn import_length_overflow() {
+        let wasm_bytes = include_bytes!("../../target/wasm32-wasip1/debug/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string()); // 50 tGas
+
+        let tempdir = std::env::temp_dir().join("foo");
+        std::fs::create_dir_all(&tempdir).unwrap();
+
+        let method = "import_length_overflow".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs).unwrap();
+
+        assert_eq!(result.stderr[0], "Runtime error: Out of gas");
+    }
+    #[test]
+    fn price_feed_tally() {
+        let wasm_bytes = include_bytes!("../../target/wasm32-wasip1/debug/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let tempdir = std::env::temp_dir().join("foo");
+        std::fs::create_dir_all(&tempdir).unwrap();
+
+        let method = "price_feed_tally".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let reveals = "[{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":200,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,50,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":198,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,52,53,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":201,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,50,56,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":199,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,55,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":202,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,48,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":197,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,52,49,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":200,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,53,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":203,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,57,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":196,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,51,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":201,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,54,125]}]".to_string();
+        let consensus = "[0,0,0,0,0,0,0,0,0,0]".to_string();
+
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex, reveals, consensus],
+            envs,
+        )
+        .unwrap();
+        assert_eq!(result.gas_used, 14598756165000);
     }
 }

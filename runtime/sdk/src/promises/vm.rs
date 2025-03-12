@@ -80,6 +80,20 @@ pub struct VmCallData {
     pub max_memory_pages: u32,
 }
 
+impl VmCallData {
+    pub fn args_bytes_len(&self) -> usize {
+        // Sum up the length of each argument string plus 1 byte for null terminator
+        self.args.iter().fold(0, |acc, arg| acc + arg.len() + 1)
+    }
+
+    pub fn env_bytes_len(&self) -> usize {
+        // Sum up the length of each environment variable key and value plus 2 bytes for null terminators
+        self.envs
+            .iter()
+            .fold(0, |acc, (key, val)| acc + key.len() + val.len() + 2)
+    }
+}
+
 impl Default for VmCallData {
     fn default() -> Self {
         Self {
