@@ -76,19 +76,23 @@ pub struct VmCallData {
 
     /// Which VM context you want to run in
     pub vm_type: VmType,
+
+    pub max_memory_pages: u32,
 }
 
 impl Default for VmCallData {
     fn default() -> Self {
         Self {
-            vm_type:      VmType::Tally,
-            args:         vec![],
-            call_id:      None,
-            envs:         Default::default(),
-            program_name: "default".to_string(),
-            start_func:   None,
-            wasm_id:      WasmId::Bytes(vec![]),
-            gas_limit:    None,
+            vm_type:          VmType::Tally,
+            args:             vec![],
+            call_id:          None,
+            envs:             Default::default(),
+            program_name:     "default".to_string(),
+            start_func:       None,
+            wasm_id:          WasmId::Bytes(vec![]),
+            gas_limit:        None,
+            // 160 pages * 64KB per page = 10MB maximum memory
+            max_memory_pages: 160,
         }
     }
 }

@@ -5,6 +5,7 @@ mod errors;
 pub mod metering;
 // not used with singlepass compiler
 // mod resources_dir;
+mod memory;
 mod runtime;
 mod runtime_context;
 mod safe_wasi_imports;

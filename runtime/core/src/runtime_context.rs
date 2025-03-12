@@ -1,10 +1,23 @@
 use std::{path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
-use wasmer::{sys::EngineBuilder, CompilerConfig, Module, Singlepass, Store};
+use wasmer::{
+    sys::{BaseTunables, EngineBuilder},
+    CompilerConfig,
+    Module,
+    Pages,
+    Singlepass,
+    Store,
+    Target,
+};
 use wasmer_middlewares::Metering;
 
-use crate::{errors::Result, metering::get_wasm_operation_gas_cost, wasm_cache::wasm_cache_id};
+use crate::{
+    errors::Result,
+    memory::LimitingTunables,
+    metering::get_wasm_operation_gas_cost,
+    wasm_cache::wasm_cache_id,
+};
 
 pub struct RuntimeContext {
     pub wasm_store:  Store,
@@ -14,14 +27,20 @@ pub struct RuntimeContext {
 
 impl RuntimeContext {
     pub fn new(_sedad_home: &Path, call_data: &VmCallData) -> Result<Self> {
-        let mut engine = Singlepass::default();
+        let base = BaseTunables::for_target(&Target::default());
+        let tunables = LimitingTunables::new(base, Pages(call_data.max_memory_pages));
+        let mut single_pass_config = Singlepass::new();
 
         if let Some(gas_limit) = call_data.gas_limit {
             let metering = Arc::new(Metering::new(gas_limit, get_wasm_operation_gas_cost));
-            engine.push_middleware(metering);
+            single_pass_config.push_middleware(metering);
         }
 
-        let store = Store::new(EngineBuilder::new(engine));
+        let builder = EngineBuilder::new(single_pass_config);
+        let mut engine = builder.engine();
+        engine.set_tunables(tunables);
+
+        let store = Store::new(engine);
 
         let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
