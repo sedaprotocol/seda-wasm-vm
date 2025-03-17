@@ -27,6 +27,7 @@ var TallyMaxBytes uint
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
 	configDirC := C.CString(LogDir)
+	defer C.free(unsafe.Pointer(configDirC))
 
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {
