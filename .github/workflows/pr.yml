@@ -94,6 +94,12 @@ jobs:
           RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
         run: cargo clippy --all-features --locked -- -D warnings
 
+      - name: Install WASM
+        run: rustup target add wasm32-wasip1
+
+      - name: Build WASM
+        run: cargo build -p test-vm --target wasm32-wasip1
+
       - name: ☁️ Install Nextest
         uses: taiki-e/install-action@nextest
 

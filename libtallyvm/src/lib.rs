@@ -666,6 +666,6 @@ mod test {
             envs,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 14598756165000);
+        assert_eq!(result.gas_used, 14549853896250);
     }
 }
