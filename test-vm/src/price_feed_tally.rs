@@ -34,7 +34,7 @@ pub fn price_feed_tally() -> Result<()> {
         prices.push(price);
     }
 
-    if prices.len() > 0 {
+    if !prices.is_empty() {
         let final_price = median(prices);
 
         println!("{}", &final_price);

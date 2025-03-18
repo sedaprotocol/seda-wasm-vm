@@ -13,7 +13,7 @@ extern "C" {
 }
 
 pub fn import_length_overflow() -> Result<()> {
-    let result = vec![1, 2, 3];
+    let result = [1, 2, 3];
     unsafe {
         secp256k1_verify(result.as_ptr(), u32::MAX as i64, result.as_ptr(), 0, result.as_ptr(), 0);
     }
