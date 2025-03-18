@@ -135,7 +135,7 @@ fn internal_run_vm(
     };
     tracing::debug!("VM completed or out of gas");
 
-    let execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
+    let mut execution_result = vm_context.as_ref(&context.wasm_store).result.lock();
 
     // Add size check for execution result
     if execution_result.len() > MAX_VM_RESULT_SIZE_BYTES {
@@ -165,7 +165,7 @@ fn internal_run_vm(
         stderr.push(stderr_buffer);
     }
 
-    Ok((execution_result.clone(), exit_code, gas_used))
+    Ok((std::mem::take(&mut execution_result), exit_code, gas_used))
 }
 
 pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {

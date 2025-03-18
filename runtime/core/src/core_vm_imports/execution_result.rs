@@ -24,6 +24,7 @@ pub fn execution_result_import_obj(store: &mut Store, vm_context: &FunctionEnv<V
         let result = result_ptr.slice(&memory, result_length as u32)?.read_to_vec()?;
         let mut vm_result = ctx.result.lock();
         *vm_result = result;
+        vm_result.shrink_to_fit();
 
         Ok(())
     }

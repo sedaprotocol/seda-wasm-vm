@@ -87,9 +87,9 @@ impl FfiVmResult {
         let result = vm_result.result.unwrap_or_default().into_boxed_slice();
         let result_ptr = result.as_ptr();
         let result_len = result.len();
-        mem::forget(result);
 
         if is_tally && result_len > max_result_bytes {
+            drop(result);
             FfiVmResult {
                 exit_info: FfiExitInfo {
                     exit_message: CString::new(format!("Result larger than {max_result_bytes}bytes."))
@@ -106,6 +106,7 @@ impl FfiVmResult {
                 stderr_len,
             }
         } else {
+            mem::forget(result);
             FfiVmResult {
                 stdout_ptr,
                 stdout_len,
