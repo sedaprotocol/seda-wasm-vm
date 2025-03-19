@@ -294,7 +294,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 20566535451250);
+        assert_eq!(result.gas_used, 17855437682500);
     }
 
     #[test]
@@ -349,7 +349,7 @@ mod test {
                 "http_fetch is not allowed in tally".to_string()
             );
         }
-        assert_eq!(result.gas_used, 20566535451250);
+        assert_eq!(result.gas_used, 17855437682500);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -409,7 +409,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 255);
-        assert_eq!(result.gas_used, 29473111092500);
+        assert_eq!(result.gas_used, 29464558655000);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -468,7 +468,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 0);
-        assert_eq!(result.gas_used, 9114698646250);
+        assert_eq!(result.gas_used, 9111887083750);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -497,7 +497,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "proxy_http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 23111707163750);
+        assert_eq!(result.gas_used, 20194610813750);
     }
 
     #[test]
@@ -510,7 +510,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
-        assert_eq!(result.gas_used, 10096086678750);
+        assert_eq!(result.gas_used, 10093838441250);
     }
 
     #[test]
@@ -551,7 +551,7 @@ mod test {
             // "testKeccak256" hashed
             "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
         );
-        assert_eq!(result.gas_used, 11564472550000);
+        assert_eq!(result.gas_used, 10892767450000);
     }
 
     #[test]
@@ -667,6 +667,6 @@ mod test {
             envs,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13471874490000);
+        assert_eq!(result.gas_used, 13239977321250);
     }
 }
