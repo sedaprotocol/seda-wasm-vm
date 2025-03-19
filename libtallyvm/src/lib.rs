@@ -173,6 +173,8 @@ pub unsafe extern "C" fn execute_tally_vm(
     env_values_ptr: *const *const c_char,
     env_count: usize,
     max_result_bytes: usize,
+    stdout_limit: usize,
+    stderr_limit: usize,
 ) -> FfiVmResult {
     static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
     let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
@@ -205,7 +207,7 @@ pub unsafe extern "C" fn execute_tally_vm(
         false
     };
 
-    match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs) {
+    match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit) {
         Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
         // TODO: maybe we should consider exiting the process since its a vm error, not a user error?
         // Not sure how that would work with the ffi though
@@ -232,6 +234,8 @@ fn _execute_tally_vm(
     wasm_bytes: Vec<u8>,
     args: Vec<String>,
     envs: BTreeMap<String, String>,
+    stdout_limit: usize,
+    stderr_limit: usize,
 ) -> Result<VmResult> {
     tracing::info!("Executing Tally VM");
     let wasm_hash = wasm_cache_id(&wasm_bytes);
@@ -255,7 +259,7 @@ fn _execute_tally_vm(
     };
 
     let runtime_context = RuntimeContext::new(sedad_home, &call_data)?;
-    let result = start_runtime(call_data, runtime_context);
+    let result = start_runtime(call_data, runtime_context, stdout_limit, stderr_limit);
 
     Ok(result)
 }
@@ -285,6 +289,8 @@ mod test {
             wasm_bytes.to_vec(),
             vec![hex::encode("testHttpSuccess")],
             envs,
+            1024,
+            1024,
         )
         .unwrap();
 
@@ -337,6 +343,8 @@ mod test {
                 env_key_ptrs.as_ptr(),
                 env_value_ptrs.as_ptr(),
                 envs.len(),
+                1024,
+                1024,
                 1024,
             )
         };
@@ -397,6 +405,8 @@ mod test {
                 env_value_ptrs.as_ptr(),
                 envs.len(),
                 1,
+                1024,
+                1024,
             )
         };
 
@@ -456,6 +466,8 @@ mod test {
                 env_value_ptrs.as_ptr(),
                 envs.len(),
                 1,
+                1024,
+                1024,
             )
         };
 
@@ -488,6 +500,8 @@ mod test {
             wasm_bytes.to_vec(),
             vec![hex::encode("testProxyHttpFetch")],
             envs,
+            1024,
+            1024,
         )
         .unwrap();
 
@@ -507,7 +521,7 @@ mod test {
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
         assert_eq!(result.gas_used, 10093838441250);
@@ -526,6 +540,8 @@ mod test {
             wasm_bytes.to_vec(),
             vec![hex::encode("testHttpSuccess")],
             envs,
+            1024,
+            1024,
         )
         .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
@@ -542,8 +558,15 @@ mod test {
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
-        let result =
-            _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![hex::encode("testKeccak256")], envs).unwrap();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![hex::encode("testKeccak256")],
+            envs,
+            1024,
+            1024,
+        )
+        .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(
@@ -562,7 +585,15 @@ mod test {
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
         let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![hex::encode("btc-usdc")], envs).unwrap();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![hex::encode("btc-usdc")],
+            envs,
+            1024,
+            1024,
+        )
+        .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(
@@ -580,7 +611,7 @@ mod test {
 
         let tempdir = std::env::temp_dir().join("foo");
         std::fs::create_dir_all(&tempdir).unwrap();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs).unwrap();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(result.exit_info.exit_code, 252);
@@ -597,11 +628,18 @@ mod test {
 
         let tempdir = std::env::temp_dir().join("foo");
         std::fs::create_dir_all(&tempdir).unwrap();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![
-					"0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
-					"[{\"reveal\":[123,34,98,108,111,99,107,72,97,115,104,34,58,34 ,48,120,57,50,55,55,98,53,53,55,48,48,100,97,57,48,53,48,98,53,53,97,97,54,55,52,48,55,49,57,101,50,53,98,48,48,102,51,57,97,99,99,49,53,102,49,49,98,54,52,48,99,98,56,50,101,52,48,100,97,56,102,56,54,48,100,34,44,34,98,108,111,99,107,78,117,109,98,101,114,34,58,34,48,120,49,52,50,98,98,55,56,34,44,34,102,114,111,109, 34,58,34,48,120,99,48,100,98,98,53,49,101,54,48,55,102,52,57,53,54,57,99,52,50,99,53,99,101,101,50,101,98,51,51,100,99,53,98,97,99,50,56,100,53,34,125],\"salt\":[211,175,124,217,173,184,107,223,93,111,189,56,113,215,248,115,214,157,229,183,30,213,237,186,209,254,246,247,222,155,241,183,157,123,93,180,213,253,57,211,19 0,56,125,189,120,247,93,116],\"id\":\"f495c06137a92787312086267884196ec4476f6faf4bd074eafb289b65de272f\",\"exit_code\":0,\"gas_used\":42369302985625,\"proxy_public_keys\":[]}]".to_string(),
-					"[0]".to_string()
-					], envs).unwrap();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![
+                "0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
+                "[{\"reveal\":[123,34,98,108,111,99,107,72,97,115,104,34,58,34 ,48,120,57,50,55,55,98,53,53,55,48,48,100,97,57,48,53,48,98,53,53,97,97,54,55,52,48,55,49,57,101,50,53,98,48,48,102,51,57,97,99,99,49,53,102,49,49,98,54,52,48,99,98,56,50,101,52,48,100,97,56,102,56,54,48,100,34,44,34,98,108,111,99,107,78,117,109,98,101,114,34,58,34,48,120,49,52,50,98,98,55,56,34,44,34,102,114,111,109, 34,58,34,48,120,99,48,100,98,98,53,49,101,54,48,55,102,52,57,53,54,57,99,52,50,99,53,99,101,101,50,101,98,51,51,100,99,53,98,97,99,50,56,100,53,34,125],\"salt\":[211,175,124,217,173,184,107,223,93,111,189,56,113,215,248,115,214,157,229,183,30,213,237,186,209,254,246,247,222,155,241,183,157,123,93,180,213,253,57,211,19 0,56,125,189,120,247,93,116],\"id\":\"f495c06137a92787312086267884196ec4476f6faf4bd074eafb289b65de272f\",\"exit_code\":0,\"gas_used\":42369302985625,\"proxy_public_keys\":[]}]".to_string(),
+                "[0]".to_string()
+            ],
+            envs,
+            1024,
+            1024
+        ).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 1);
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
@@ -617,11 +655,18 @@ mod test {
 
         let tempdir = std::env::temp_dir().join("foo");
         std::fs::create_dir_all(&tempdir).unwrap();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![
-					"0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
-					"[{\"reveal\":[123,34,98,108,111,99,107,72,97,115,104,34,58,34 ,48,120,57,50,55,55,98,53,53,55,48,48,100,97,57,48,53,48,98,53,53,97,97,54,55,52,48,55,49,57,101,50,53,98,48,48,102,51,57,97,99,99,49,53,102,49,49,98,54,52,48,99,98,56,50,101,52,48,100,97,56,102,56,54,48,100,34,44,34,98,108,111,99,107,78,117,109,98,101,114,34,58,34,48,120,49,52,50,98,98,55,56,34,44,34,102,114,111,109, 34,58,34,48,120,99,48,100,98,98,53,49,101,54,48,55,102,52,57,53,54,57,99,52,50,99,53,99,101,101,50,101,98,51,51,100,99,53,98,97,99,50,56,100,53,34,125],\"salt\":[211,175,124,217,173,184,107,223,93,111,189,56,113,215,248,115,214,157,229,183,30,213,237,186,209,254,246,247,222,155,241,183,157,123,93,180,213,253,57,211,19 0,56,125,189,120,247,93,116],\"id\":\"f495c06137a92787312086267884196ec4476f6faf4bd074eafb289b65de272f\",\"exit_code\":0,\"gas_used\":42369302985625,\"proxy_public_keys\":[]}]".to_string(),
-					"[0]".to_string()
-					], envs).unwrap();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![
+                "0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
+                "[{\"reveal\":[123,34,98,108,111,99,107,72,97,115,104,34,58,34 ,48,120,57,50,55,55,98,53,53,55,48,48,100,97,57,48,53,48,98,53,53,97,97,54,55,52,48,55,49,57,101,50,53,98,48,48,102,51,57,97,99,99,49,53,102,49,49,98,54,52,48,99,98,56,50,101,52,48,100,97,56,102,56,54,48,100,34,44,34,98,108,111,99,107,78,117,109,98,101,114,34,58,34,48,120,49,52,50,98,98,55,56,34,44,34,102,114,111,109, 34,58,34,48,120,99,48,100,98,98,53,49,101,54,48,55,102,52,57,53,54,57,99,52,50,99,53,99,101,101,50,101,98,51,51,100,99,53,98,97,99,50,56,100,53,34,125],\"salt\":[211,175,124,217,173,184,107,223,93,111,189,56,113,215,248,115,214,157,229,183,30,213,237,186,209,254,246,247,222,155,241,183,157,123,93,180,213,253,57,211,19 0,56,125,189,120,247,93,116],\"id\":\"f495c06137a92787312086267884196ec4476f6faf4bd074eafb289b65de272f\",\"exit_code\":0,\"gas_used\":42369302985625,\"proxy_public_keys\":[]}]".to_string(),
+                "[0]".to_string()
+            ],
+            envs,
+            1024,
+            1024,
+        ).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 4);
         assert_eq!(result.exit_info.exit_message, "Error: Failed to create WASMER instance: Insufficient resources: Failed to create memory: A user-defined error occurred: Minimum exceeds the allowed memory limit".to_string());
@@ -640,10 +685,12 @@ mod test {
         let method = "import_length_overflow".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs).unwrap();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        dbg!(&result);
 
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
     }
+
     #[test]
     fn price_feed_tally() {
         let wasm_bytes = include_bytes!("../../test-vm.wasm");
@@ -665,8 +712,32 @@ mod test {
             wasm_bytes.to_vec(),
             vec![method_hex, reveals, consensus],
             envs,
+            1024,
+            1024,
         )
         .unwrap();
         assert_eq!(result.gas_used, 13239977321250);
+    }
+
+    #[test]
+    fn test_stdout_limit() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "hello_world".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 2, 2).unwrap();
+
+        assert_eq!(result.exit_info.exit_code, 0);
+        assert_eq!(result.stdout.len(), 1);
+        // the full 4 bytes would be "Foo\n"
+        assert_eq!(result.stdout[0], "Fo");
+        assert_eq!(result.stderr.len(), 1);
+        // the full 4 bytes would be "Bar\n"
+        assert_eq!(result.stderr[0], "Ba");
     }
 }

@@ -23,6 +23,8 @@ type VmResult struct {
 
 var LogDir string
 var TallyMaxBytes uint
+var TallyMaxStdoutBytes uint
+var TallyMaxStderrBytes uint
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
@@ -70,6 +72,8 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 		argsPtr, C.uintptr_t(len(args)),
 		keysPtr, valuesPtr, C.uintptr_t(len(envs)),
 		C.uintptr_t(TallyMaxBytes),
+		C.uintptr_t(TallyMaxStdoutBytes),
+		C.uintptr_t(TallyMaxStderrBytes),
 	)
 	exitMessage := C.GoString(result.exit_info.exit_message)
 	exitCode := int(result.exit_info.exit_code)

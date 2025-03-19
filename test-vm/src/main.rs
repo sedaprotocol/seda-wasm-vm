@@ -18,6 +18,10 @@ impl TestVmOracleProgram {
             "import_length_overflow" => import_length_overflow().unwrap(),
             "infinite_loop_wasi" => infinite_loop_wasi(),
             "price_feed_tally" => price_feed_tally().unwrap(),
+            "hello_world" => {
+                println!("Foo");
+                eprintln!("Bar");
+            }
             _ => process::exit(1),
         }
     }

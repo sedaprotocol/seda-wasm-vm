@@ -1,3 +1,4 @@
+use core::str;
 use std::io::Read;
 
 use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
@@ -21,6 +22,8 @@ fn internal_run_vm(
     mut context: RuntimeContext,
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
+    stdout_limit: usize,
+    stderr_limit: usize,
 ) -> ExecutionResult<(Vec<u8>, i32, u64)> {
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
@@ -147,33 +150,49 @@ fn internal_run_vm(
         return Err(VmResultStatus::ResultSizeExceeded);
     }
 
-    let mut stdout_buffer = String::new();
-    stdout_rx
-        .read_to_string(&mut stdout_buffer)
+    // Under the hood read_to_string called str::from_utf8
+    // though it did it in chunks, but I think this is fine.
+    let mut stdout_buffer = vec![0; stdout_limit];
+    let bytes_read = stdout_rx
+        .read(&mut stdout_buffer)
         .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?;
 
-    if !stdout_buffer.is_empty() {
-        stdout.push(stdout_buffer);
+    if bytes_read > 0 {
+        // push the buffer but cap at stdout_limit in bytes
+        stdout.push(
+            str::from_utf8(&stdout_buffer)
+                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
+                .to_string(),
+        );
     }
 
-    let mut stderr_buffer = String::new();
-    stderr_rx
-        .read_to_string(&mut stderr_buffer)
+    let mut stderr_buffer = vec![0; stderr_limit];
+    let bytes_read = stderr_rx
+        .read(&mut stderr_buffer)
         .map_err(|_| VmResultStatus::FailedToGetWASMStderr)?;
 
-    if !stderr_buffer.is_empty() {
-        stderr.push(stderr_buffer);
+    if bytes_read > 0 {
+        stderr.push(
+            str::from_utf8(&stderr_buffer)
+                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
+                .to_string(),
+        );
     }
 
     Ok((std::mem::take(&mut execution_result), exit_code, gas_used))
 }
 
-pub fn start_runtime(call_data: VmCallData, context: RuntimeContext) -> VmResult {
+pub fn start_runtime(
+    call_data: VmCallData,
+    context: RuntimeContext,
+    stdout_limit: usize,
+    stderr_limit: usize,
+) -> VmResult {
     tracing::debug!("Starting runtime");
     let mut stdout: Vec<String> = vec![];
     let mut stderr: Vec<String> = vec![];
 
-    let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr);
+    let vm_execution_result = internal_run_vm(call_data, context, &mut stdout, &mut stderr, stdout_limit, stderr_limit);
 
     tracing::info!("TALLY VM execution completed");
     match vm_execution_result {
