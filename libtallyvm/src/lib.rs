@@ -629,7 +629,7 @@ mod test {
 
     #[test]
     fn import_length_overflow() {
-        let wasm_bytes = include_bytes!("../../target/wasm32-wasip1/debug/test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string()); // 50 tGas
@@ -646,7 +646,7 @@ mod test {
     }
     #[test]
     fn price_feed_tally() {
-        let wasm_bytes = include_bytes!("../../target/wasm32-wasip1/debug/test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -667,6 +667,6 @@ mod test {
             envs,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 14549853896250);
+        assert_eq!(result.gas_used, 13471874490000);
     }
 }

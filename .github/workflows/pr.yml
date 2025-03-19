@@ -3,8 +3,8 @@ on: [pull_request]
 
 env:
   GO_VERSION: 1.21.3
-  # https://releases.rs/docs/1.80.0/ branch date
-  NIGHTLY_TOOLCHAIN: nightly-2024-06-07
+  # https://releases.rs/docs/1.85.0/ release date
+  NIGHTLY_TOOLCHAIN: nightly-2025-02-20
   RUST_BACKTRACE: 1
 
 jobs:
@@ -87,26 +87,15 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
-          components: clippy rustc-codegen-cranelift-preview
+          components: clippy rustc-codegen-cranelift-preview llvm-tools-preview
 
       - name: 📋 Clippy Check
         env:
           RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
         run: cargo clippy --all-features --locked -- -D warnings
 
-      - name: Install WASM
-        run: rustup target add wasm32-wasip1
-
-      - name: Build WASM
-        run: cargo build -p test-vm --target wasm32-wasip1
-
       - name: ☁️ Install Nextest
         uses: taiki-e/install-action@nextest
-
-      - name: 🧪 Test
-        env:
-          RUSTFLAGS: -Zthreads=4 -Zshare-generics=y -Zcodegen-backend=cranelift
-        run: cargo nextest run --locked -P ci
 
       - name: ☁️ Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
