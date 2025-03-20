@@ -160,7 +160,7 @@ fn internal_run_vm(
     if bytes_read > 0 {
         // push the buffer but cap at stdout_limit in bytes
         stdout.push(
-            str::from_utf8(&stdout_buffer)
+            str::from_utf8(&stdout_buffer[..bytes_read])
                 .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
                 .to_string(),
         );
@@ -173,7 +173,7 @@ fn internal_run_vm(
 
     if bytes_read > 0 {
         stderr.push(
-            str::from_utf8(&stderr_buffer)
+            str::from_utf8(&stderr_buffer[..bytes_read])
                 .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
                 .to_string(),
         );

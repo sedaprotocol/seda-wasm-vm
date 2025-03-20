@@ -716,7 +716,7 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13239977321250);
+        assert_eq!(result.gas_used, 13240033571250);
     }
 
     #[test]
