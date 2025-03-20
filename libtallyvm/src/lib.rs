@@ -176,51 +176,83 @@ pub unsafe extern "C" fn execute_tally_vm(
     stdout_limit: usize,
     stderr_limit: usize,
 ) -> FfiVmResult {
-    static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
-    let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
-    let sedad_home = PathBuf::from(sedad_home);
-    let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
+    let result = std::panic::catch_unwind(|| {
+        #[cfg(test)]
+        {
+            let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
+            if should_panic == "true" {
+                panic!("Panic for testing");
+            }
+        }
 
-    let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
+        static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
+        let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
+        let sedad_home = PathBuf::from(sedad_home);
+        let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
 
-    let args: Vec<String> = (0..args_count)
-        .map(|i| {
-            let ptr = *args_ptr.add(i);
-            CStr::from_ptr(ptr).to_string_lossy().into_owned()
-        })
-        .collect();
+        let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
 
-    let mut envs = BTreeMap::new();
-    for i in 0..env_count {
-        let key_ptr = *env_keys_ptr.add(i);
-        let value_ptr = *env_values_ptr.add(i);
+        let args: Vec<String> = (0..args_count)
+            .map(|i| {
+                let ptr = *args_ptr.add(i);
+                CStr::from_ptr(ptr).to_string_lossy().into_owned()
+            })
+            .collect();
 
-        let key = CStr::from_ptr(key_ptr).to_string_lossy().into_owned();
-        let value = CStr::from_ptr(value_ptr).to_string_lossy().into_owned();
+        let mut envs = BTreeMap::new();
+        for i in 0..env_count {
+            let key_ptr = *env_keys_ptr.add(i);
+            let value_ptr = *env_values_ptr.add(i);
 
-        envs.insert(key, value);
-    }
-    let is_tally = if let Some(mode) = envs.get("VM_MODE") {
-        mode == "tally"
-    } else {
-        // TODO should we default or return an error?
-        false
-    };
+            let key = CStr::from_ptr(key_ptr).to_string_lossy().into_owned();
+            let value = CStr::from_ptr(value_ptr).to_string_lossy().into_owned();
 
-    match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit) {
-        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
-        // TODO: maybe we should consider exiting the process since its a vm error, not a user error?
-        // Not sure how that would work with the ffi though
+            envs.insert(key, value);
+        }
+        let is_tally = if let Some(mode) = envs.get("VM_MODE") {
+            mode == "tally"
+        } else {
+            false
+        };
+
+        match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit) {
+            Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
+            Err(e) => FfiVmResult {
+                stdout_ptr: std::ptr::null(),
+                stdout_len: 0,
+                stderr_ptr: std::ptr::null(),
+                stderr_len: 0,
+                result_ptr: std::ptr::null(),
+                result_len: 0,
+                exit_info:  FfiExitInfo {
+                    exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
+                    exit_code:    e.exit_code(),
+                },
+                gas_used:   0,
+            },
+        }
+    });
+
+    match result {
+        Ok(vm_result) => vm_result,
         Err(e) => FfiVmResult {
-            stdout_ptr: ptr::null(),
+            stdout_ptr: std::ptr::null(),
             stdout_len: 0,
-            stderr_ptr: ptr::null(),
+            stderr_ptr: std::ptr::null(),
             stderr_len: 0,
-            result_ptr: ptr::null(),
+            result_ptr: std::ptr::null(),
             result_len: 0,
             exit_info:  FfiExitInfo {
-                exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
-                exit_code:    e.exit_code(),
+                exit_message: CString::new(format!(
+                    "The tally VM panicked.\n\
+                     Please report this issue at: \
+                     https://github.com/sedaprotocol/seda-wasm-vm/issues.\n\
+                     Panic Error:\n{e:?}"
+                ))
+                .unwrap()
+                .into_raw(),
+
+                exit_code: 42,
             },
             gas_used:   0,
         },
@@ -877,5 +909,64 @@ mod test {
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
+    }
+
+    #[test]
+    fn execute_c_tally_vm_panic() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+
+        let args: [String; 0] = [];
+        let arg_cstrings: Vec<CString> = args
+            .iter()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let envs: BTreeMap<String, String> = BTreeMap::new();
+        let env_key_cstrings: Vec<CString> = envs
+            .keys()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
+        let env_value_cstrings: Vec<CString> = envs
+            .values()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let tempdir = std::env::temp_dir().display().to_string();
+        std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
+        let mut result = unsafe {
+            super::execute_tally_vm(
+                CString::new(tempdir).unwrap().into_raw(),
+                wasm_bytes.as_ptr(),
+                wasm_bytes.len(),
+                arg_ptrs.as_ptr(),
+                args.len(),
+                env_key_ptrs.as_ptr(),
+                env_value_ptrs.as_ptr(),
+                envs.len(),
+                1024,
+                1024,
+                1024,
+            )
+        };
+
+        unsafe {
+            let exit_message = std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+                .to_string_lossy()
+                .into_owned();
+            assert!(exit_message.contains("The tally VM panicked."));
+        }
+
+        assert_eq!(result.gas_used, 0);
+        assert_eq!(result.exit_info.exit_code, 42);
+
+        unsafe {
+            super::free_ffi_vm_result(&mut result);
+        }
     }
 }
