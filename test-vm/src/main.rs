@@ -5,6 +5,7 @@ use infinite_loop_wasi::infinite_loop_wasi;
 use price_feed_tally::price_feed_tally;
 use seda_sdk_rs::{oracle_program, Process};
 
+mod call_result_write_0;
 mod import_length_overflow;
 mod infinite_loop_wasi;
 mod price_feed_tally;
@@ -15,6 +16,7 @@ impl TestVmOracleProgram {
         let inputs = String::from_utf8(Process::get_inputs()).unwrap();
 
         match inputs.as_str() {
+            "call_result_write_0" => call_result_write_0::call_result_write_0(),
             "hello_world" => {
                 println!("Foo");
                 eprintln!("Bar");

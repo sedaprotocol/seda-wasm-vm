@@ -1,6 +1,6 @@
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
-use crate::{context::VmContext, errors::Result};
+use crate::{context::VmContext, errors::Result, RuntimeError};
 
 pub fn call_result_value_length_import_obj(store: &mut Store, vm_context: &FunctionEnv<VmContext>) -> Function {
     fn call_result_value_length(env: FunctionEnvMut<'_, VmContext>) -> Result<u32> {
@@ -23,10 +23,27 @@ pub fn call_result_value_write_import_obj(store: &mut Store, vm_context: &Functi
         let memory = ctx.memory_view(&env);
 
         let target = result_data_ptr.slice(&memory, result_data_length)?;
-        let call_value = ctx.call_result_value.read();
+        if target.is_empty() {
+            return Err(RuntimeError::InvalidMemoryAccess(
+                "call_result_write: result_data_ptr is empty cannot write to it",
+            ));
+        }
 
-        for index in 0..result_data_length {
-            target.index(index as u64).write(call_value[index as usize])?;
+        let call_value = ctx.call_result_value.read();
+        if call_value.is_empty() || call_value.len() as u32 != result_data_length {
+            return Err(RuntimeError::InvalidMemoryAccess(
+                "call_result_write: result_data_ptr length does not match call_value length",
+            ));
+        }
+
+        for index in 0..result_data_length as u64 {
+            if dbg!(target.read(index).is_err()) {
+                return Err(RuntimeError::InvalidMemoryAccess(
+                    "call_result_write: result_data_ptr length does not match result_data_length",
+                ));
+            }
+
+            target.index(index).write(call_value[index as usize])?;
         }
 
         Ok(())

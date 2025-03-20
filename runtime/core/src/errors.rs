@@ -71,6 +71,9 @@ pub enum RuntimeError {
 
     #[error("{0}")]
     Unknown(String),
+
+    #[error("Invalid Memory Access: {0}")]
+    InvalidMemoryAccess(&'static str),
 }
 
 pub type Result<T, E = RuntimeError> = core::result::Result<T, E>;

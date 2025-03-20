@@ -716,7 +716,85 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13240033665000);
+        assert_eq!(result.gas_used, 13240033590000);
+    }
+
+    #[test]
+    fn call_result_write_len_0() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "call_result_write_0".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
+        assert_eq!(result.stderr.len(), 1);
+        assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
+    }
+
+    #[test]
+    fn execute_c_tally_vm_panic() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+
+        let args: [String; 0] = [];
+        let arg_cstrings: Vec<CString> = args
+            .iter()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let envs: BTreeMap<String, String> = BTreeMap::new();
+        let env_key_cstrings: Vec<CString> = envs
+            .keys()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
+        let env_value_cstrings: Vec<CString> = envs
+            .values()
+            .cloned()
+            .map(|s| CString::new(s).expect("CString::new failed"))
+            .collect();
+        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
+
+        let tempdir = std::env::temp_dir().display().to_string();
+        std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
+        let mut result = unsafe {
+            super::execute_tally_vm(
+                CString::new(tempdir).unwrap().into_raw(),
+                wasm_bytes.as_ptr(),
+                wasm_bytes.len(),
+                arg_ptrs.as_ptr(),
+                args.len(),
+                env_key_ptrs.as_ptr(),
+                env_value_ptrs.as_ptr(),
+                envs.len(),
+                1024,
+                1024,
+                1024,
+            )
+        };
+
+        unsafe {
+            let exit_message = std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+                .to_string_lossy()
+                .into_owned();
+            assert!(exit_message.contains("The tally VM panicked."));
+        }
+
+        assert_eq!(result.gas_used, 0);
+        assert_eq!(result.exit_info.exit_code, 42);
+
+        unsafe {
+            super::free_ffi_vm_result(&mut result);
+        }
     }
 
     #[test]
@@ -795,5 +873,9 @@ mod test {
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stdout.len(), 0);
         assert_eq!(result.stderr.len(), 0);
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
+        assert_eq!(result.stderr.len(), 1);
+        assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
     }
 }
