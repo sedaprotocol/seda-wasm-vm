@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -10,40 +11,62 @@ import (
 	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
 )
 
+type Config struct {
+	WasmFile string          `json:"wasm_file"`
+	Method   string          `json:"method"`
+	Args     json.RawMessage `json:"args"`
+}
+
 func main() {
-	// read the number of seconds to sleep from the command line
-	// default to 5 seconds if no argument is provided
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: sleep <seconds>")
-		os.Exit(1)
-	}
-	seconds, err := strconv.Atoi(os.Args[1])
-	if err != nil {
-		fmt.Println("Invalid number of seconds:", os.Args[1])
+	if len(os.Args) != 3 {
+		fmt.Println("Usage: <config.json> <sleep_seconds>")
 		os.Exit(1)
 	}
 
-	file := "./test-vm.wasm"
-	data, err := os.ReadFile(file)
-	if err != nil {
-		panic(err)
+	sleepSeconds, err := strconv.Atoi(os.Args[2])
+	if err != nil || sleepSeconds <= 0 {
+		fmt.Println("Invalid sleep seconds:", os.Args[2])
+		os.Exit(1)
 	}
 
-	method := "price_feed_tally"
-	method_hex := hex.EncodeToString([]byte(method))
-	reveals := "[{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":200,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,50,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":198,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,52,53,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":201,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,50,56,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":199,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,55,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":202,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,48,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":197,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,52,49,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":200,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,53,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":203,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,57,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":196,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,51,125]},{\"salt\":[115,101,100,97,95,115,100,107],\"exit_code\":0,\"gas_used\":201,\"reveal\":[123,34,112,114,105,99,101,34,58,32,49,49,50,57,57,51,54,125]}]"
-	// reveals_hex := hex.EncodeToString([]byte(reveals))
-	consensus := "[0,0,0,0,0,0,0,0,0,0]"
+	configData, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Println("Error reading config file:", err)
+		os.Exit(1)
+	}
+
+	var cfg Config
+	if err := json.Unmarshal(configData, &cfg); err != nil {
+		fmt.Println("Error parsing config file:", err)
+		os.Exit(1)
+	}
+
+	// Validate that cfg.Args is valid JSON.
+	if !json.Valid(cfg.Args) {
+		fmt.Println("Invalid JSON in args")
+		os.Exit(1)
+	}
+
+	wasmData, err := os.ReadFile(cfg.WasmFile)
+	if err != nil {
+		fmt.Println("Error reading wasm file:", err)
+		os.Exit(1)
+	}
+
+	// Convert the method to hex and prepend it to the args slice.
+	methodHex := hex.EncodeToString([]byte(cfg.Method))
+	args := []string{methodHex, string(cfg.Args)}
 
 	tallyvm.TallyMaxBytes = 1024
 
 	for {
-		tallyvm.ExecuteTallyVm(data, []string{method_hex, reveals, consensus}, map[string]string{
+		res := tallyvm.ExecuteTallyVm(wasmData, args, map[string]string{
 			"CONSENSUS":          "true",
 			"VM_MODE":            "tally",
 			"DR_TALLY_GAS_LIMIT": "150000000000000",
 		})
-
-		time.Sleep(time.Duration(seconds) * time.Second)
+		fmt.Printf("VMExitCode: %d\n", res.ExitInfo.ExitCode)
+		fmt.Printf("VMExitMessage: %s\n", res.ExitInfo.ExitMessage)
+		time.Sleep(time.Duration(sleepSeconds) * time.Second)
 	}
 }

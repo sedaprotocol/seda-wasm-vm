@@ -8,7 +8,9 @@ Useful to see if memory leaking in a long running process that calls the tallyVM
 1. Make sure the `test-vm.wasm` is in the `mem-test` directory.
 1. Make sure you are in the `mem-test` directory.
 1. Run `go build` to generate the `mem-test` binary.
-1. You can then run `./monitor.py <time_in_seconds>`. The time in seconds is optional and determines how often the tally vm runs the `price_feed_tally` program.
+1. You can then run `./monitor.py [time_in_seconds] [vm_args_json_path]`. The `json` file is so you can easily change the wasm, method, and args to it.
+   1. The time in seconds is optional and defaults to 5.
+   1. The json path is also optional and defaults to the `price_feed_tally.json` by default.
 1. You can `ctrl-c` to quit at any time. 
 
 ## Reading

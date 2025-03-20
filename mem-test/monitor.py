@@ -15,11 +15,12 @@ def get_rss(pid):
 def main():
     # Use the first argument as the sleep time for mem-test, defaulting to "5" if not provided.
     sleep_arg = sys.argv[1] if len(sys.argv) > 1 else "5"
+    vm_args_json = sys.argv[2] if len(sys.argv) > 2 else "price_feed_tally.json"
     print(f"Running tallyVM every {sleep_arg} seconds")
 
     # Launch mem-test binary with the sleep argument.
     try:
-        proc = subprocess.Popen(["./mem-test", sleep_arg])
+        proc = subprocess.Popen(["./mem-test", vm_args_json, sleep_arg])
     except Exception as e:
         print("Failed to launch mem-test:", e)
         return
