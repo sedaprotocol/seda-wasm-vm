@@ -6,6 +6,7 @@ use price_feed_tally::price_feed_tally;
 use seda_sdk_rs::{oracle_program, Process};
 
 mod call_result_write_0;
+mod cannot_spam_call_result_write;
 mod import_length_overflow;
 mod infinite_loop_wasi;
 mod price_feed_tally;
@@ -17,6 +18,7 @@ impl TestVmOracleProgram {
 
         match inputs.as_str() {
             "call_result_write_0" => call_result_write_0::call_result_write_0(),
+            "cannot_spam_call_result_write" => cannot_spam_call_result_write::cannot_spam_call_result_write(),
             "hello_world" => {
                 println!("Foo");
                 eprintln!("Bar");

@@ -29,7 +29,10 @@ pub fn call_result_value_write_import_obj(store: &mut Store, vm_context: &Functi
             ));
         }
 
-        let call_value = ctx.call_result_value.read();
+        let mut call_result_value = ctx.call_result_value.write();
+        let call_value = std::mem::replace(&mut *call_result_value, Vec::with_capacity(0));
+        drop(call_result_value);
+
         if call_value.is_empty() || call_value.len() as u32 != result_data_length {
             return Err(RuntimeError::InvalidMemoryAccess(
                 "call_result_write: result_data_ptr length does not match call_value length",

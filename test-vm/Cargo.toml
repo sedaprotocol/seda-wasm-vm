@@ -6,6 +6,7 @@ version.workspace = true
 
 [dependencies]
 anyhow = "1.0.95"
-serde = { workspace = true }
-serde_json = { workspace = true }
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
 seda-sdk-rs = { git = "https://github.com/sedaprotocol/seda-sdk" }

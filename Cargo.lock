@@ -2552,6 +2552,7 @@ name = "test-vm"
 version = "2.2.3"
 dependencies = [
  "anyhow",
+ "hex",
  "seda-sdk-rs",
  "serde",
  "serde_json",

@@ -745,7 +745,7 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13240033683750);
+        assert_eq!(result.gas_used, 13240146333750);
     }
 
     #[test]
@@ -910,5 +910,32 @@ mod test {
             &result.exit_info.exit_message,
             "Error: Failed to convert VM pipe output to String"
         );
+    }
+
+    #[test]
+    fn cannot_spam_call_result_write() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let tempdir = std::env::temp_dir();
+
+        let method = "cannot_spam_call_result_write".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex],
+            envs.clone(),
+            1024,
+            1024,
+        )
+        .unwrap();
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert_eq!(result.stderr.len(), 1);
+        assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
+        assert_eq!(&result.exit_info.exit_message, "Not ok");
     }
 }
