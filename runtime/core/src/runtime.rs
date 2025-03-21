@@ -155,7 +155,7 @@ fn internal_run_vm(
     let mut stdout_buffer = vec![0; stdout_limit];
     let bytes_read = stdout_rx
         .read(&mut stdout_buffer)
-        .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?;
+        .map_err(|_| VmResultStatus::FailedToGetWASMStdout)?;
 
     if bytes_read > 0 {
         // push the buffer but cap at stdout_limit in bytes

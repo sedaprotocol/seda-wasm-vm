@@ -716,11 +716,11 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13240033571250);
+        assert_eq!(result.gas_used, 13240033665000);
     }
 
     #[test]
-    fn test_stdout_limit() {
+    fn test_stdout_and_stderr_limit() {
         let wasm_bytes = include_bytes!("../../test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -739,5 +739,61 @@ mod test {
         assert_eq!(result.stderr.len(), 1);
         // the full 4 bytes would be "Bar\n"
         assert_eq!(result.stderr[0], "Ba");
+    }
+
+    #[test]
+    fn test_long_stdout_and_stderr() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "long_stdout_stderr".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+
+        assert_eq!(result.exit_info.exit_code, 0);
+        assert_eq!(result.stdout.len(), 1);
+        assert_eq!(result.stdout[0].len(), 1024);
+        assert_eq!(result.stdout[0], "Hello, World!\n".repeat(100)[..1024]);
+        assert_eq!(result.stderr.len(), 1);
+        assert_eq!(result.stderr[0].len(), 1024);
+        assert_eq!(result.stderr[0], "I AM ERROR\n".repeat(100)[..1024]);
+    }
+
+    #[test]
+    fn test_stdout_and_stderr_fail_when_given_non_utf8() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let tempdir = std::env::temp_dir();
+
+        let method = "stderr_non_utf8".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex],
+            envs.clone(),
+            1024,
+            1024,
+        )
+        .unwrap();
+        assert_eq!(result.exit_info.exit_code, 8);
+        assert_eq!(result.stdout.len(), 0);
+        assert_eq!(result.stderr.len(), 0);
+
+        let method = "stdout_non_utf8".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        assert_eq!(result.exit_info.exit_code, 8);
+        assert_eq!(result.stdout.len(), 0);
+        assert_eq!(result.stderr.len(), 0);
     }
 }

@@ -1,4 +1,4 @@
-use std::process;
+use std::{io::Write, process};
 
 use import_length_overflow::import_length_overflow;
 use infinite_loop_wasi::infinite_loop_wasi;
@@ -15,12 +15,24 @@ impl TestVmOracleProgram {
         let inputs = String::from_utf8(Process::get_inputs()).unwrap();
 
         match inputs.as_str() {
-            "import_length_overflow" => import_length_overflow().unwrap(),
-            "infinite_loop_wasi" => infinite_loop_wasi(),
-            "price_feed_tally" => price_feed_tally().unwrap(),
             "hello_world" => {
                 println!("Foo");
                 eprintln!("Bar");
+            }
+            "import_length_overflow" => import_length_overflow().unwrap(),
+            "infinite_loop_wasi" => infinite_loop_wasi(),
+            "long_stdout_stderr" => {
+                println!("{}", "Hello, World!\n".repeat(1_000));
+                eprintln!("{}", "I AM ERROR\n".repeat(1_000));
+            }
+            "price_feed_tally" => price_feed_tally().unwrap(),
+            "stderr_non_utf8" => {
+                let non_utf8 = b"\xff";
+                std::io::stderr().write_all(non_utf8).unwrap();
+            }
+            "stdout_non_utf8" => {
+                let non_utf8 = b"\xff";
+                std::io::stdout().write_all(non_utf8).unwrap();
             }
             _ => process::exit(1),
         }
