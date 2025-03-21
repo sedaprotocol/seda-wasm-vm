@@ -16,9 +16,6 @@ func init() {
 		panic(err)
 	}
 	tallyvm.LogDir = tempdir
-	tallyvm.TallyMaxBytes = 1024
-	tallyvm.TallyMaxStdoutBytes = 1024
-	tallyvm.TallyMaxStderrBytes = 1024
 }
 
 func cleanup() {
@@ -216,7 +213,7 @@ func TestMaxOutputByteLimits(t *testing.T) {
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 0, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
-	assert.Equal(t, uint64(11050593597500), res.GasUsed)
+	assert.Equal(t, uint64(11050706247500), res.GasUsed)
 	assert.Equal(t, res.Stdout[0], "Fo")
 	assert.Equal(t, res.Stderr[0], "Ba")
 }

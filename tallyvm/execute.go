@@ -22,9 +22,9 @@ type VmResult struct {
 }
 
 var LogDir string
-var TallyMaxBytes uint
-var TallyMaxStdoutBytes uint
-var TallyMaxStderrBytes uint
+var TallyMaxBytes uint = 1024
+var TallyMaxStdoutBytes uint = 512
+var TallyMaxStderrBytes uint = 512
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
