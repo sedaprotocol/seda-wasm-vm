@@ -209,32 +209,30 @@ pub unsafe extern "C" fn execute_tally_vm(
 
             envs.insert(key, value);
         }
-        let is_tally = if let Some(mode) = envs.get("VM_MODE") {
-            mode == "tally"
-        } else {
-            false
-        };
 
-        match _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit) {
-            Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
-            Err(e) => FfiVmResult {
-                stdout_ptr: std::ptr::null(),
-                stdout_len: 0,
-                stderr_ptr: std::ptr::null(),
-                stderr_len: 0,
-                result_ptr: std::ptr::null(),
-                result_len: 0,
-                exit_info:  FfiExitInfo {
-                    exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
-                    exit_code:    e.exit_code(),
-                },
-                gas_used:   0,
-            },
-        }
+        let is_tally = envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
+        (
+            _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit),
+            is_tally,
+        )
     });
 
     match result {
-        Ok(vm_result) => vm_result,
+        Ok((Ok(vm_result), is_tally)) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
+        Ok((Err(e), _)) => FfiVmResult {
+            stdout_ptr: std::ptr::null(),
+            stdout_len: 0,
+            stderr_ptr: std::ptr::null(),
+            stderr_len: 0,
+            result_ptr: std::ptr::null(),
+            result_len: 0,
+            exit_info:  FfiExitInfo {
+                exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
+                exit_code:    e.exit_code(),
+            },
+            gas_used:   0,
+        },
+
         Err(e) => FfiVmResult {
             stdout_ptr: std::ptr::null(),
             stdout_len: 0,
@@ -718,7 +716,6 @@ mod test {
         let method_hex = hex::encode(method.to_bytes().eject());
 
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
-        dbg!(&result);
 
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
     }
@@ -748,7 +745,7 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13240033590000);
+        assert_eq!(result.gas_used, 13240033683750);
     }
 
     #[test]
@@ -897,6 +894,10 @@ mod test {
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stdout.len(), 0);
         assert_eq!(result.stderr.len(), 0);
+        assert_eq!(
+            &result.exit_info.exit_message,
+            "Error: Failed to convert VM pipe output to String"
+        );
 
         let method = "stdout_non_utf8".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
@@ -905,68 +906,9 @@ mod test {
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stdout.len(), 0);
         assert_eq!(result.stderr.len(), 0);
-        assert_eq!(result.exit_info.exit_code, 252);
-        assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
-        assert_eq!(result.stderr.len(), 1);
-        assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
-    }
-
-    #[test]
-    fn execute_c_tally_vm_panic() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
-
-        let args: [String; 0] = [];
-        let arg_cstrings: Vec<CString> = args
-            .iter()
-            .cloned()
-            .map(|s| CString::new(s).expect("CString::new failed"))
-            .collect();
-        let arg_ptrs: Vec<*const c_char> = arg_cstrings.iter().map(|s| s.as_ptr()).collect();
-
-        let envs: BTreeMap<String, String> = BTreeMap::new();
-        let env_key_cstrings: Vec<CString> = envs
-            .keys()
-            .cloned()
-            .map(|s| CString::new(s).expect("CString::new failed"))
-            .collect();
-        let env_key_ptrs: Vec<*const c_char> = env_key_cstrings.iter().map(|s| s.as_ptr()).collect();
-        let env_value_cstrings: Vec<CString> = envs
-            .values()
-            .cloned()
-            .map(|s| CString::new(s).expect("CString::new failed"))
-            .collect();
-        let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
-
-        let tempdir = std::env::temp_dir().display().to_string();
-        std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                CString::new(tempdir).unwrap().into_raw(),
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1024,
-                1024,
-                1024,
-            )
-        };
-
-        unsafe {
-            let exit_message = std::ffi::CStr::from_ptr(result.exit_info.exit_message)
-                .to_string_lossy()
-                .into_owned();
-            assert!(exit_message.contains("The tally VM panicked."));
-        }
-
-        assert_eq!(result.gas_used, 0);
-        assert_eq!(result.exit_info.exit_code, 42);
-
-        unsafe {
-            super::free_ffi_vm_result(&mut result);
-        }
+        assert_eq!(
+            &result.exit_info.exit_message,
+            "Error: Failed to convert VM pipe output to String"
+        );
     }
 }

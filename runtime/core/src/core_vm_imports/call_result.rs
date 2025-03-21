@@ -37,7 +37,7 @@ pub fn call_result_value_write_import_obj(store: &mut Store, vm_context: &Functi
         }
 
         for index in 0..result_data_length as u64 {
-            if dbg!(target.read(index).is_err()) {
+            if target.read(index).is_err() {
                 return Err(RuntimeError::InvalidMemoryAccess(
                     "call_result_write: result_data_ptr length does not match result_data_length",
                 ));
