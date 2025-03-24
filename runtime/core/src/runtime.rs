@@ -8,7 +8,7 @@ use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
 
 use crate::{
     context::VmContext,
-    metering::{GAS_PER_BYTE, GAS_STARTUP},
+    metering::vm_gas_startup_cost,
     runtime_context::RuntimeContext,
     vm_imports::create_wasm_imports,
 };
@@ -25,6 +25,22 @@ fn internal_run_vm(
     stdout_limit: usize,
     stderr_limit: usize,
 ) -> ExecutionResult<(Vec<u8>, i32, u64)> {
+    // If the gas limit is set, we need to calculate the startup cost
+    let gas_cost = if let Some(gas_limit) = call_data.gas_limit {
+        // Errors if gas_cost doesn't fit in a u64 i.e. too expensive
+        let Ok(Some(gas_cost)): Result<Option<u64>, _> = vm_gas_startup_cost(&call_data.args) else {
+            return Err(VmResultStatus::GasStartupCostTooHigh);
+        };
+
+        // If the startup cost is higher than the gas limit, we return an error
+        if gas_cost > gas_limit {
+            return Err(VmResultStatus::GasStartupCostTooHigh);
+        }
+        gas_cost
+    } else {
+        0
+    };
+
     // _start is the default WASI entrypoint
     let function_name = call_data.clone().start_func.unwrap_or_else(|| "_start".to_string());
 
@@ -83,17 +99,9 @@ fn internal_run_vm(
         .get_function(&function_name)
         .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
 
-    // Apply arguments gas cost
+    // Apply startup cost before calling the main function
     if let Some(gas_limit) = call_data.gas_limit {
-        let args_bytes_total = call_data.args.iter().fold(0, |acc, v| acc + v.len());
-        // Gas startup costs (for spinning up the VM)
-        let gas_cost = (GAS_PER_BYTE * args_bytes_total as u64) + GAS_STARTUP;
-
-        if gas_cost < gas_limit {
-            set_remaining_points(&mut context.wasm_store, &wasmer_instance, gas_limit - gas_cost);
-        } else {
-            set_remaining_points(&mut context.wasm_store, &wasmer_instance, 0);
-        }
+        set_remaining_points(&mut context.wasm_store, &wasmer_instance, gas_limit - gas_cost);
     }
 
     let runtime_result = main_func.call(&mut context.wasm_store, &[]);
@@ -216,8 +224,8 @@ pub fn start_runtime(
             stdout,
             stderr,
             result: None,
-            exit_info: error.into(),
             gas_used: 0,
+            exit_info: error.into(),
         },
     }
 }

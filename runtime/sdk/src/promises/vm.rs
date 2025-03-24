@@ -209,6 +209,7 @@ pub enum VmResultStatus {
     FailedToJoinThread,
     /// When the execution result size exceeds the maximum allowed size
     ResultSizeExceeded,
+    GasStartupCostTooHigh,
 }
 
 impl From<VmResultStatus> for ExitInfo {
@@ -237,6 +238,11 @@ impl From<VmResultStatus> for ExitInfo {
             VmResultStatus::ResultSizeExceeded => {
                 ("Error: Execution result size exceeds maximum allowed size".into(), 13).into()
             }
+            VmResultStatus::GasStartupCostTooHigh => (
+                "Error: Gas startup cost is too expensive. Args might be too large.".into(),
+                14,
+            )
+                .into(),
         }
     }
 }

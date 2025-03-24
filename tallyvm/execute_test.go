@@ -3,6 +3,7 @@ package tallyvm_test
 import (
 	"encoding/hex"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,10 +85,13 @@ func TestTallyGasExceeded(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	startup_gas := 1_000_000_000_000 * 5
+	total_gas := startup_gas + 1_000
+
 	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
 		"CONSENSUS":          "true",
 		"VM_MODE":            "tally",
-		"DR_TALLY_GAS_LIMIT": "123",
+		"DR_TALLY_GAS_LIMIT": strconv.Itoa(total_gas),
 	})
 
 	t.Log(res)
@@ -96,7 +100,7 @@ func TestTallyGasExceeded(t *testing.T) {
 	assert.Equal(t, 250, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
-	assert.Equal(t, uint64(123), res.GasUsed)
+	assert.Equal(t, uint64(total_gas), res.GasUsed)
 }
 
 func TestTallyMaxBytesExceeded(t *testing.T) {

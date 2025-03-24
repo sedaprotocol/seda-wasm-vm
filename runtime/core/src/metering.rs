@@ -77,6 +77,15 @@ pub fn get_wasm_operation_gas_cost(operator: &Operator) -> u64 {
     }
 }
 
+pub fn vm_gas_startup_cost(args: &[String]) -> Result<Option<u64>, std::num::TryFromIntError> {
+    let args_bytes_total = args.iter().fold(0, |acc, v| acc + v.len());
+    (GAS_PER_BYTE as usize)
+        .checked_mul(args_bytes_total)
+        .and_then(|cost| cost.checked_add(GAS_STARTUP as usize))
+        .map(|c| c.try_into())
+        .transpose()
+}
+
 #[derive(Debug)]
 pub enum ExternalCallType {
     /// Takes as argument the bytes length

@@ -562,22 +562,35 @@ mod test {
         let wasm_bytes = include_bytes!("../../integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
-        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "1000".to_string());
+        // enough to cover startup cost + some
+        let method_hex = hex::encode("testHttpSuccess");
+        let startup_gas = (method_hex.len() as u64 * 10_000) + (1_000_000_000_000 * 5);
+        let total_gas = startup_gas + 1_000;
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), total_gas.to_string());
 
         let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(
-            &tempdir,
-            wasm_bytes.to_vec(),
-            vec![hex::encode("testHttpSuccess")],
-            envs,
-            1024,
-            1024,
-        )
-        .unwrap();
-        result.stdout.iter().for_each(|line| print!("{}", line));
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 250);
-        assert_eq!(result.gas_used, 1000);
+        assert_eq!(result.gas_used, total_gas);
+    }
+
+    #[test]
+    fn vm_does_not_run_if_startup_cost_is_higher_than_gas_limit() {
+        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "dr".to_string());
+        // enough to cover startup cost + some
+        let method_hex = hex::encode("testHttpSuccess");
+        let startup_gas = (method_hex.len() as u64 * 10_000) + (1_000_000_000_000 * 5);
+        let total_gas = startup_gas - 1_000;
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), total_gas.to_string());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+
+        assert_eq!(result.exit_info.exit_code, 14);
+        assert_eq!(result.gas_used, 0);
     }
 
     #[test]
@@ -937,5 +950,27 @@ mod test {
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
         assert_eq!(&result.exit_info.exit_message, "Not ok");
+    }
+
+    #[test]
+    fn call_infinite_loop() {
+        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "infinite_loop_wasi".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let start = std::time::Instant::now();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let elapsed = start.elapsed();
+
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
+        assert_eq!(result.stderr.len(), 1);
+        assert_eq!(result.stderr[0], "Runtime error: Out of gas");
+        assert!(elapsed.as_secs() < 1);
     }
 }
