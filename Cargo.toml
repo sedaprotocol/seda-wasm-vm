@@ -1,11 +1,18 @@
 [workspace]
 resolver = "2"
 default-members = ["libtallyvm"]
-members = ["libtallyvm", "runtime/core", "runtime/sdk", "test-vm", "xtask", "test-vm"]
+members = [
+	"libtallyvm",
+	"runtime/core",
+	"runtime/sdk",
+	"test-vm",
+	"xtask",
+	"test-vm",
+]
 
 [workspace.package]
 rust-version = "1.77.0"
-version = "2.2.3"
+version = "2.3.0-rc.1"
 
 [profile.dev]
 codegen-units = 512

@@ -1,7 +1,7 @@
 use core::str;
 use std::io::Read;
 
-use seda_runtime_sdk::{ExecutionResult, ExitInfo, VmCallData, VmResult, VmResultStatus};
+use seda_runtime_sdk::{ExecutionResult, ExitInfo, ExitInfoWithGasUsed, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
 use wasmer_middlewares::metering::{get_remaining_points, set_remaining_points, MeteringPoints};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
@@ -29,12 +29,12 @@ fn internal_run_vm(
     let gas_cost = if let Some(gas_limit) = call_data.gas_limit {
         // Errors if gas_cost doesn't fit in a u64 i.e. too expensive
         let Ok(Some(gas_cost)): Result<Option<u64>, _> = vm_gas_startup_cost(&call_data.args) else {
-            return Err(VmResultStatus::GasStartupCostTooHigh);
+            return Err(VmResultStatus::GasStartupCostTooHigh(gas_limit));
         };
 
         // If the startup cost is higher than the gas limit, we return an error
         if gas_cost > gas_limit {
-            return Err(VmResultStatus::GasStartupCostTooHigh);
+            return Err(VmResultStatus::GasStartupCostTooHigh(gas_limit));
         }
         gas_cost
     } else {
@@ -76,7 +76,7 @@ fn internal_run_vm(
     .map_err(|_| VmResultStatus::FailedToCreateVMImports)?;
 
     let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
-        .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string()))?;
+        .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string(), gas_cost))?;
 
     vm_context.as_mut(&mut context.wasm_store).instance = Some(wasmer_instance.clone());
 
@@ -85,19 +85,19 @@ fn internal_run_vm(
         wasmer_instance
             .exports
             .get_memory("memory")
-            .map_err(|_| VmResultStatus::FailedToGetWASMMemory)?
+            .map_err(|_| VmResultStatus::FailedToGetWASMMemory(gas_cost))?
             .clone(),
     );
 
     wasi_env
         .initialize(&mut context.wasm_store, wasmer_instance.clone())
-        .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
+        .map_err(|_| VmResultStatus::FailedToGetWASMFn(gas_cost))?;
 
     tracing::debug!("Calling WASM entrypoint");
     let main_func = wasmer_instance
         .exports
         .get_function(&function_name)
-        .map_err(|_| VmResultStatus::FailedToGetWASMFn)?;
+        .map_err(|_| VmResultStatus::FailedToGetWASMFn(gas_cost))?;
 
     // Apply startup cost before calling the main function
     if let Some(gas_limit) = call_data.gas_limit {
@@ -155,7 +155,7 @@ fn internal_run_vm(
             execution_result.len(),
             MAX_VM_RESULT_SIZE_BYTES
         ));
-        return Err(VmResultStatus::ResultSizeExceeded);
+        return Err(VmResultStatus::ResultSizeExceeded(gas_used));
     }
 
     // Under the hood read_to_string called str::from_utf8
@@ -163,13 +163,13 @@ fn internal_run_vm(
     let mut stdout_buffer = vec![0; stdout_limit];
     let bytes_read = stdout_rx
         .read(&mut stdout_buffer)
-        .map_err(|_| VmResultStatus::FailedToGetWASMStdout)?;
+        .map_err(|_| VmResultStatus::FailedToGetWASMStdout(gas_used))?;
 
     if bytes_read > 0 {
         // push the buffer but cap at stdout_limit in bytes
         stdout.push(
             str::from_utf8(&stdout_buffer[..bytes_read])
-                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
+                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString("stdout".to_string(), gas_used))?
                 .to_string(),
         );
     }
@@ -177,12 +177,12 @@ fn internal_run_vm(
     let mut stderr_buffer = vec![0; stderr_limit];
     let bytes_read = stderr_rx
         .read(&mut stderr_buffer)
-        .map_err(|_| VmResultStatus::FailedToGetWASMStderr)?;
+        .map_err(|_| VmResultStatus::FailedToGetWASMStderr(gas_used))?;
 
     if bytes_read > 0 {
         stderr.push(
             str::from_utf8(&stderr_buffer[..bytes_read])
-                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString)?
+                .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString("stderr".to_string(), gas_used))?
                 .to_string(),
         );
     }
@@ -220,12 +220,15 @@ pub fn start_runtime(
                 result: Some(result),
             }
         }
-        Err(error) => VmResult {
-            stdout,
-            stderr,
-            result: None,
-            gas_used: 0,
-            exit_info: error.into(),
-        },
+        Err(error) => {
+            let info: ExitInfoWithGasUsed = error.into();
+            VmResult {
+                stdout,
+                stderr,
+                result: None,
+                gas_used: info.1,
+                exit_info: info.0,
+            }
+        }
     }
 }

@@ -181,68 +181,78 @@ impl ToBytes for VmResult {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(test, derive(arbitrary::Arbitrary, PartialEq))]
 pub enum VmResultStatus {
-    /// When the Vm has nothing in the promise queue to run
-    EmptyQueue,
     /// When the Vm runs and exits successfully
     Ok(String),
-    /// When the config could not be set into the VM env variables
-    FailedToSetConfig,
     /// When the WASI environment variables could not be initialized
     WasiEnvInitializeFailure,
     /// When the host functions could not be exported to the VM
     FailedToCreateVMImports,
     /// When the WASMER instance could not be created
-    FailedToCreateWasmerInstance(String),
+    FailedToCreateWasmerInstance(String, u64),
     /// When a function from the WASM VM does not exist
-    FailedToGetWASMFn,
+    FailedToGetWASMFn(u64),
     /// When we fail to fetch the WASM VM stdout
-    FailedToGetWASMStdout,
+    FailedToGetWASMStdout(u64),
     /// When we fail to fetch the WASM VM stderr
-    FailedToGetWASMStderr,
+    FailedToGetWASMStderr(u64),
     /// When we fail to fetch the WASM VM stderr
-    FailedToConvertVMPipeToString,
+    FailedToConvertVMPipeToString(String, u64),
     /// An execution error from the WASM Runtime
-    ExecutionError(String),
+    ExecutionError(String, u64),
     /// When we fail to get the memory export
-    FailedToGetWASMMemory,
-    ExecutionTimeout,
-    FailedToJoinThread,
+    FailedToGetWASMMemory(u64),
     /// When the execution result size exceeds the maximum allowed size
-    ResultSizeExceeded,
-    GasStartupCostTooHigh,
+    ResultSizeExceeded(u64),
+    GasStartupCostTooHigh(u64),
 }
 
-impl From<VmResultStatus> for ExitInfo {
+impl From<VmResultStatus> for ExitInfoWithGasUsed {
     fn from(value: VmResultStatus) -> Self {
         match value {
-            VmResultStatus::EmptyQueue => ("Success: Empty Promise Queue".into(), 0).into(),
-            VmResultStatus::Ok(msg) => (format!("Success: {msg}"), 0).into(),
-            VmResultStatus::FailedToSetConfig => ("Error: Failed to set VM Config".into(), 1).into(),
-            VmResultStatus::WasiEnvInitializeFailure => ("Error: Failed to initialize Wasi Env".into(), 2).into(),
-            VmResultStatus::FailedToCreateVMImports => ("Error: Failed to create host imports for VM".into(), 3).into(),
-            VmResultStatus::FailedToCreateWasmerInstance(msg) => {
-                (format!("Error: Failed to create WASMER instance: {msg}"), 4).into()
+            VmResultStatus::Ok(msg) => Self((format!("Success: {msg}"), 0).into(), 0),
+            VmResultStatus::WasiEnvInitializeFailure => {
+                Self(("Error: Failed to initialize Wasi Env".into(), 2).into(), 0)
             }
-            VmResultStatus::FailedToGetWASMFn => {
-                ("Error: Failed to find specified function in WASM binary".into(), 5).into()
+            VmResultStatus::FailedToCreateVMImports => {
+                Self(("Error: Failed to create host imports for VM".into(), 3).into(), 0)
             }
-            VmResultStatus::FailedToGetWASMStdout => ("Error: Failed to get STDOUT of VM".into(), 6).into(),
-            VmResultStatus::FailedToGetWASMStderr => ("Error: Failed to get STDERR of VM".into(), 7).into(),
-            VmResultStatus::FailedToConvertVMPipeToString => {
-                ("Error: Failed to convert VM pipe output to String".into(), 8).into()
+            VmResultStatus::FailedToCreateWasmerInstance(msg, startup_cost) => Self(
+                (format!("Error: Failed to create WASMER instance: {msg}"), 4).into(),
+                startup_cost,
+            ),
+            VmResultStatus::FailedToGetWASMFn(startup_cost) => Self(
+                ("Error: Failed to find specified function in WASM binary".into(), 5).into(),
+                startup_cost,
+            ),
+            VmResultStatus::FailedToGetWASMStdout(gas_used) => {
+                Self(("Error: Failed to get STDOUT of VM".into(), 6).into(), gas_used)
             }
-            VmResultStatus::ExecutionError(err) => (format!("Execution Error: {err}"), 9).into(),
-            VmResultStatus::FailedToGetWASMMemory => ("Error: Failed to get memory export from WASM".into(), 10).into(),
-            VmResultStatus::ExecutionTimeout => ("Error: Execution Timeout".into(), 11).into(),
-            VmResultStatus::FailedToJoinThread => ("Error: Failed to join thread".into(), 12).into(),
-            VmResultStatus::ResultSizeExceeded => {
-                ("Error: Execution result size exceeds maximum allowed size".into(), 13).into()
+            VmResultStatus::FailedToGetWASMStderr(gas_used) => {
+                Self(("Error: Failed to get STDERR of VM".into(), 7).into(), gas_used)
             }
-            VmResultStatus::GasStartupCostTooHigh => (
-                "Error: Gas startup cost is too expensive. Args might be too large.".into(),
-                14,
-            )
-                .into(),
+            VmResultStatus::FailedToConvertVMPipeToString(kind, gas_used) => Self(
+                (format!("Error: Failed to convert VM pipe `{kind}` output to String"), 8).into(),
+                gas_used,
+            ),
+            VmResultStatus::ExecutionError(err, gas_used) => {
+                Self((format!("Execution Error: {err}"), 9).into(), gas_used)
+            }
+            VmResultStatus::FailedToGetWASMMemory(gas_used) => Self(
+                ("Error: Failed to get memory export from WASM".into(), 10).into(),
+                gas_used,
+            ),
+            VmResultStatus::ResultSizeExceeded(gas_used) => Self(
+                ("Error: Execution result size exceeds maximum allowed size".into(), 13).into(),
+                gas_used,
+            ),
+            VmResultStatus::GasStartupCostTooHigh(gas_limit) => Self(
+                (
+                    "Error: Gas startup cost is too expensive. Args might be too large.".into(),
+                    14,
+                )
+                    .into(),
+                gas_limit,
+            ),
         }
     }
 }
@@ -255,7 +265,9 @@ impl From<VmResultStatus> for ExecutionResult {
 
 pub type ExecutionResult<T = VmResultStatus, E = VmResultStatus> = core::result::Result<T, E>;
 
-impl From<ExecutionResult> for ExitInfo {
+pub struct ExitInfoWithGasUsed(pub ExitInfo, pub u64);
+
+impl From<ExecutionResult> for ExitInfoWithGasUsed {
     fn from(value: ExecutionResult) -> Self {
         match value {
             Ok(ok) => ok.into(),

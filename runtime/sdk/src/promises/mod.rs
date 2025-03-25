@@ -45,7 +45,6 @@ mod test {
         ConsensusType,
         DatabaseGetAction,
         DatabaseSetAction,
-        ExecutionResult,
         ExitInfo,
         HttpFetchAction,
         HttpFetchMethod,

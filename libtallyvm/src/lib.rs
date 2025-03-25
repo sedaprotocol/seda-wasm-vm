@@ -590,7 +590,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 14);
-        assert_eq!(result.gas_used, 0);
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -643,6 +643,7 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "Error while fetching price feed".to_string()
         );
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -659,6 +660,7 @@ mod test {
 
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -686,6 +688,7 @@ mod test {
 
         assert_eq!(result.exit_info.exit_code, 1);
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -731,6 +734,7 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -778,6 +782,7 @@ mod test {
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -881,6 +886,7 @@ mod test {
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0].len(), 1024);
         assert_eq!(result.stderr[0], "I AM ERROR\n".repeat(100)[..1024]);
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -905,12 +911,12 @@ mod test {
         )
         .unwrap();
         assert_eq!(result.exit_info.exit_code, 8);
-        assert_eq!(result.stdout.len(), 0);
         assert_eq!(result.stderr.len(), 0);
         assert_eq!(
             &result.exit_info.exit_message,
-            "Error: Failed to convert VM pipe output to String"
+            "Error: Failed to convert VM pipe `stderr` output to String"
         );
+        assert!(result.gas_used > 0);
 
         let method = "stdout_non_utf8".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
@@ -918,11 +924,11 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stdout.len(), 0);
-        assert_eq!(result.stderr.len(), 0);
         assert_eq!(
             &result.exit_info.exit_message,
-            "Error: Failed to convert VM pipe output to String"
+            "Error: Failed to convert VM pipe `stdout` output to String"
         );
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -950,6 +956,7 @@ mod test {
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
         assert_eq!(&result.exit_info.exit_message, "Not ok");
+        assert!(result.gas_used > 0);
     }
 
     #[test]
@@ -972,5 +979,6 @@ mod test {
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
         assert!(elapsed.as_secs() < 1);
+        assert!(result.gas_used > 0);
     }
 }

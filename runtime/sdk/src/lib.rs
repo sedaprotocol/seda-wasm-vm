@@ -16,6 +16,7 @@ pub use promises::{
     DatabaseSetAction,
     ExecutionResult,
     ExitInfo,
+    ExitInfoWithGasUsed,
     HttpFetchAction,
     HttpFetchMethod,
     HttpFetchOptions,
