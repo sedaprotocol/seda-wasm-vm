@@ -158,30 +158,32 @@ fn internal_run_vm(
         return Err(VmResultStatus::ResultSizeExceeded(gas_used));
     }
 
-    // Under the hood read_to_string called str::from_utf8
-    // though it did it in chunks, but I think this is fine.
-    let mut stdout_buffer = vec![0; stdout_limit];
+
+    let mut stdout_buffer = Vec::new();
     let bytes_read = stdout_rx
-        .read(&mut stdout_buffer)
+        .read_to_end(&mut stdout_buffer)
         .map_err(|_| VmResultStatus::FailedToGetWASMStdout(gas_used))?;
 
     if bytes_read > 0 {
         // push the buffer but cap at stdout_limit in bytes
         stdout.push(
-            str::from_utf8(&stdout_buffer[..bytes_read])
+            // Under the hood read_to_string called str::from_utf8
+            // though it did it in chunks, but I think this is fine.
+            str::from_utf8(&stdout_buffer[..stdout_limit.min(stdout_buffer.len())])
                 .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString("stdout".to_string(), gas_used))?
                 .to_string(),
         );
     }
 
-    let mut stderr_buffer = vec![0; stderr_limit];
+    let mut stderr_buffer = Vec::new();
+
     let bytes_read = stderr_rx
-        .read(&mut stderr_buffer)
+        .read_to_end(&mut stderr_buffer)
         .map_err(|_| VmResultStatus::FailedToGetWASMStderr(gas_used))?;
 
     if bytes_read > 0 {
         stderr.push(
-            str::from_utf8(&stderr_buffer[..bytes_read])
+            str::from_utf8(&stderr_buffer[..stderr_limit.min(stderr_buffer.len())])
                 .map_err(|_| VmResultStatus::FailedToConvertVMPipeToString("stderr".to_string(), gas_used))?
                 .to_string(),
         );
