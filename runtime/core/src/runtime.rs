@@ -158,7 +158,6 @@ fn internal_run_vm(
         return Err(VmResultStatus::ResultSizeExceeded(gas_used));
     }
 
-
     let mut stdout_buffer = Vec::new();
     let bytes_read = stdout_rx
         .read_to_end(&mut stdout_buffer)

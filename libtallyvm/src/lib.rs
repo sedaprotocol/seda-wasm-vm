@@ -981,4 +981,54 @@ mod test {
         assert!(elapsed.as_secs() < 1);
         assert!(result.gas_used > 0);
     }
+
+    #[test]
+    fn dr_playground_multiple_price_feed() {
+        let wasm_bytes = include_bytes!("../../price-feed-playground.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let tempdir = std::env::temp_dir().join("foo");
+
+        let method = "test".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let reveals = "[{\"dr_block_height\":1,\"exit_code\":0,\"gas_used\":502047984,\"reveal\":[123,34,112,114,105,99,101,34,58,49,48,48,48,48,48,48,125]}]".to_string();
+        let consensus = "[0]".to_string();
+
+        std::fs::create_dir_all(&tempdir).unwrap();
+        let result = _execute_tally_vm(
+            &tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex, reveals, consensus],
+            envs,
+            1024,
+            1024,
+        )
+        .unwrap();
+        result.stdout.iter().for_each(|line| print!("{}", line));
+
+        assert_eq!(result.gas_used, 11887774068750);
+    }
+
+    #[test]
+    fn spam_fd_write() {
+        let wasm_bytes = include_bytes!("../../spam-fd-write.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+        let tempdir = std::env::temp_dir().join("foo");
+
+        std::fs::create_dir_all(&tempdir).unwrap();
+        let start = std::time::Instant::now();
+        let _result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
+        let duration = start.elapsed();
+
+        assert!(
+            duration < std::time::Duration::from_millis(50),
+            "Execution took too long: {:?} (should be < 50ms)",
+            duration
+        );
+    }
 }
