@@ -3,8 +3,6 @@ name: Manual Build
 on:
   workflow_dispatch:
     inputs:
-      password:
-        required: true
       architecture:
         required: true
         description: "The architecture to build for"
@@ -27,24 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  check_pass:
-    name: Check password
-    runs-on: ubuntu-latest
-    outputs:
-      is_allowed: ${{ steps.check.outputs.is_allowed }}
-    steps:
-      - id: check
-        run: |
-          password=${{ secrets.CI_PASSWORD }}
-          if [[ "${{ github.event.inputs.password }}" == "${password}" ]]; then
-            echo "is_allowed=true" >> $GITHUB_OUTPUT
-          else
-            echo "is_allowed=false" >> $GITHUB_OUTPUT
-          fi
-
   build:
-    needs: check_pass
-    if: ${{ needs.check_pass.outputs.is_allowed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
