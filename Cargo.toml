@@ -5,6 +5,7 @@ members = [
 	"libtallyvm",
 	"runtime/core",
 	"runtime/sdk",
+	"runtime/wasmer-middlewares",
 	"test-vm",
 	"xtask",
 	"test-vm",
@@ -50,7 +51,8 @@ tracing-subscriber = "0.3"
 tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
 wasmer = { version = "4.3.7", default-features = false }
-wasmer-middlewares = "4.3.7"
+wasmer-types = { version = "4.3.7" }
+wasmer-middlewares = { path = "./runtime/wasmer-middlewares"}
 wasmer-wasix = { version = "0.27", default-features = false, features = [
 	"sys",
 	"logging",

@@ -3289,13 +3289,10 @@ dependencies = [
 
 [[package]]
 name = "wasmer-middlewares"
-version = "4.3.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9b8606706b694465035cbdd85a5a1ea437b7cd851e6a8dfe4e387a3e8f81ef78"
+version = "2.3.0-rc.3"
 dependencies = [
  "wasmer",
  "wasmer-types",
- "wasmer-vm",
 ]
 
 [[package]]

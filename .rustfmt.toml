@@ -9,7 +9,7 @@ use_field_init_shorthand = true
 # Unstable Rustfmt Flags
 condense_wildcard_suffixes = true
 enum_discrim_align_threshold = 120
-error_on_unformatted = true
+error_on_unformatted = false
 format_macro_matchers = true
 group_imports = "StdExternalCrate"
 imports_granularity = "Crate"

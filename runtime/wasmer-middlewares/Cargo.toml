@@ -1,0 +1,17 @@
+[package]
+name = "wasmer-middlewares"
+version.workspace = true
+edition = "2021"
+rust-version.workspace = true
+
+[dependencies]
+wasmer = { workspace = true, default-features = false, features = ["compiler"] }
+wasmer-types = { workspace = true }
+
+
+[dev-dependencies]
+wasmer = { workspace = true, default-features = false, features = [
+	"compiler",
+	"wat",
+	"singlepass"
+	] }
