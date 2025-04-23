@@ -13,7 +13,7 @@ members = [
 
 [workspace.package]
 rust-version = "1.77.0"
-version = "2.3.0-rc.3"
+version = "2.3.0-rc.4"
 
 [profile.dev]
 codegen-units = 512
