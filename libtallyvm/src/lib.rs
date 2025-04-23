@@ -307,7 +307,7 @@ mod test {
 
     #[test]
     fn execute_tally_vm() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         // VM_MODE dr to force the http_fetch path
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -330,12 +330,12 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 17855437682500);
+        assert_eq!(result.gas_used, 19287742795000);
     }
 
     #[test]
     fn execute_c_tally_vm() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
 
         let args = [hex::encode("testHttpSuccess")];
         let arg_cstrings: Vec<CString> = args
@@ -387,7 +387,7 @@ mod test {
                 "http_fetch is not allowed in tally".to_string()
             );
         }
-        assert_eq!(result.gas_used, 17855437682500);
+        assert_eq!(result.gas_used, 19287742795000);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -396,7 +396,7 @@ mod test {
 
     #[test]
     fn execute_c_tally_vm_exceeds_byte_limit() {
-        let wasm_bytes = include_bytes!("../../tally.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/tally.wasm");
 
         let args = [hex::encode("tally"), hex::encode("[{\"salt\":[1],\"exit_code\":0,\"gas_used\":\"200\",\"reveal\":[2]},{\"salt\":[3],\"exit_code\":0,\"gas_used\":\"201\",\"reveal\":[5]},{\"salt\":[4],\"exit_code\":0,\"gas_used\":\"202\",\"reveal\":[6]}]"), hex::encode("[0,0,0]")];
         let arg_cstrings: Vec<CString> = args
@@ -449,7 +449,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 255);
-        assert_eq!(result.gas_used, 29464558655000);
+        assert_eq!(result.gas_used, 29648222761250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -458,7 +458,7 @@ mod test {
 
     #[test]
     fn execute_c_tally_vm_exceeds_byte_limit_does_not_matter_for_dr_mode() {
-        let wasm_bytes = include_bytes!("../../tally.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/tally.wasm");
 
         let args = [hex::encode("tally")];
         let arg_cstrings: Vec<CString> = args
@@ -510,7 +510,7 @@ mod test {
             );
         }
         assert_eq!(result.exit_info.exit_code, 0);
-        assert_eq!(result.gas_used, 9111887083750);
+        assert_eq!(result.gas_used, 9156653346250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
@@ -519,7 +519,7 @@ mod test {
 
     #[test]
     fn execute_tally_vm_proxy_http_fetch() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
@@ -541,12 +541,12 @@ mod test {
             String::from_utf8_lossy(&result.result.unwrap()),
             "proxy_http_fetch is not allowed in tally".to_string()
         );
-        assert_eq!(result.gas_used, 20194610813750);
+        assert_eq!(result.gas_used, 21736902545000);
     }
 
     #[test]
     fn execute_tally_vm_no_args() {
-        let wasm_bytes = include_bytes!("../../tally.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/tally.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
@@ -554,12 +554,12 @@ mod test {
         let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
-        assert_eq!(result.gas_used, 10093838441250);
+        assert_eq!(result.gas_used, 10124565078750);
     }
 
     #[test]
     fn execute_tally_vm_with_low_gas_limit() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         // enough to cover startup cost + some
@@ -577,7 +577,7 @@ mod test {
 
     #[test]
     fn vm_does_not_run_if_startup_cost_is_higher_than_gas_limit() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         // enough to cover startup cost + some
@@ -595,7 +595,7 @@ mod test {
 
     #[test]
     fn execute_tally_keccak256() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
@@ -617,12 +617,12 @@ mod test {
             // "testKeccak256" hashed
             "fe8baa653979909c621153b53c973bab3832768b5e77896a5b5944d20d48c7a6"
         );
-        assert_eq!(result.gas_used, 10892767450000);
+        assert_eq!(result.gas_used, 11250594475000);
     }
 
     #[test]
     fn simple_price_feed() {
-        let wasm_bytes = include_bytes!("../../simplePriceFeed.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/simplePriceFeed.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
@@ -648,7 +648,7 @@ mod test {
 
     #[test]
     fn polyfill_does_not_crash_vm() {
-        let wasm_bytes = include_bytes!("../../randomNumber.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/randomNumber.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
@@ -665,7 +665,7 @@ mod test {
 
     #[test]
     fn userland_non_zero_exit_code() {
-        let wasm_bytes = include_bytes!("../../null_byte_string.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/null_byte_string.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
@@ -693,7 +693,7 @@ mod test {
 
     #[test]
     fn assign_too_much_memory() {
-        let wasm_bytes = include_bytes!("../../assign_too_much_memory.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/assign_too_much_memory.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
@@ -720,7 +720,7 @@ mod test {
 
     #[test]
     fn import_length_overflow() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string()); // 50 tGas
@@ -739,7 +739,7 @@ mod test {
 
     #[test]
     fn price_feed_tally() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -762,12 +762,12 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 13240146333750);
+        assert_eq!(result.gas_used, 13419149190000);
     }
 
     #[test]
     fn call_result_write_len_0() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -787,7 +787,7 @@ mod test {
 
     #[test]
     fn execute_c_tally_vm_panic() {
-        let wasm_bytes = include_bytes!("../../integration-test.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
 
         let args: [String; 0] = [];
         let arg_cstrings: Vec<CString> = args
@@ -846,7 +846,7 @@ mod test {
 
     #[test]
     fn test_stdout_and_stderr_limit() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -868,7 +868,7 @@ mod test {
 
     #[test]
     fn test_long_stdout_and_stderr() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -891,7 +891,7 @@ mod test {
 
     #[test]
     fn test_stdout_and_stderr_fail_when_given_non_utf8() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -933,7 +933,7 @@ mod test {
 
     #[test]
     fn cannot_spam_call_result_write() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -961,7 +961,7 @@ mod test {
 
     #[test]
     fn call_infinite_loop() {
-        let wasm_bytes = include_bytes!("../../test-vm.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -984,7 +984,7 @@ mod test {
 
     #[test]
     fn dr_playground_multiple_price_feed() {
-        let wasm_bytes = include_bytes!("../../price-feed-playground.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/price-feed-playground.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
@@ -1009,12 +1009,12 @@ mod test {
         .unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
-        assert_eq!(result.gas_used, 11887774068750);
+        assert_eq!(result.gas_used, 11986115812500);
     }
 
     #[test]
     fn spam_fd_write() {
-        let wasm_bytes = include_bytes!("../../spam-fd-write.wasm");
+        let wasm_bytes = include_bytes!("../../test-wasm-files/spam-fd-write.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());

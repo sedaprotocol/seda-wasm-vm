@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 
@@ -26,7 +27,7 @@ func cleanup() {
 func TestTallyBinaryWorks(t *testing.T) {
 	defer cleanup()
 
-	file := "../tally.wasm"
+	file := "../test-wasm-files/tally.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -48,13 +49,13 @@ func TestTallyBinaryWorks(t *testing.T) {
 	assert.NotEmpty(t, res.Result)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(30299374322500), res.GasUsed)
+	assert.Equal(t, 30944893003750, int(res.GasUsed))
 }
 
 func TestTallyBinaryNoArgs(t *testing.T) {
 	defer cleanup()
 
-	file := "../tally.wasm"
+	file := "../test-wasm-files/tally.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -73,13 +74,13 @@ func TestTallyBinaryNoArgs(t *testing.T) {
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(12126930428750), res.GasUsed)
+	assert.Equal(t, 12177280647500, int(res.GasUsed))
 }
 
 func TestTallyGasExceeded(t *testing.T) {
 	defer cleanup()
 
-	file := "../tally.wasm"
+	file := "../test-wasm-files/tally.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -100,14 +101,14 @@ func TestTallyGasExceeded(t *testing.T) {
 	assert.Equal(t, 250, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.NotEmpty(t, res.Stderr)
-	assert.Equal(t, uint64(total_gas), res.GasUsed)
+	assert.Equal(t, total_gas, int(res.GasUsed))
 }
 
 func TestTallyMaxBytesExceeded(t *testing.T) {
 	defer cleanup()
 	tallyvm.TallyMaxBytes = 1
 
-	file := "../tally.wasm"
+	file := "../test-wasm-files/tally.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -130,14 +131,14 @@ func TestTallyMaxBytesExceeded(t *testing.T) {
 	assert.NotZero(t, res.ResultLen)
 	assert.Empty(t, res.Stderr)
 	assert.NotEmpty(t, res.Stdout)
-	assert.Equal(t, uint64(30299374322500), res.GasUsed)
+	assert.Equal(t, 30944893003750, int(res.GasUsed))
 }
 
 func TestDrMaxBytesExceededIsFine(t *testing.T) {
 	defer cleanup()
 	tallyvm.TallyMaxBytes = 1
 
-	file := "../tally.wasm"
+	file := "../test-wasm-files/tally.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -160,14 +161,14 @@ func TestDrMaxBytesExceededIsFine(t *testing.T) {
 	assert.NotZero(t, res.ResultLen)
 	assert.Empty(t, res.Stderr)
 	assert.Empty(t, res.Stdout)
-	assert.Equal(t, uint64(9158933731250), res.GasUsed)
+	assert.Equal(t, 9237079512500, int(res.GasUsed))
 }
 
 func TestUserlandNonZeroExitCode(t *testing.T) {
 	defer cleanup()
 	tallyvm.TallyMaxBytes = 1024
 
-	file := "../null_byte_string.wasm"
+	file := "../test-wasm-files/null_byte_string.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -188,7 +189,7 @@ func TestUserlandNonZeroExitCode(t *testing.T) {
 	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 1, res.ExitInfo.ExitCode)
 	assert.NotEmpty(t, res.Result)
-	assert.Equal(t, uint64(10644057423750), res.GasUsed)
+	assert.Equal(t, 12059308161250, int(res.GasUsed))
 }
 
 func TestMaxOutputByteLimits(t *testing.T) {
@@ -196,7 +197,7 @@ func TestMaxOutputByteLimits(t *testing.T) {
 	tallyvm.TallyMaxStdoutBytes = 2
 	tallyvm.TallyMaxStderrBytes = 2
 
-	file := "../test-vm.wasm"
+	file := "../test-wasm-files/test-vm.wasm"
 	data, err := os.ReadFile(file)
 	if err != nil {
 		t.Fatal(err)
@@ -217,7 +218,34 @@ func TestMaxOutputByteLimits(t *testing.T) {
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 0, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
-	assert.Equal(t, uint64(11050706247500), res.GasUsed)
+	assert.Equal(t, 11059277435000, int(res.GasUsed))
 	assert.Equal(t, res.Stdout[0], "Fo")
 	assert.Equal(t, res.Stderr[0], "Ba")
+}
+
+func TestMeteringBeforeBranchSources(t *testing.T) {
+	defer cleanup()
+
+	file := "../test-wasm-files/cache_misses.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	start := time.Now()
+	res := tallyvm.ExecuteTallyVm(data, []string{}, map[string]string{
+		"CONSENSUS":             "true",
+		"VM_MODE":               "tally",
+		"DR_TALLY_GAS_LIMIT":    "150000000000000",
+		"DR_REPLICATION_FACTOR": "1",
+	})
+	elapsed := time.Since(start)
+
+	t.Logf("Execution took %s", elapsed)
+	t.Log(res)
+
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
+	assert.Empty(t, res.Result)
+	assert.Equal(t, 5000125831250, int(res.GasUsed))
+	assert.LessOrEqual(t, elapsed, time.Duration(5000000))
 }

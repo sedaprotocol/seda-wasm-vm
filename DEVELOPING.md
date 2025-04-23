@@ -70,9 +70,7 @@ Go unit testing can be done with `go test` if you are in the `tallyvm` directory
 
 ### Test Wasms
 
-The file `./integration-test.wasm` is taken from the SEDA-SDK integration tests: https://github.com/sedaprotocol/seda-sdk/tree/main/libs/as-sdk-integration-tests.
-
-While the others are from an internal closed repo.
+See [./test-wasm-files/README.md](./test-wasm-files/README.md) for more details on the various WASM files used for testing.
 
 ## xtask
 

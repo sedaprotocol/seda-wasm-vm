@@ -1,5 +1,5 @@
 {
-	"wasm_file": "../test-vm.wasm",
+	"wasm_file": "../test-wasm-files/test-vm.wasm",
 	"method": "price_feed_tally",
 	"args": [
 		{
