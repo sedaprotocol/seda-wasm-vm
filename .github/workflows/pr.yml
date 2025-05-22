@@ -4,7 +4,7 @@ on: [pull_request]
 env:
   GO_VERSION: 1.21.3
   # https://releases.rs/docs/1.85.0/ release date
-  NIGHTLY_TOOLCHAIN: nightly-2025-02-20
+  RUSTUP_TOOLCHAIN: nightly-2025-02-20
   RUST_BACKTRACE: 1
 
 jobs:
@@ -71,8 +71,6 @@ jobs:
   rust_test_and_lint:
     name: Rust Test & Lint
     runs-on: ubuntu-latest
-    env:
-      RUSTUP_TOOLCHAIN: nightly
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -90,7 +88,7 @@ jobs:
       - name: 📥 Install Rust
         uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: ${{ env.NIGHTLY_TOOLCHAIN }}
+          toolchain: ${{ env.RUSTUP_TOOLCHAIN }}
           components: clippy rustc-codegen-cranelift-preview llvm-tools-preview
 
       - name: 📋 Clippy Check

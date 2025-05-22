@@ -33,6 +33,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Remove rust-toolchain.toml
+        run: |
+          rm -f rust-toolchain.toml
+
       - name: 🫙 Cache
         uses: Swatinem/rust-cache@v2
         with:
