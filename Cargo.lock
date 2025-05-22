@@ -2156,7 +2156,7 @@ dependencies = [
 [[package]]
 name = "seda-sdk-macros"
 version = "0.1.0"
-source = "git+https://github.com/sedaprotocol/seda-sdk#0b9a751d6924dc840b21c51039696918e48007f5"
+source = "git+https://github.com/sedaprotocol/seda-sdk?tag=rs-sdk/v1.0.0-rc.3#ff0fd02f2464d2435e9f7a53da0c94d77c4515f8"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2165,8 +2165,8 @@ dependencies = [
 
 [[package]]
 name = "seda-sdk-rs"
-version = "0.1.0"
-source = "git+https://github.com/sedaprotocol/seda-sdk#0b9a751d6924dc840b21c51039696918e48007f5"
+version = "1.0.0-rc.3"
+source = "git+https://github.com/sedaprotocol/seda-sdk?tag=rs-sdk/v1.0.0-rc.3#ff0fd02f2464d2435e9f7a53da0c94d77c4515f8"
 dependencies = [
  "anyhow",
  "hex",

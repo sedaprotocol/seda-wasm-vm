@@ -9,4 +9,4 @@ anyhow = "1.0.95"
 hex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-seda-sdk-rs = { git = "https://github.com/sedaprotocol/seda-sdk" }
+seda-sdk-rs = { git = "https://github.com/sedaprotocol/seda-sdk", tag = "rs-sdk/v1.0.0-rc.3" }

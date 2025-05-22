@@ -23,7 +23,7 @@ check:
 	cargo clippy --all-features --locked -- -D warnings
 
 # TODO Update libseda_tally_vm.h?
-all: build test
+all: build build-test
 
 build: build-rust
 

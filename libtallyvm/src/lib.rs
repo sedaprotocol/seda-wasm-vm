@@ -1031,4 +1031,37 @@ mod test {
             duration
         );
     }
+
+    #[test]
+    fn memory_fill_prealloc() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "memory_fill_prealloc".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        dbg!(&result);
+
+        assert_eq!(result.exit_info.exit_code, 1);
+    }
+
+    #[test]
+    fn memory_fill_dynamic() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let method = "memory_fill_dynamic".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+
+        assert_eq!(result.exit_info.exit_code, 1);
+    }
 }

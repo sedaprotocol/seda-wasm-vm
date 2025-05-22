@@ -3,18 +3,20 @@ use std::{io::Write, process};
 use import_length_overflow::import_length_overflow;
 use infinite_loop_wasi::infinite_loop_wasi;
 use price_feed_tally::price_feed_tally;
-use seda_sdk_rs::{oracle_program, Process};
+use seda_sdk_rs::{log, oracle_program, Process};
 
 mod call_result_write_0;
 mod cannot_spam_call_result_write;
 mod import_length_overflow;
 mod infinite_loop_wasi;
 mod price_feed_tally;
+mod memory_fill;
 
 #[oracle_program]
 impl TestVmOracleProgram {
     fn tally() {
         let inputs = String::from_utf8(Process::get_inputs()).unwrap();
+        log!("Inputs: {}", inputs);
 
         match inputs.as_str() {
             "call_result_write_0" => call_result_write_0::call_result_write_0(),
@@ -38,7 +40,9 @@ impl TestVmOracleProgram {
                 let non_utf8 = b"\xff";
                 std::io::stdout().write_all(non_utf8).unwrap();
             }
-            _ => process::exit(1),
+            "memory_fill_prealloc" => memory_fill::memory_fill(true),
+            "memory_fill_dynamic" => memory_fill::memory_fill(false),
+            _ => unimplemented!("Method not implemented {}", inputs),
         }
     }
 
