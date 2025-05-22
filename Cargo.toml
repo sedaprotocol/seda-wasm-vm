@@ -13,7 +13,7 @@ members = [
 
 [workspace.package]
 rust-version = "1.77.0"
-version = "2.3.0"
+version = "2.4.0"
 
 [profile.dev]
 codegen-units = 512
@@ -52,7 +52,7 @@ tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
 wasmer = { version = "4.3.7", default-features = false }
 wasmer-types = { version = "4.3.7" }
-wasmer-middlewares = { path = "./runtime/wasmer-middlewares"}
+wasmer-middlewares = { path = "./runtime/wasmer-middlewares" }
 wasmer-wasix = { version = "0.27", default-features = false, features = [
 	"sys",
 	"logging",
