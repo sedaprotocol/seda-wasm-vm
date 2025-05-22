@@ -167,6 +167,8 @@ func TestDrMaxBytesExceededIsFine(t *testing.T) {
 func TestUserlandNonZeroExitCode(t *testing.T) {
 	defer cleanup()
 	tallyvm.TallyMaxBytes = 1024
+	tallyvm.TallyMaxStdoutBytes = 512
+	tallyvm.TallyMaxStderrBytes = 512
 
 	file := "../test-wasm-files/null_byte_string.wasm"
 	data, err := os.ReadFile(file)
@@ -194,6 +196,7 @@ func TestUserlandNonZeroExitCode(t *testing.T) {
 
 func TestMaxOutputByteLimits(t *testing.T) {
 	defer cleanup()
+	tallyvm.TallyMaxBytes = 1024
 	tallyvm.TallyMaxStdoutBytes = 2
 	tallyvm.TallyMaxStderrBytes = 2
 
@@ -225,6 +228,9 @@ func TestMaxOutputByteLimits(t *testing.T) {
 
 func TestMeteringBeforeBranchSources(t *testing.T) {
 	defer cleanup()
+	tallyvm.TallyMaxBytes = 1024
+	tallyvm.TallyMaxStdoutBytes = 512
+	tallyvm.TallyMaxStderrBytes = 512
 
 	file := "../test-wasm-files/cache_misses.wasm"
 	data, err := os.ReadFile(file)
@@ -252,6 +258,9 @@ func TestMeteringBeforeBranchSources(t *testing.T) {
 
 func TestMemoryPreallocTooMuch(t *testing.T) {
 	defer cleanup()
+	tallyvm.TallyMaxBytes = 1024
+	tallyvm.TallyMaxStdoutBytes = 512
+	tallyvm.TallyMaxStderrBytes = 512
 
 	file := "../test-wasm-files/test-vm.wasm"
 	data, err := os.ReadFile(file)
@@ -280,6 +289,9 @@ func TestMemoryPreallocTooMuch(t *testing.T) {
 
 func TestMemoryDynamicTooMuch(t *testing.T) {
 	defer cleanup()
+	tallyvm.TallyMaxBytes = 1024
+	tallyvm.TallyMaxStdoutBytes = 512
+	tallyvm.TallyMaxStderrBytes = 512
 
 	file := "../test-wasm-files/test-vm.wasm"
 	data, err := os.ReadFile(file)
