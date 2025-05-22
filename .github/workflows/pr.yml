@@ -51,6 +51,8 @@ jobs:
   rust_fmt:
     name: Rust Fmt
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: nightly
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
@@ -69,6 +71,8 @@ jobs:
   rust_test_and_lint:
     name: Rust Test & Lint
     runs-on: ubuntu-latest
+    env:
+      RUSTUP_TOOLCHAIN: nightly
     steps:
       - name: 📥 Checkout
         uses: actions/checkout@v4
