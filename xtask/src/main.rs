@@ -66,6 +66,7 @@ impl AptInstall {
     }
 
     fn handle(self, sh: &Shell) -> Result<()> {
+        cmd!(sh, "sudo apt-get update").run()?;
         match self.arch {
             Arch::All => {
                 Self::install_aarch64_musl_gcc(sh)?;
