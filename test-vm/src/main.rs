@@ -9,14 +9,13 @@ mod call_result_write_0;
 mod cannot_spam_call_result_write;
 mod import_length_overflow;
 mod infinite_loop_wasi;
-mod price_feed_tally;
 mod memory_fill;
+mod price_feed_tally;
 
 #[oracle_program]
 impl TestVmOracleProgram {
     fn tally() {
         let inputs = String::from_utf8(Process::get_inputs()).unwrap();
-        log!("Inputs: {}", inputs);
 
         match inputs.as_str() {
             "call_result_write_0" => call_result_write_0::call_result_write_0(),

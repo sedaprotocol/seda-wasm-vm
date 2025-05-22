@@ -218,7 +218,7 @@ func TestMaxOutputByteLimits(t *testing.T) {
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 0, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
-	assert.Equal(t, 11059277435000, int(res.GasUsed))
+	assert.Equal(t, 11089317466250, int(res.GasUsed))
 	assert.Equal(t, res.Stdout[0], "Fo")
 	assert.Equal(t, res.Stderr[0], "Ba")
 }
@@ -248,4 +248,60 @@ func TestMeteringBeforeBranchSources(t *testing.T) {
 	assert.Empty(t, res.Result)
 	assert.Equal(t, 5000125831250, int(res.GasUsed))
 	assert.LessOrEqual(t, elapsed, time.Duration(5000000))
+}
+
+func TestMemoryPreallocTooMuch(t *testing.T) {
+	defer cleanup()
+
+	file := "../test-wasm-files/test-vm.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	method := "memory_fill_prealloc"
+	method_hex := hex.EncodeToString([]byte(method))
+
+	res := tallyvm.ExecuteTallyVm(data, []string{method_hex}, map[string]string{
+		"CONSENSUS":             "true",
+		"VM_MODE":               "tally",
+		"DR_TALLY_GAS_LIMIT":    "150000000000000",
+		"DR_REPLICATION_FACTOR": "1",
+	})
+
+	t.Log(res)
+
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
+	assert.Equal(t, 252, res.ExitInfo.ExitCode)
+	assert.Empty(t, res.Result)
+	assert.Equal(t, "memory allocation of 44832551 bytes failed\n", res.Stderr[0])
+	assert.Equal(t, 12104438591250, int(res.GasUsed))
+}
+
+func TestMemoryDynamicTooMuch(t *testing.T) {
+	defer cleanup()
+
+	file := "../test-wasm-files/test-vm.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	method := "memory_fill_dynamic"
+	method_hex := hex.EncodeToString([]byte(method))
+
+	res := tallyvm.ExecuteTallyVm(data, []string{method_hex}, map[string]string{
+		"CONSENSUS":             "true",
+		"VM_MODE":               "tally",
+		"DR_TALLY_GAS_LIMIT":    "150000000000000",
+		"DR_REPLICATION_FACTOR": "1",
+	})
+
+	t.Log(res)
+
+	assert.Equal(t, "Not ok", res.ExitInfo.ExitMessage)
+	assert.Equal(t, 252, res.ExitInfo.ExitCode)
+	assert.Empty(t, res.Result)
+	assert.Equal(t, "memory allocation of 8192000 bytes failed\n", res.Stderr[0])
+	assert.Equal(t, 21244868027500, int(res.GasUsed))
 }

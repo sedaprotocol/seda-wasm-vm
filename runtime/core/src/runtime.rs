@@ -127,6 +127,10 @@ fn internal_run_vm(
 
             if let Some(wasi_exit_code) = wasix_error.as_exit_code() {
                 exit_code = wasi_exit_code.raw();
+            } else {
+                // When running out of memory the VM does throw a different kind of error which does not
+                // have an exit code. We set it manually to make sure it is not ignored.
+                exit_code = 252;
             }
         }
     }
