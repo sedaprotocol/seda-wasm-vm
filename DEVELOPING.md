@@ -60,9 +60,10 @@ Nightly can be installed with: `rustup install nightly`.
 
 ### Rust Unit
 
-Rust unit testing can be done with: `cargo test`.
+Running tests should be done with `nextest`. We require this since we set an env var to force trigger a panic in one of the tests, and Nextest promises isolated test execution.
 
-You could also install [nextest][4], with `cargo install cargo-nextest --locked`, then run `cargo nextest run --workspace`. Nextest is a faster test runner for Rust.
+It can be installed with `cargo install cargo-nextest --locked`.
+Then run `cargo nextest run --workspace`.
 
 ### Go Unit
 
