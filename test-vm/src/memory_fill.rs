@@ -1,4 +1,4 @@
-use seda_sdk_rs::{log, oracle_program, Process};
+use seda_sdk_rs::{log, Process};
 
 const MAX_MEMORY_ALLOCATION: usize = 10 * 1024 * 1024; // 10MB in bytes
 

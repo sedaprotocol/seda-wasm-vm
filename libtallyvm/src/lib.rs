@@ -298,7 +298,8 @@ fn _execute_tally_vm(
 mod test {
     use std::{
         collections::BTreeMap,
-        ffi::{c_char, CString},
+        ffi::{c_char, CStr, CString},
+        mem,
     };
 
     use seda_runtime_sdk::ToBytes;
@@ -363,9 +364,10 @@ mod test {
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
         let tempdir = std::env::temp_dir().display().to_string();
+        let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
-                CString::new(tempdir).unwrap().into_raw(),
+                tempdir_craw,
                 wasm_bytes.as_ptr(),
                 wasm_bytes.len(),
                 arg_ptrs.as_ptr(),
@@ -379,18 +381,19 @@ mod test {
             )
         };
 
-        unsafe {
-            assert_eq!(
-                std::ffi::CStr::from_ptr(result.result_ptr as *const c_char)
-                    .to_string_lossy()
-                    .into_owned(),
-                "http_fetch is not allowed in tally".to_string()
-            );
-        }
+        let result_msg = unsafe {
+            CStr::from_ptr(result.result_ptr as *const c_char)
+                .to_string_lossy()
+                .into_owned()
+        };
+
+        assert_eq!(result_msg, "http_fetch is not allowed in tally".to_string());
         assert_eq!(result.gas_used, 19287742795000);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
+            let tempdir_c = CString::from_raw(tempdir_craw);
+            mem::drop(tempdir_c);
         }
     }
 
@@ -424,9 +427,10 @@ mod test {
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
         let tempdir = std::env::temp_dir().display().to_string();
+        let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
-                CString::new(tempdir).unwrap().into_raw(),
+                tempdir_craw,
                 wasm_bytes.as_ptr(),
                 wasm_bytes.len(),
                 arg_ptrs.as_ptr(),
@@ -440,19 +444,20 @@ mod test {
             )
         };
 
-        unsafe {
-            assert_eq!(
-                std::ffi::CStr::from_ptr(result.exit_info.exit_message)
-                    .to_string_lossy()
-                    .into_owned(),
-                "Result larger than 1bytes.".to_string()
-            );
-        }
+        let exit_msg = unsafe {
+            CStr::from_ptr(result.exit_info.exit_message)
+                .to_string_lossy()
+                .into_owned()
+        };
+
+        assert_eq!(exit_msg, "Result larger than 1bytes.".to_string());
         assert_eq!(result.exit_info.exit_code, 255);
         assert_eq!(result.gas_used, 29703554900000);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
+            let tempdir_c = CString::from_raw(tempdir_craw);
+            mem::drop(tempdir_c);
         }
     }
 
@@ -485,9 +490,10 @@ mod test {
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
         let tempdir = std::env::temp_dir().display().to_string();
+        let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
-                CString::new(tempdir).unwrap().into_raw(),
+                tempdir_craw,
                 wasm_bytes.as_ptr(),
                 wasm_bytes.len(),
                 arg_ptrs.as_ptr(),
@@ -501,19 +507,19 @@ mod test {
             )
         };
 
-        unsafe {
-            assert_eq!(
-                std::ffi::CStr::from_ptr(result.exit_info.exit_message)
-                    .to_string_lossy()
-                    .into_owned(),
-                "Ok".to_string()
-            );
-        }
+        let exit_msg = unsafe {
+            CStr::from_ptr(result.exit_info.exit_message)
+                .to_string_lossy()
+                .into_owned()
+        };
+        assert_eq!(exit_msg, "Ok".to_string());
         assert_eq!(result.exit_info.exit_code, 0);
         assert_eq!(result.gas_used, 9156653346250);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
+            let tempdir_c = CString::from_raw(tempdir_craw);
+            mem::drop(tempdir_c);
         }
     }
 
@@ -812,10 +818,11 @@ mod test {
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
         let tempdir = std::env::temp_dir().display().to_string();
+        let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
         let mut result = unsafe {
             super::execute_tally_vm(
-                CString::new(tempdir).unwrap().into_raw(),
+                tempdir_craw,
                 wasm_bytes.as_ptr(),
                 wasm_bytes.len(),
                 arg_ptrs.as_ptr(),
@@ -828,19 +835,22 @@ mod test {
                 1024,
             )
         };
+        std::env::remove_var("_GIBBERISH_CHECK_TO_PANIC");
 
-        unsafe {
-            let exit_message = std::ffi::CStr::from_ptr(result.exit_info.exit_message)
+        let exit_msg = unsafe {
+            CStr::from_ptr(result.exit_info.exit_message)
                 .to_string_lossy()
-                .into_owned();
-            assert!(exit_message.contains("The tally VM panicked."));
-        }
+                .into_owned()
+        };
 
+        assert!(exit_msg.contains("The tally VM panicked."));
         assert_eq!(result.gas_used, 0);
         assert_eq!(result.exit_info.exit_code, 42);
 
         unsafe {
             super::free_ffi_vm_result(&mut result);
+            let tempdir_c = CString::from_raw(tempdir_craw);
+            mem::drop(tempdir_c);
         }
     }
 

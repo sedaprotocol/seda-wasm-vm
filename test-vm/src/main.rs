@@ -1,9 +1,9 @@
-use std::{io::Write, process};
+use std::io::Write;
 
 use import_length_overflow::import_length_overflow;
 use infinite_loop_wasi::infinite_loop_wasi;
 use price_feed_tally::price_feed_tally;
-use seda_sdk_rs::{log, oracle_program, Process};
+use seda_sdk_rs::{oracle_program, Process};
 
 mod call_result_write_0;
 mod cannot_spam_call_result_write;
