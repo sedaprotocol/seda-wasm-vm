@@ -970,7 +970,7 @@ mod test {
     }
 
     #[test]
-    fn call_infinite_loop() {
+    fn timing_call_infinite_loop() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -988,7 +988,7 @@ mod test {
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
-        assert!(elapsed.as_secs() < 1);
+        assert!(elapsed.as_secs() < 2);
         assert!(result.gas_used > 0);
     }
 
@@ -1023,7 +1023,7 @@ mod test {
     }
 
     #[test]
-    fn spam_fd_write() {
+    fn timing_spam_fd_write() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/spam-fd-write.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());

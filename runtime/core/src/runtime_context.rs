@@ -1,15 +1,7 @@
-use std::{path::Path, sync::Arc};
+use std::{fs, io::Write, path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
-use wasmer::{
-    sys::{BaseTunables, EngineBuilder},
-    CompilerConfig,
-    Module,
-    Pages,
-    Singlepass,
-    Store,
-    Target,
-};
+use wasmer::{sys::BaseTunables, CompilerConfig, Engine, Module, NativeEngineExt, Pages, Singlepass, Store, Target};
 use wasmer_middlewares::Metering;
 
 use crate::{
@@ -19,6 +11,29 @@ use crate::{
     wasm_cache::wasm_cache_id,
 };
 
+pub fn make_runtime_engine(max_memory_pages: u32) -> Engine {
+    let mut engine = Engine::headless();
+
+    let base = BaseTunables::for_target(&Target::default());
+    let tunables = LimitingTunables::new(base, Pages(max_memory_pages));
+    engine.set_tunables(tunables);
+    engine
+}
+
+pub fn make_compiling_engine(max_memory_pages: u32) -> Store {
+    let mut compiler = Singlepass::new();
+
+    let metering = Arc::new(Metering::new(0, get_wasm_operation_gas_cost));
+    compiler.push_middleware(metering);
+    let mut engine = Engine::from(compiler);
+
+    let base = BaseTunables::for_target(&Target::default());
+    let tunables = LimitingTunables::new(base, Pages(max_memory_pages));
+    engine.set_tunables(tunables);
+
+    Store::new(engine)
+}
+
 pub struct RuntimeContext {
     pub wasm_store:  Store,
     pub wasm_module: Module,
@@ -27,25 +42,21 @@ pub struct RuntimeContext {
 
 impl RuntimeContext {
     pub fn new(_sedad_home: &Path, call_data: &VmCallData) -> Result<Self> {
-        let base = BaseTunables::for_target(&Target::default());
-        let tunables = LimitingTunables::new(base, Pages(call_data.max_memory_pages));
-        let mut single_pass_config = Singlepass::new();
-
-        if let Some(gas_limit) = call_data.gas_limit {
-            let metering = Arc::new(Metering::new(gas_limit, get_wasm_operation_gas_cost));
-            single_pass_config.push_middleware(metering);
-        }
-
-        let builder = EngineBuilder::new(single_pass_config);
-        let mut engine = builder.engine();
-        engine.set_tunables(tunables);
-
+        let engine = make_runtime_engine(call_data.max_memory_pages);
         let store = Store::new(engine);
 
         let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
                 let wasm_id = wasm_cache_id(wasm_bytes);
-                let wasm_module = Module::new(&store, wasm_bytes)?;
+                let wasm_module = Module::new(&make_compiling_engine(call_data.max_memory_pages), wasm_bytes)?;
+                let temp = tempdir::TempDir::new("wasm_cache")?;
+                let compiled = temp.path().join(&wasm_id);
+                let mut file = fs::File::create(&compiled)?;
+                let buffer = wasm_module.serialize()?;
+                file.write_all(&buffer)?;
+
+                drop(wasm_module);
+                let wasm_module = unsafe { Module::deserialize_from_file(&store, compiled)? };
 
                 (wasm_module, wasm_id)
             }

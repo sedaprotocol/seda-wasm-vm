@@ -59,7 +59,11 @@ struct AptInstall {
 
 impl AptInstall {
     fn install_aarch64_musl_gcc(sh: &Shell) -> Result<()> {
-        cmd!(sh, "wget https://musl.cc/aarch64-linux-musl-cross.tgz").run()?;
+        cmd!(
+            sh,
+            "wget https://aarch64-linux-musl-cross.s3.eu-west-2.amazonaws.com/aarch64-linux-musl-cross.tgz"
+        )
+        .run()?;
         cmd!(sh, "tar -xvf aarch64-linux-musl-cross.tgz").run()?;
         cmd!(sh, "sudo mv aarch64-linux-musl-cross /opt").run()?;
         Ok(())
@@ -190,18 +194,13 @@ struct Cov {
 
 impl Cov {
     fn handle(self, sh: &Shell) -> Result<()> {
-        if !self.ci {
-            cmd!(
-                sh,
-                "cargo llvm-cov -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci"
-            )
-            .run()?;
+        cmd!(sh, "cargo llvm-cov clean --workspace").run()?;
+        cmd!(sh, "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci -- --skip timing_").run()?;
+        cmd!(sh, "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci -- timing_").run()?;
+        if self.ci {
+            cmd!(sh, "cargo llvm-cov report --cobertura --output-path cobertura.xml").run()?;
         } else {
-            cmd!(
-                sh,
-                "cargo llvm-cov -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --cobertura --output-path cobertura.xml --locked nextest -P ci"
-            )
-            .run()?;
+            cmd!(sh, "cargo llvm-cov report").run()?;
         }
         Ok(())
     }

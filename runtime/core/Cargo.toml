@@ -13,6 +13,7 @@ parking_lot = { workspace = true }
 seda-runtime-sdk = { workspace = true }
 serde_json = { workspace = true, features = ["std"] }
 sha3 = { workspace = true }
+tempdir.workspace = true
 thiserror = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
