@@ -21,15 +21,15 @@ type VmResult struct {
 	GasUsed   uint64
 }
 
-var LogDir string
+var TallyVmDir string
 var TallyMaxBytes uint = 1024
 var TallyMaxStdoutBytes uint = 512
 var TallyMaxStderrBytes uint = 512
 
 func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResult {
 	// convert config dir to C string
-	configDirC := C.CString(LogDir)
-	defer C.free(unsafe.Pointer(configDirC))
+	tallyVmDirC := C.CString(TallyVmDir)
+	defer C.free(unsafe.Pointer(tallyVmDirC))
 
 	argsC := make([]*C.char, len(args))
 	for i, s := range args {
@@ -67,7 +67,7 @@ func ExecuteTallyVm(bytes []byte, args []string, envs map[string]string) VmResul
 	}
 
 	result := C.execute_tally_vm(
-		configDirC,
+		tallyVmDirC,
 		bytesPtr, C.uintptr_t(len(bytes)),
 		argsPtr, C.uintptr_t(len(args)),
 		keysPtr, valuesPtr, C.uintptr_t(len(envs)),

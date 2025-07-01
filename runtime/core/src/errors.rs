@@ -11,6 +11,9 @@ pub enum VmHostError {
     InstanceNotSet,
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    #[error("Invalid WASM cache path, it exists but is not a directory: {0}")]
+    InvalidCachePath(String),
 }
 
 #[derive(Debug, Error)]

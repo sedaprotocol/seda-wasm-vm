@@ -1,4 +1,4 @@
-use std::{fs, io::Write, path::Path, sync::Arc};
+use std::{path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
 use wasmer::{sys::BaseTunables, CompilerConfig, Engine, Module, NativeEngineExt, Pages, Singlepass, Store, Target};
@@ -8,7 +8,7 @@ use crate::{
     errors::Result,
     memory::LimitingTunables,
     metering::get_wasm_operation_gas_cost,
-    wasm_cache::wasm_cache_id,
+    wasm_cache::{get_full_wasm_path_from_id, valid_wasm_cache_id, wasm_cache_id, wasm_cache_load, wasm_cache_store},
 };
 
 pub fn make_runtime_engine(max_memory_pages: u32) -> Engine {
@@ -41,20 +41,22 @@ pub struct RuntimeContext {
 }
 
 impl RuntimeContext {
-    pub fn new(_sedad_home: &Path, call_data: &VmCallData) -> Result<Self> {
+    pub fn new(sedad_home: &Path, call_data: &VmCallData) -> Result<Self> {
         let engine = make_runtime_engine(call_data.max_memory_pages);
         let store = Store::new(engine);
 
         let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
                 let wasm_id = wasm_cache_id(wasm_bytes);
+                let wasm_path = get_full_wasm_path_from_id(sedad_home, &wasm_id);
 
-                // Check if the module is already cached
-                fs::create_dir_all("./wasm_cache")?;
-                let compiled = Path::new("./wasm_cache").join(&wasm_id);
+                let mut compiled = wasm_path.exists() && wasm_path.is_file();
+                if compiled && !valid_wasm_cache_id(&wasm_path) {
+                    compiled = false;
+                }
 
-                if compiled.exists() {
-                    let wasm_module = unsafe { Module::deserialize_from_file(&store, compiled)? };
+                if compiled {
+                    let wasm_module = wasm_cache_load(&store, &wasm_path)?;
                     return Ok(Self {
                         wasm_module,
                         wasm_store: store,
@@ -63,14 +65,13 @@ impl RuntimeContext {
                 }
 
                 // If not, compile and cache it
-                let wasm_module = Module::new(&make_compiling_engine(call_data.max_memory_pages), wasm_bytes)?;
-
-                let mut file = fs::File::create(&compiled)?;
-                let buffer = wasm_module.serialize()?;
-                file.write_all(&buffer)?;
-
-                drop(wasm_module);
-                let wasm_module = unsafe { Module::deserialize_from_file(&store, compiled)? };
+                let wasm_module = wasm_cache_store(
+                    sedad_home,
+                    &make_compiling_engine(call_data.max_memory_pages),
+                    &store,
+                    &wasm_id,
+                    wasm_bytes,
+                )?;
 
                 (wasm_module, wasm_id)
             }

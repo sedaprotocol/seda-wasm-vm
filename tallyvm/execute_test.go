@@ -17,11 +17,11 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	tallyvm.LogDir = tempdir
+	tallyvm.TallyVmDir = tempdir
 }
 
 func cleanup() {
-	os.RemoveAll(tallyvm.LogDir)
+	os.RemoveAll(tallyvm.TallyVmDir)
 }
 
 func TestTallyBinaryWorks(t *testing.T) {

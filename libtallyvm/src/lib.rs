@@ -296,6 +296,7 @@ mod test {
     };
 
     use seda_runtime_sdk::ToBytes;
+    use tempdir::TempDir;
 
     use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
@@ -303,8 +304,91 @@ mod test {
     fn can_get_runtime_versions() {
         assert_eq!(seda_wasm_vm::WASMER_VERSION, "4.3.7");
         assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "4.3.7");
-        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "2.4.1");
+        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "2.5.0");
         assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.27.0");
+    }
+
+    #[test]
+    fn cache_works() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("CONSENSUS".to_string(), "true".to_string());
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+        envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
+
+        let method = "infinite_loop_wasi".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let temp_dir = TempDir::new("cache_works").unwrap();
+        let tempdir = temp_dir.path();
+
+        let now = std::time::Instant::now();
+        let _result = _execute_tally_vm(
+            tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex.clone()],
+            envs.clone(),
+            1024,
+            1024,
+        )
+        .unwrap();
+        let first_run = now.elapsed();
+        println!("First run took: {:?}", first_run);
+
+        let now = std::time::Instant::now();
+        let _result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let second_run = now.elapsed();
+        println!("Second run took: {:?}", second_run);
+
+        // second run should be faster than first run
+        assert!(second_run < first_run);
+    }
+
+    #[test]
+    fn cache_invalidates_on_new_version() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("CONSENSUS".to_string(), "true".to_string());
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+        envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
+
+        let method = "infinite_loop_wasi".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let temp_dir = TempDir::new("cache_invalidates_on_new_version").unwrap();
+        let tempdir = temp_dir.path();
+
+        seda_wasm_vm::set_test_version_file_name("1.0.0");
+        let now = std::time::Instant::now();
+        let _result = _execute_tally_vm(
+            tempdir,
+            wasm_bytes.to_vec(),
+            vec![method_hex.clone()],
+            envs.clone(),
+            1024,
+            1024,
+        )
+        .unwrap();
+        let first_run = now.elapsed();
+        println!("First run took: {:?}", first_run);
+
+        seda_wasm_vm::set_test_version_file_name("1.0.1");
+        let now = std::time::Instant::now();
+        let _result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let second_run = now.elapsed();
+        println!("Second run took: {:?}", second_run);
+
+        // second run should be about the same as the first run
+        let diff = second_run.as_millis() as i64 - first_run.as_millis() as i64;
+        println!("Diff: {diff}ms");
+        // Allow a 50% difference, as the first run might be slower due to cache
+        // warmup, but the second run should be about the same.
+        // it shouldn't be as much as 50% but accounting for CI variance + bulk running tests
+        assert!(diff.abs() < (first_run.as_millis() as f64 * 0.5) as i64);
     }
 
     #[test]
@@ -315,9 +399,10 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("execute_tally_vm").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![hex::encode("testHttpSuccess")],
             envs,
@@ -364,7 +449,8 @@ mod test {
             .collect();
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
-        let tempdir = std::env::temp_dir().display().to_string();
+        let temp_dir = TempDir::new("execute_c_tally_vm").unwrap();
+        let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
@@ -427,7 +513,8 @@ mod test {
             .collect();
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
-        let tempdir = std::env::temp_dir().display().to_string();
+        let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit").unwrap();
+        let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
@@ -490,7 +577,8 @@ mod test {
             .collect();
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
-        let tempdir = std::env::temp_dir().display().to_string();
+        let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit_does_not_matter_for_dr_mode").unwrap();
+        let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         let mut result = unsafe {
             super::execute_tally_vm(
@@ -531,9 +619,10 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("execute_tally_vm_proxy_http_fetch").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![hex::encode("testProxyHttpFetch")],
             envs,
@@ -557,8 +646,9 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("execute_tally_vm_no_args").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
 
         result.stdout.iter().for_each(|line| print!("{}", line));
         assert_eq!(result.gas_used, 10124565078750);
@@ -575,8 +665,9 @@ mod test {
         let total_gas = startup_gas + 1_000;
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), total_gas.to_string());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("execute_tally_vm_with_low_gas_limit").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 250);
         assert_eq!(result.gas_used, total_gas);
@@ -593,8 +684,9 @@ mod test {
         let total_gas = startup_gas - 1_000;
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), total_gas.to_string());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("vm_does_not_run_if_startup_cost_is_higher_than_gas_limit").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 14);
         assert!(result.gas_used > 0);
@@ -607,9 +699,10 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("execute_tally_keccak256").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![hex::encode("testKeccak256")],
             envs,
@@ -634,9 +727,10 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("simple_price_feed").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![hex::encode("btc-usdc")],
             envs,
@@ -660,9 +754,9 @@ mod test {
         envs.insert("VM_MODE".to_string(), "dr".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
-        let tempdir = std::env::temp_dir().join("foo");
-        std::fs::create_dir_all(&tempdir).unwrap();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("polyfill_does_not_crash_vm").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
         result.stdout.iter().for_each(|line| print!("{}", line));
 
         assert_eq!(result.exit_info.exit_code, 252);
@@ -678,10 +772,10 @@ mod test {
         envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
-        let tempdir = std::env::temp_dir().join("foo");
-        std::fs::create_dir_all(&tempdir).unwrap();
+        let temp_dir = TempDir::new("userland_non_zero_exit_code").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![
                 "0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
@@ -706,10 +800,10 @@ mod test {
         envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "300000000000000".to_string());
 
-        let tempdir = std::env::temp_dir().join("foo");
-        std::fs::create_dir_all(&tempdir).unwrap();
+        let temp_dir = TempDir::new("assign_too_much_memory").unwrap();
+        let tempdir = temp_dir.path();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![
                 "0xd66196506df89851d1200962310cc4bd5ee7b4d19c852a4afd0ccf07e636606f".to_string(),
@@ -732,13 +826,13 @@ mod test {
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string()); // 50 tGas
 
-        let tempdir = std::env::temp_dir().join("foo");
-        std::fs::create_dir_all(&tempdir).unwrap();
+        let temp_dir = TempDir::new("import_length_overflow").unwrap();
+        let tempdir = temp_dir.path();
 
         let method = "import_length_overflow".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.stderr[0], "Runtime error: Out of gas");
         assert!(result.gas_used > 0);
@@ -751,8 +845,8 @@ mod test {
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
 
-        let tempdir = std::env::temp_dir().join("foo");
-        std::fs::create_dir_all(&tempdir).unwrap();
+        let temp_dir = TempDir::new("price_feed_tally").unwrap();
+        let tempdir = temp_dir.path();
 
         let method = "price_feed_tally".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
@@ -761,7 +855,7 @@ mod test {
         let consensus = "[0,0,0,0,0,0,0,0,0,0]".to_string();
 
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![method_hex, reveals, consensus],
             envs,
@@ -782,8 +876,9 @@ mod test {
         let method = "call_result_write_0".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("call_result_write_len_0").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.exit_info.exit_message, "Not ok".to_string());
@@ -818,7 +913,8 @@ mod test {
             .collect();
         let env_value_ptrs: Vec<*const c_char> = env_value_cstrings.iter().map(|s| s.as_ptr()).collect();
 
-        let tempdir = std::env::temp_dir().display().to_string();
+        let temp_dir = TempDir::new("execute_c_tally_vm_panic").unwrap();
+        let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
         let mut result = unsafe {
@@ -865,8 +961,9 @@ mod test {
         let method = "hello_world".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 2, 2).unwrap();
+        let temp_dir = TempDir::new("test_stdout_and_stderr_limit").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 2, 2).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 0);
         assert_eq!(result.stdout.len(), 1);
@@ -887,8 +984,9 @@ mod test {
         let method = "long_stdout_stderr".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("test_long_stdout_and_stderr").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 0);
         assert_eq!(result.stdout.len(), 1);
@@ -907,20 +1005,14 @@ mod test {
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("test_stdout_and_stderr_fail_when_given_non_utf8").unwrap();
+        let tempdir = temp_dir.path();
 
         let method = "stderr_non_utf8".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let result = _execute_tally_vm(
-            &tempdir,
-            wasm_bytes.to_vec(),
-            vec![method_hex],
-            envs.clone(),
-            1024,
-            1024,
-        )
-        .unwrap();
+        let result =
+            _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs.clone(), 1024, 1024).unwrap();
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stderr.len(), 0);
         assert_eq!(
@@ -932,7 +1024,7 @@ mod test {
         let method = "stdout_non_utf8".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
         assert_eq!(result.exit_info.exit_code, 8);
         assert_eq!(result.stdout.len(), 0);
         assert_eq!(
@@ -949,20 +1041,14 @@ mod test {
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("cannot_spam_call_result_write").unwrap();
+        let tempdir = temp_dir.path();
 
         let method = "cannot_spam_call_result_write".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let result = _execute_tally_vm(
-            &tempdir,
-            wasm_bytes.to_vec(),
-            vec![method_hex],
-            envs.clone(),
-            1024,
-            1024,
-        )
-        .unwrap();
+        let result =
+            _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs.clone(), 1024, 1024).unwrap();
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.stderr.len(), 1);
         assert_eq!(result.stderr[0], "Runtime error: Invalid Memory Access: call_result_write: result_data_ptr length does not match call_value length");
@@ -980,9 +1066,10 @@ mod test {
         let method = "infinite_loop_wasi".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("timing_call_infinite_loop").unwrap();
+        let tempdir = temp_dir.path();
         let start = std::time::Instant::now();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
         let elapsed = start.elapsed();
 
         assert_eq!(result.exit_info.exit_code, 252);
@@ -1000,7 +1087,8 @@ mod test {
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
 
-        let tempdir = std::env::temp_dir().join("foo");
+        let temp_dir = TempDir::new("dr_playground_multiple_price_feed").unwrap();
+        let tempdir = temp_dir.path();
 
         let method = "test".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
@@ -1008,9 +1096,9 @@ mod test {
         let reveals = "[{\"dr_block_height\":1,\"exit_code\":0,\"gas_used\":502047984,\"reveal\":[123,34,112,114,105,99,101,34,58,49,48,48,48,48,48,48,125]}]".to_string();
         let consensus = "[0]".to_string();
 
-        std::fs::create_dir_all(&tempdir).unwrap();
+        std::fs::create_dir_all(tempdir).unwrap();
         let result = _execute_tally_vm(
-            &tempdir,
+            tempdir,
             wasm_bytes.to_vec(),
             vec![method_hex, reveals, consensus],
             envs,
@@ -1029,11 +1117,12 @@ mod test {
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
-        let tempdir = std::env::temp_dir().join("foo");
 
-        std::fs::create_dir_all(&tempdir).unwrap();
+        let temp_dir = TempDir::new("timing_spam_fd_write").unwrap();
+        let tempdir = temp_dir.path();
+
         let start = std::time::Instant::now();
-        let _result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
+        let _result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![], envs, 1024, 1024).unwrap();
         let duration = start.elapsed();
 
         assert!(
@@ -1053,8 +1142,9 @@ mod test {
         let method = "memory_fill_prealloc".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("memory_fill_prealloc").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.stderr[0], "memory allocation of 44832551 bytes failed\n");
@@ -1070,8 +1160,9 @@ mod test {
         let method = "memory_fill_dynamic".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
-        let result = _execute_tally_vm(&tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
+        let temp_dir = TempDir::new("memory_fill_dynamic").unwrap();
+        let tempdir = temp_dir.path();
+        let result = _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs, 1024, 1024).unwrap();
 
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.stderr[0], "memory allocation of 8192000 bytes failed\n");
@@ -1090,12 +1181,13 @@ mod test {
         let method = "infinite_loop_wasi".to_string();
         let method_hex = hex::encode(method.to_bytes().eject());
 
-        let tempdir = std::env::temp_dir();
+        let temp_dir = TempDir::new("execute_binary_100_times").unwrap();
+        let tempdir = temp_dir.path();
         let start_time = std::time::Instant::now();
 
         for _ in 0..100 {
             let _result = _execute_tally_vm(
-                &tempdir,
+                tempdir,
                 wasm_bytes.to_vec(),
                 vec![method_hex.clone()],
                 envs.clone(),
@@ -1106,7 +1198,9 @@ mod test {
         }
 
         let total_duration = start_time.elapsed();
+        println!("Total execution time for 100 runs: {:?}", total_duration);
         let average_duration = total_duration / 100;
+        println!("Average execution time for 100 runs: {:?}", average_duration);
 
         assert!(average_duration < std::time::Duration::from_secs(10));
     }
