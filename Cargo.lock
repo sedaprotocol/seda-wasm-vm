@@ -2200,6 +2200,7 @@ dependencies = [
  "k256",
  "lazy_static",
  "parking_lot",
+ "seahash",
  "seda-runtime-sdk",
  "serde_json",
  "sha3",

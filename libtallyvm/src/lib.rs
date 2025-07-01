@@ -8,15 +8,7 @@ use std::{
 };
 
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
-use seda_wasm_vm::{
-    init_logger,
-    start_runtime,
-    wasm_cache::wasm_cache_id,
-    RuntimeContext,
-    RuntimeError,
-    VmCallData,
-    VmResult,
-};
+use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, RuntimeError, VmCallData, VmResult};
 
 use crate::errors::Result;
 
@@ -268,7 +260,6 @@ fn _execute_tally_vm(
     stderr_limit: usize,
 ) -> Result<VmResult> {
     tracing::info!("Executing Tally VM");
-    let wasm_hash = wasm_cache_id(&wasm_bytes);
     let env_vars = envs.clone();
     let gas_limit = env_vars
         .get(DEFAULT_GAS_LIMIT_ENV_VAR)
@@ -281,7 +272,9 @@ fn _execute_tally_vm(
         wasm_id: WasmId::Bytes(wasm_bytes),
         args,
         envs,
-        program_name: wasm_hash,
+        // program_name is not used in the SEDA SDK (It refers in CLI to the first argument)
+        // Better to hardcode it to something fast than the binary id.
+        program_name: "data-request".to_string(),
         start_func: None,
         vm_type: VmType::Tally,
         gas_limit: Some(gas_limit.parse::<u64>()?),
@@ -1074,5 +1067,39 @@ mod test {
 
         assert_eq!(result.exit_info.exit_code, 252);
         assert_eq!(result.stderr[0], "memory allocation of 8192000 bytes failed\n");
+    }
+
+    #[test]
+    fn execute_binary_100_times() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("CONSENSUS".to_string(), "true".to_string());
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+        envs.insert("DR_REPLICATION_FACTOR".to_string(), "1".to_string());
+
+        let method = "infinite_loop_wasi".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let tempdir = std::env::temp_dir();
+        let start_time = std::time::Instant::now();
+
+        for _ in 0..100 {
+            let _result = _execute_tally_vm(
+                &tempdir,
+                wasm_bytes.to_vec(),
+                vec![method_hex.clone()],
+                envs.clone(),
+                1024,
+                1024,
+            )
+            .unwrap();
+        }
+
+        let total_duration = start_time.elapsed();
+        let average_duration = total_duration / 100;
+
+        assert!(average_duration < std::time::Duration::from_secs(10));
     }
 }

@@ -72,6 +72,17 @@ pub fn create_wasm_imports(
             )(store, vm_context),
         );
 
+        allowed_wasi_exports.insert(
+            "clock_time_get".to_string(),
+            // https://wasix.org/docs/api-reference/wasi/clock_time_get
+            // https://docs.rs/wasix/latest/wasix/lib_generated64/fn.clock_time_get.html
+            crate::generic_polyfill_import_obj!(
+                "clock_time_get", i32,
+                _id: i32,
+                _precision: i32
+            )(store, vm_context),
+        );
+
         allowed_wasi_exports.insert("args_get", args_get_import_obj(store, vm_context));
         allowed_wasi_exports.insert("args_sizes_get", args_sizes_get_import_obj(store, vm_context));
 

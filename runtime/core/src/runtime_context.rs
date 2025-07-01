@@ -48,9 +48,23 @@ impl RuntimeContext {
         let (wasm_module, wasm_hash) = match &call_data.wasm_id {
             WasmId::Bytes(wasm_bytes) => {
                 let wasm_id = wasm_cache_id(wasm_bytes);
+
+                // Check if the module is already cached
+                fs::create_dir_all("./wasm_cache")?;
+                let compiled = Path::new("./wasm_cache").join(&wasm_id);
+
+                if compiled.exists() {
+                    let wasm_module = unsafe { Module::deserialize_from_file(&store, compiled)? };
+                    return Ok(Self {
+                        wasm_module,
+                        wasm_store: store,
+                        wasm_hash: wasm_id,
+                    });
+                }
+
+                // If not, compile and cache it
                 let wasm_module = Module::new(&make_compiling_engine(call_data.max_memory_pages), wasm_bytes)?;
-                let temp = tempdir::TempDir::new("wasm_cache")?;
-                let compiled = temp.path().join(&wasm_id);
+
                 let mut file = fs::File::create(&compiled)?;
                 let buffer = wasm_module.serialize()?;
                 file.write_all(&buffer)?;

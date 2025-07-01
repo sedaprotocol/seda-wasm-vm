@@ -1,5 +1,3 @@
-use sha3::{Digest, Keccak256};
-
 pub const WASM_CACHE_FOLDER_NAME: &str = "wasm_cache";
 
 // not used with singlepass compiler
@@ -12,11 +10,8 @@ pub const WASM_CACHE_FOLDER_NAME: &str = "wasm_cache";
 
 //     Ok(wasm_cache_path)
 // }
-
 pub fn wasm_cache_id<T: AsRef<[u8]>>(wasm_binary: T) -> String {
-    let mut hash = Keccak256::new();
-    hash.update(&wasm_binary);
-    hex::encode(hash.finalize())
+    seahash::hash(wasm_binary.as_ref()).to_string()
 }
 
 // not used with singlepass compiler

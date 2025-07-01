@@ -7,6 +7,7 @@ use seda_sdk_rs::{oracle_program, Process};
 
 mod call_result_write_0;
 mod cannot_spam_call_result_write;
+mod get_time;
 mod import_length_overflow;
 mod infinite_loop_wasi;
 mod memory_fill;
@@ -26,6 +27,7 @@ impl TestVmOracleProgram {
             }
             "import_length_overflow" => import_length_overflow().unwrap(),
             "infinite_loop_wasi" => infinite_loop_wasi(),
+            "get_time" => get_time::get_time(),
             "long_stdout_stderr" => {
                 println!("{}", "Hello, World!\n".repeat(1_000));
                 eprintln!("{}", "I AM ERROR\n".repeat(1_000));
