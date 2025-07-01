@@ -15,6 +15,7 @@ use std::{
 };
 
 use wasmer::{
+    sys::{FunctionMiddleware, MiddlewareReaderState, ModuleMiddleware},
     wasmparser::{BlockType as WpTypeOrFuncType, Operator},
     AsStoreMut,
     ExportIndex,
@@ -24,8 +25,6 @@ use wasmer::{
     Instance,
     LocalFunctionIndex,
     MiddlewareError,
-    MiddlewareReaderState,
-    ModuleMiddleware,
     Mutability,
     Type,
 };
