@@ -283,7 +283,6 @@ fn _execute_tally_vm(
 
     let runtime_context = RuntimeContext::new(sedad_home, &call_data)?;
     let result = start_runtime(call_data, runtime_context, stdout_limit, stderr_limit);
-
     Ok(result)
 }
 
@@ -1198,7 +1197,9 @@ mod test {
         }
 
         let total_duration = start_time.elapsed();
+        println!("Total execution time for 100 runs: {:?}", total_duration);
         let average_duration = total_duration / 100;
+        println!("Average execution time for 100 runs: {:?}", average_duration);
 
         assert!(average_duration < std::time::Duration::from_secs(10));
     }

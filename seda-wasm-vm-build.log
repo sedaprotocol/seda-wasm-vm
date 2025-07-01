@@ -1,0 +1,2975 @@
+   Compiling wasmer v6.0.0-beta.1
+   Compiling virtual-fs v0.24.0
+   Compiling wasmer-compiler-singlepass v5.0.6
+error: One of: `sys`, `js`, `jsc` `wamr`, `wasmi` or `v8` features must be enabled. Please, pick one.
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/lib.rs:423:1
+    |
+423 | / compile_error!(
+424 | |     "One of: `sys`, `js`, `jsc` `wamr`, `wasmi` or `v8` features must be enabled. Please, pick one."
+425 | | );
+    | |_^
+
+error: cannot find attribute `source` in this scope
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/error.rs:23:12
+   |
+23 |     Trap(#[source] RuntimeError),
+   |            ^^^^^^
+
+error[E0392]: lifetime parameter `'a` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/mem/mod.rs:55:20
+   |
+55 | pub struct WasmRef<'a, T: ValueType> {
+   |                    ^^ unused lifetime parameter
+   |
+   = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/mem/mod.rs:149:22
+    |
+149 | pub struct WasmSlice<'a, T: ValueType> {
+    |                      ^^ unused lifetime parameter
+    |
+    = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/mem/mod.rs:373:26
+    |
+373 | pub struct WasmSliceIter<'a, T: ValueType> {
+    |                          ^^ unused lifetime parameter
+    |
+    = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0277]: `()` is not an iterator
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:617:60
+    |
+617 |     pub fn custom_sections<'a>(&'a self, name: &'a str) -> impl Iterator<Item = Box<[u8]>> + 'a {
+    |                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `()` is not an iterator
+    |
+    = help: the trait `Iterator` is not implemented for `()`
+
+error[E0392]: type parameter `T` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:10:24
+   |
+10 | pub struct FunctionEnv<T>(pub(crate) BackendFunctionEnv<T>);
+   |                        ^ unused type parameter          - `T` is named here, but is likely unused in the containing type
+   |
+   = help: consider removing `T`, referring to it in a field, or using a marker such as `PhantomData`
+   = help: if you intended `T` to be a const parameter, use `const T: /* Type */` instead
+
+error[E0392]: lifetime parameter `'a` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:59:27
+   |
+59 | pub struct FunctionEnvMut<'a, T: 'a>(pub(crate) BackendFunctionEnvMut<'a, T>);
+   |                           ^^ unused lifetime parameter
+   |
+   = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: type parameter `T` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:59:31
+   |
+59 | pub struct FunctionEnvMut<'a, T: 'a>(pub(crate) BackendFunctionEnvMut<'a, T>);
+   |                               ^ unused type parameter                     - `T` is named here, but is likely unused in the containing type
+   |
+   = help: consider removing `T`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: type parameter `T` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:10:29
+   |
+10 | pub enum BackendFunctionEnv<T> {
+   |                             ^ unused type parameter
+   |
+   = help: consider removing `T`, referring to it in a field, or using a marker such as `PhantomData`
+   = help: if you intended `T` to be a const parameter, use `const T: /* Type */` instead
+
+error[E0392]: lifetime parameter `'a` is never used
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:32
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |                                ^^ unused lifetime parameter
+    |
+    = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: type parameter `T` is never used
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:36
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |                                    ^ unused type parameter
+    |
+    = help: consider removing `T`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/mod.rs:10:32
+   |
+10 | pub(crate) struct MemoryBuffer<'a>(pub(crate) BackendMemoryBuffer<'a>);
+   |                                ^^ unused lifetime parameter
+   |
+   = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+ --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:25
+  |
+9 | gen_rt_ty!(MemoryBuffer<'a>
+  |                         ^^ unused lifetime parameter
+  |
+  = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/mod.rs:16:23
+   |
+16 | pub struct MemoryView<'a>(pub(crate) BackendMemoryView<'a>);
+   |                       ^^ unused lifetime parameter
+   |
+   = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0392]: lifetime parameter `'a` is never used
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:23
+   |
+16 | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+   |                       ^^ unused lifetime parameter
+   |
+   = help: consider removing `'a`, referring to it in a field, or using a marker such as `PhantomData`
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+391 | define_vm_like!(Extern);
+    | ----------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+392 | define_vm_like!(ExternFunction);
+    | ------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+393 | define_vm_like!(ExternGlobal);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+394 | define_vm_like!(ExternTag);
+    | -------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+395 | define_vm_like!(ExternMemory);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+396 | define_vm_like!(ExternTable);
+    | ---------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+398 | define_vm_like!(FunctionCallback);
+    | --------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+399 | define_vm_like!(FunctionBody);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+400 | define_vm_like!(FunctionEnvironment, Debug);
+    | ------------------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+401 | define_vm_like!(Instance, Debug);
+    | -------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+402 | define_vm_like!(Trampoline);
+    | --------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+405 | define_vm_like!(Function, Debug);
+    | -------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+406 | define_vm_like!(Global, Debug);
+    | ------------------------------ in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+407 | define_vm_like!(Tag, Debug);
+    | --------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+408 | define_vm_like!(Exception, Debug);
+    | --------------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+409 | define_vm_like!(Memory, Debug);
+    | ------------------------------ in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+410 | define_vm_like!(SharedMemory);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:206:9
+    |
+206 |         #[repr(C)]
+    |         ^^^^^^^^^^
+207 |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+411 | define_vm_like!(Table, Debug);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+413 | define_vm_like!(ExceptionRef);
+    | ----------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+414 | define_vm_like!(ExternRef);
+    | -------------------------- in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0084]: unsupported representation for zero-variant enum
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:12:9
+    |
+12  |         #[repr(C)]
+    |         ^^^^^^^^^^
+13  |         pub enum [<VM $name>] {
+    |         --------------------- zero-variant enum
+...
+415 | define_vm_like!(FuncRef);
+    | ------------------------ in this macro invocation
+    |
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0599]: `!` is not an iterator
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/native/convert.rs:230:10
+    |
+199 | /         match store.as_store_ref().inner.store {
+200 | |             #[cfg(feature = "sys")]
+201 | |             crate::BackendStore::Sys(_) => {
+202 | |                 wasmer_vm::VMExternRef::from_raw(RawValue { externref: abi }).map(VMExternRef::Sys)
+...   |
+229 | |         }
+230 | |         .map(|e| ExternRef::from_vm_externref(store, e))
+    | |         -^^^ `!` is not an iterator
+    | |_________|
+    |
+    |
+    = note: the following trait bounds were not satisfied:
+            `!: Iterator`
+            which is required by `&mut !: Iterator`
+
+error[E0599]: `!` is not an iterator
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/native/convert.rs:271:10
+    |
+245 | /         match store.as_store_ref().inner.store {
+246 | |             #[cfg(feature = "sys")]
+247 | |             crate::BackendStore::Sys(_) => {
+248 | |                 wasmer_vm::VMExternRef::from_raw(raw).map(VMExternRef::Sys)
+...   |
+270 | |         }
+271 | |         .map(|e| ExternRef::from_vm_externref(store, e))
+    | |         -^^^ `!` is not an iterator
+    | |_________|
+    |
+    |
+    = note: the following trait bounds were not satisfied:
+            `!: Iterator`
+            which is required by `&mut !: Iterator`
+
+error[E0599]: `!` is not an iterator
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/native/convert.rs:324:10
+    |
+293 | /         match store.as_store_ref().inner.store {
+294 | |             #[cfg(feature = "sys")]
+295 | |             crate::BackendStore::Sys(_) => {
+296 | |                 wasmer_vm::VMFuncRef::from_raw(RawValue { funcref: abi }).map(VMFuncRef::Sys)
+...   |
+323 | |         }
+324 | |         .map(|f| Function::from_vm_funcref(store, f))
+    | |         -^^^ `!` is not an iterator
+    | |_________|
+    |
+    |
+    = note: the following trait bounds were not satisfied:
+            `!: Iterator`
+            which is required by `&mut !: Iterator`
+
+error[E0599]: `!` is not an iterator
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/native/convert.rs:365:10
+    |
+341 | /         match store.as_store_ref().inner.store {
+342 | |             #[cfg(feature = "sys")]
+343 | |             crate::BackendStore::Sys(_) => wasmer_vm::VMFuncRef::from_raw(raw).map(VMFuncRef::Sys),
+344 | |             #[cfg(feature = "wamr")]
+...   |
+364 | |         }
+365 | |         .map(|f| Function::from_vm_funcref(store, f))
+    | |         -^^^ `!` is not an iterator
+    | |_________|
+    |
+    |
+    = note: the following trait bounds were not satisfied:
+            `!: Iterator`
+            which is required by `&mut !: Iterator`
+
+error[E0282]: type annotations needed
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:44:19
+   |
+44 |         let env = FunctionEnv::new(&mut store.as_store_mut(), ());
+   |                   ^^^^^^^^^^^ cannot infer type for type parameter `T` declared on the struct `FunctionEnv`
+
+error[E0282]: type annotations needed
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:10:12
+   |
+10 | pub struct FunctionEnv<T>(pub(crate) BackendFunctionEnv<T>);
+   |            ^^^^^^^^^^^ cannot infer type of the type parameter `T` declared on the struct `FunctionEnv`
+   |
+help: consider specifying the generic argument
+   |
+10 | pub struct FunctionEnv::<T><T>(pub(crate) BackendFunctionEnv<T>);
+   |                       +++++
+
+error[E0282]: type annotations needed
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:24:14
+   |
+24 |         Self(BackendFunctionEnv::new(store, value))
+   |              ^^^^^^^^^^^^^^^^^^ cannot infer type for type parameter `T` declared on the enum `BackendFunctionEnv`
+
+error[E0283]: type annotations needed
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:53:16
+    |
+53  |         self.0.into_mut(store)
+    |                ^^^^^^^^ cannot infer type for type parameter `T`
+    |
+    = note: cannot satisfy `_: Any`
+note: required by a bound in `function::env::inner::BackendFunctionEnv::<T>::into_mut`
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:116:12
+    |
+114 |     pub fn into_mut(self, store: &mut impl AsStoreMut) -> FunctionEnvMut<T>
+    |            -------- required by a bound in this associated function
+115 |     where
+116 |         T: Any + Send + 'static + Sized,
+    |            ^^^ required by this bound in `BackendFunctionEnv::<T>::into_mut`
+
+error[E0282]: type annotations needed
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:59:12
+   |
+59 | pub struct FunctionEnvMut<'a, T: 'a>(pub(crate) BackendFunctionEnvMut<'a, T>);
+   |            ^^^^^^^^^^^^^^ cannot infer type of the type parameter `T` declared on the struct `FunctionEnvMut`
+   |
+help: consider specifying the generic argument
+   |
+59 | pub struct FunctionEnvMut::<T><'a, T: 'a>(pub(crate) BackendFunctionEnvMut<'a, T>);
+   |                          +++++
+
+error[E0283]: type annotations needed
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/mod.rs:74:16
+    |
+74  |         self.0.as_ref()
+    |                ^^^^^^ cannot infer type for type parameter `T`
+    |
+    = note: cannot satisfy `_: Send`
+note: required by a bound in `function::env::inner::BackendFunctionEnvMut::<'_, T>::as_ref`
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:150:9
+    |
+150 | impl<T: Send + 'static> BackendFunctionEnvMut<'_, T> {
+    |         ^^^^ required by this bound in `BackendFunctionEnvMut::<'_, T>::as_ref`
+...
+166 |     pub fn as_ref(&self) -> FunctionEnv<T> {
+    |            ------ required by a bound in this associated function
+
+error[E0004]: non-exhaustive patterns: type `&engine::inner::BackendEngine` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/engine/inner.rs:19:22
+   |
+19 |         match_rt!(on self  => s {
+   |                      ^^^^
+   |
+note: `engine::inner::BackendEngine` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/engine/inner.rs:13:1
+   |
+13 | gen_rt_ty!(Engine @derives Debug, Clone);
+   | ---------------------------------------- in this macro invocation
+   = note: the matched value is of type `&engine::inner::BackendEngine`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:46:22
+   |
+46 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&mut entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:53:22
+   |
+53 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&mut entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:62:22
+   |
+62 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&obj::StoreObjects` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:62:22
+   |
+62 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `obj::StoreObjects` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:7:10
+   |
+7  | pub enum StoreObjects {
+   |          ^^^^^^^^^^^^
+   = note: the matched value is of type `&obj::StoreObjects`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:69:15
+   |
+69 |         match store {
+   |               ^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+69 ~         match store {
+70 +             _ => todo!(),
+71 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&obj::StoreObjects` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:88:22
+   |
+88 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `obj::StoreObjects` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:7:10
+   |
+7  | pub enum StoreObjects {
+   |          ^^^^^^^^^^^^
+   = note: the matched value is of type `&obj::StoreObjects`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&obj::StoreObjects` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:98:22
+   |
+98 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `obj::StoreObjects` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/obj.rs:7:10
+   |
+7  | pub enum StoreObjects {
+   |          ^^^^^^^^^^^^
+   = note: the matched value is of type `&obj::StoreObjects`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:218:22
+    |
+218 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:515:22
+    |
+515 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&mut entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:543:22
+    |
+543 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&mut entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:574:22
+    |
+574 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:604:22
+    |
+604 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::module::inner::BackendModule` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:631:22
+    |
+631 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `entities::module::inner::BackendModule` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/module/inner.rs:29:1
+    |
+29  | / gen_rt_ty!(Module
+30  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+31  | |     @derives Clone, PartialEq, Eq, derive_more::From
+32  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&entities::module::inner::BackendModule`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/instance.rs:59:39
+   |
+59 |         let (_inner, exports) = match &store.as_store_mut().inner.store {
+   |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+59 ~         let (_inner, exports) = match &store.as_store_mut().inner.store {
+60 +             _ => todo!(),
+61 ~         };
+   |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/instance.rs:118:39
+    |
+118 |         let (_inner, exports) = match &store.as_store_mut().inner.store {
+    |                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+118 ~         let (_inner, exports) = match &store.as_store_mut().inner.store {
+119 +             _ => todo!(),
+120 ~         };
+    |
+
+error[E0004]: non-exhaustive patterns: type `&trap::BackendTrap` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:78:22
+   |
+78 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `trap::BackendTrap` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:7:10
+   |
+7  | pub enum BackendTrap {
+   |          ^^^^^^^^^^^
+   = note: the matched value is of type `&trap::BackendTrap`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&trap::BackendTrap` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:86:22
+   |
+86 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `trap::BackendTrap` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:7:10
+   |
+7  | pub enum BackendTrap {
+   |          ^^^^^^^^^^^
+   = note: the matched value is of type `&trap::BackendTrap`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&trap::BackendTrap` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:94:22
+   |
+94 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `trap::BackendTrap` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:7:10
+   |
+7  | pub enum BackendTrap {
+   |          ^^^^^^^^^^^
+   = note: the matched value is of type `&trap::BackendTrap`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&trap::BackendTrap` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:102:22
+    |
+102 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `trap::BackendTrap` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/trap.rs:7:10
+    |
+7   | pub enum BackendTrap {
+    |          ^^^^^^^^^^^
+    = note: the matched value is of type `&trap::BackendTrap`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:17:15
+   |
+17 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+17 ~         match &store.as_store_mut().inner.store {
+18 +             _ => todo!(),
+19 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&extref::inner::BackendExternRef` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:51:22
+   |
+51 |         match_rt!(on self => r {
+   |                      ^^^^
+   |
+note: `extref::inner::BackendExternRef` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:8:1
+   |
+8  | gen_rt_ty!(ExternRef @derives derive_more::From, Debug, Clone ; @path external);
+   | ------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&extref::inner::BackendExternRef`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&extref::inner::BackendExternRef` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:59:15
+   |
+59 |         match self {
+   |               ^^^^
+   |
+note: `extref::inner::BackendExternRef` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:8:1
+   |
+8  | gen_rt_ty!(ExternRef @derives derive_more::From, Debug, Clone ; @path external);
+   | ------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&extref::inner::BackendExternRef`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+59 ~         match self {
+60 +             _ => todo!(),
+61 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:81:15
+   |
+81 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+81 ~         match &store.as_store_mut().inner.store {
+82 +             _ => todo!(),
+83 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&extref::inner::BackendExternRef` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:136:22
+    |
+136 |         match_rt!(on self => r {
+    |                      ^^^^
+    |
+note: `extref::inner::BackendExternRef` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/external/extref/inner.rs:8:1
+    |
+8   | gen_rt_ty!(ExternRef @derives derive_more::From, Debug, Clone ; @path external);
+    | ------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&extref::inner::BackendExternRef`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:102:15
+    |
+102 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+102 ~         match &store.as_store_mut().inner.store {
+103 +             _ => todo!(),
+104 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:150:15
+    |
+150 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+150 ~         match &store.as_store_mut().inner.store {
+151 +             _ => todo!(),
+152 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:209:15
+    |
+209 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+209 ~         match &store.as_store_mut().inner.store {
+210 +             _ => todo!(),
+211 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:270:22
+    |
+270 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:356:22
+    |
+356 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:369:22
+    |
+369 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:376:15
+    |
+376 |         match self {
+    |               ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+376 ~         match self {
+377 +             _ => todo!(),
+378 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:394:15
+    |
+394 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+394 ~         match &store.as_store_mut().inner.store {
+395 +             _ => todo!(),
+396 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:560:15
+    |
+560 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+560 ~         match &store.as_store_mut().inner.store {
+561 +             _ => todo!(),
+562 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:595:22
+    |
+595 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&function::inner::BackendFunction` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:602:22
+    |
+602 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::inner::BackendFunction` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/inner.rs:28:1
+    |
+28  | / gen_rt_ty!(Function
+29  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+30  | |     @derives Debug, Clone, PartialEq, Eq
+31  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&function::inner::BackendFunction`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnv<T>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:33:15
+   |
+33 |         match self {
+   |               ^^^^
+   |
+note: `function::env::inner::BackendFunctionEnv<T>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:10:10
+   |
+10 | pub enum BackendFunctionEnv<T> {
+   |          ^^^^^^^^^^^^^^^^^^
+   = note: the matched value is of type `&function::env::inner::BackendFunctionEnv<T>`
+   = note: references are always considered inhabited
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+33 ~         match self {
+34 +             _ => todo!(),
+35 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnv<T>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:98:22
+   |
+98 |         match_rt!(on self => f {
+   |                      ^^^^
+   |
+note: `function::env::inner::BackendFunctionEnv<T>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:10:10
+   |
+10 | pub enum BackendFunctionEnv<T> {
+   |          ^^^^^^^^^^^^^^^^^^
+   = note: the matched value is of type `&function::env::inner::BackendFunctionEnv<T>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnv<T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:108:22
+    |
+108 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnv<T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:10:10
+    |
+10  | pub enum BackendFunctionEnv<T> {
+    |          ^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&function::env::inner::BackendFunctionEnv<T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:153:22
+    |
+153 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:160:22
+    |
+160 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:167:15
+    |
+167 |         match self {
+    |               ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+167 ~         match self {
+168 +             _ => todo!(),
+169 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:185:15
+    |
+185 |         match self {
+    |               ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+185 ~         match self {
+186 +             _ => todo!(),
+187 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:203:22
+    |
+203 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&&function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:211:22
+    |
+211 |         match_rt!(on &self => f {
+    |                      ^^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&&function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:219:22
+    |
+219 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:225:22
+    |
+225 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&mut function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&function::env::inner::BackendFunctionEnvMut<'_, T>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:236:22
+    |
+236 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `function::env::inner::BackendFunctionEnvMut<'_, T>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/function/env/inner.rs:126:10
+    |
+126 | pub enum BackendFunctionEnvMut<'a, T: 'a> {
+    |          ^^^^^^^^^^^^^^^^^^^^^
+    = note: the matched value is of type `&function::env::inner::BackendFunctionEnvMut<'_, T>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:25:15
+   |
+25 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+25 ~         match &store.as_store_mut().inner.store {
+26 +             _ => todo!(),
+27 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&tag::inner::BackendTag` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:56:22
+   |
+56 |         match_rt!(on self => f {
+   |                      ^^^^
+   |
+note: `tag::inner::BackendTag` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:15:1
+   |
+15 | / gen_rt_ty!(Tag
+16 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+17 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+18 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&tag::inner::BackendTag`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:63:15
+   |
+63 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+63 ~         match &store.as_store_mut().inner.store {
+64 +             _ => todo!(),
+65 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&tag::inner::BackendTag` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:94:22
+   |
+94 |         match_rt!(on self => f {
+   |                      ^^^^
+   |
+note: `tag::inner::BackendTag` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:15:1
+   |
+15 | / gen_rt_ty!(Tag
+16 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+17 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+18 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&tag::inner::BackendTag`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&tag::inner::BackendTag` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:102:22
+    |
+102 |         match_rt!(on self => f {
+    |                      ^^^^
+    |
+note: `tag::inner::BackendTag` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/tag/inner.rs:15:1
+    |
+15  | / gen_rt_ty!(Tag
+16  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+17  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+18  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&tag::inner::BackendTag`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:16:15
+   |
+16 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+16 ~         match &store.as_store_mut().inner.store {
+17 +             _ => todo!(),
+18 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&exnref::inner::BackendExceptionRef` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:49:22
+   |
+49 |         match_rt!(on self => r {
+   |                      ^^^^
+   |
+note: `exnref::inner::BackendExceptionRef` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:8:1
+   |
+8  | gen_rt_ty!(ExceptionRef @derives derive_more::From, Debug, Clone ; @path exception);
+   | ----------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&exnref::inner::BackendExceptionRef`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&exnref::inner::BackendExceptionRef` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:56:15
+   |
+56 |         match self {
+   |               ^^^^
+   |
+note: `exnref::inner::BackendExceptionRef` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:8:1
+   |
+8  | gen_rt_ty!(ExceptionRef @derives derive_more::From, Debug, Clone ; @path exception);
+   | ----------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&exnref::inner::BackendExceptionRef`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+56 ~         match self {
+57 +             _ => todo!(),
+58 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:77:15
+   |
+77 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+77 ~         match &store.as_store_mut().inner.store {
+78 +             _ => todo!(),
+79 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&exnref::inner::BackendExceptionRef` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:131:22
+    |
+131 |         match_rt!(on self => r {
+    |                      ^^^^
+    |
+note: `exnref::inner::BackendExceptionRef` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/exnref/inner.rs:8:1
+    |
+8   | gen_rt_ty!(ExceptionRef @derives derive_more::From, Debug, Clone ; @path exception);
+    | ----------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&exnref::inner::BackendExceptionRef`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/exception/inner.rs:22:15
+   |
+22 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+22 ~         match &store.as_store_mut().inner.store {
+23 +             _ => todo!(),
+24 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:66:15
+   |
+66 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+66 ~         match &store.as_store_mut().inner.store {
+67 +             _ => todo!(),
+68 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&global::inner::BackendGlobal` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:111:22
+    |
+111 |         match_rt!(on self => g {
+    |                      ^^^^
+    |
+note: `global::inner::BackendGlobal` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:17:1
+    |
+17  | / gen_rt_ty!(Global
+18  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+19  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+20  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&global::inner::BackendGlobal`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&global::inner::BackendGlobal` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:130:22
+    |
+130 |         match_rt!(on self => g {
+    |                      ^^^^
+    |
+note: `global::inner::BackendGlobal` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:17:1
+    |
+17  | / gen_rt_ty!(Global
+18  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+19  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+20  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&global::inner::BackendGlobal`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&global::inner::BackendGlobal` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:178:22
+    |
+178 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `global::inner::BackendGlobal` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:17:1
+    |
+17  | / gen_rt_ty!(Global
+18  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+19  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+20  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&global::inner::BackendGlobal`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:185:15
+    |
+185 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+185 ~         match &store.as_store_mut().inner.store {
+186 +             _ => todo!(),
+187 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&global::inner::BackendGlobal` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:216:22
+    |
+216 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `global::inner::BackendGlobal` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:17:1
+    |
+17  | / gen_rt_ty!(Global
+18  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+19  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+20  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&global::inner::BackendGlobal`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&global::inner::BackendGlobal` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:224:22
+    |
+224 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `global::inner::BackendGlobal` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/global/inner.rs:17:1
+    |
+17  | / gen_rt_ty!(Global
+18  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+19  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+20  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&global::inner::BackendGlobal`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:36:15
+   |
+36 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+36 ~         match &store.as_store_mut().inner.store {
+37 +             _ => todo!(),
+38 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:67:22
+   |
+67 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `table::inner::BackendTable` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+   |
+19 | / gen_rt_ty!(Table
+20 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&table::inner::BackendTable`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:75:22
+   |
+75 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `table::inner::BackendTable` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+   |
+19 | / gen_rt_ty!(Table
+20 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&table::inner::BackendTable`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:88:22
+   |
+88 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `table::inner::BackendTable` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+   |
+19 | / gen_rt_ty!(Table
+20 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&table::inner::BackendTable`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:96:22
+   |
+96 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `table::inner::BackendTable` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+   |
+40 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+   |
+19 | / gen_rt_ty!(Table
+20 | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21 | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&table::inner::BackendTable`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:117:22
+    |
+117 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `table::inner::BackendTable` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+    |
+19  | / gen_rt_ty!(Table
+20  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&table::inner::BackendTable`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:138:15
+    |
+138 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+138 ~         match &store.as_store_mut().inner.store {
+139 +             _ => todo!(),
+140 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:199:15
+    |
+199 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+199 ~         match &store.as_store_mut().inner.store {
+200 +             _ => todo!(),
+201 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:230:22
+    |
+230 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `table::inner::BackendTable` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+    |
+19  | / gen_rt_ty!(Table
+20  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&table::inner::BackendTable`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&table::inner::BackendTable` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:237:22
+    |
+237 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `table::inner::BackendTable` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/table/inner.rs:19:1
+    |
+19  | / gen_rt_ty!(Table
+20  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+21  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+22  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&table::inner::BackendTable`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::buffer::inner::BackendMemoryBuffer<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:18:22
+   |
+18 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `memory::buffer::inner::BackendMemoryBuffer<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:1
+   |
+9  | / gen_rt_ty!(MemoryBuffer<'a>
+10 | |     @derives Debug, Copy, Clone, derive_more::From;
+11 | |     @path memory
+12 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&memory::buffer::inner::BackendMemoryBuffer<'_>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::buffer::inner::BackendMemoryBuffer<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:30:22
+   |
+30 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `memory::buffer::inner::BackendMemoryBuffer<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:1
+   |
+9  | / gen_rt_ty!(MemoryBuffer<'a>
+10 | |     @derives Debug, Copy, Clone, derive_more::From;
+11 | |     @path memory
+12 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&memory::buffer::inner::BackendMemoryBuffer<'_>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::buffer::inner::BackendMemoryBuffer<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:38:22
+   |
+38 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `memory::buffer::inner::BackendMemoryBuffer<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:1
+   |
+9  | / gen_rt_ty!(MemoryBuffer<'a>
+10 | |     @derives Debug, Copy, Clone, derive_more::From;
+11 | |     @path memory
+12 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&memory::buffer::inner::BackendMemoryBuffer<'_>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::buffer::inner::BackendMemoryBuffer<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:45:15
+   |
+45 |         match self {
+   |               ^^^^
+   |
+note: `memory::buffer::inner::BackendMemoryBuffer<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:1
+   |
+9  | / gen_rt_ty!(MemoryBuffer<'a>
+10 | |     @derives Debug, Copy, Clone, derive_more::From;
+11 | |     @path memory
+12 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&memory::buffer::inner::BackendMemoryBuffer<'_>`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+45 ~         match self {
+46 +             _ => todo!(),
+47 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&memory::buffer::inner::BackendMemoryBuffer<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:68:15
+   |
+68 |         match self {
+   |               ^^^^
+   |
+note: `memory::buffer::inner::BackendMemoryBuffer<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                               ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/buffer/inner.rs:9:1
+   |
+9  | / gen_rt_ty!(MemoryBuffer<'a>
+10 | |     @derives Debug, Copy, Clone, derive_more::From;
+11 | |     @path memory
+12 | | );
+   | |_- in this macro invocation
+   = note: the matched value is of type `&memory::buffer::inner::BackendMemoryBuffer<'_>`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+68 ~         match self {
+69 +             _ => todo!(),
+70 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:31:15
+   |
+31 |         match &store.as_store_mut().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+31 ~         match &store.as_store_mut().inner.store {
+32 +             _ => todo!(),
+33 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:123:22
+    |
+123 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:169:22
+    |
+169 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:185:22
+    |
+185 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:193:22
+    |
+193 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:213:15
+    |
+213 |         match self {
+    |               ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+213 ~         match self {
+214 +             _ => todo!(),
+215 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:247:15
+    |
+247 |         match &store.as_store_mut().inner.store {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: `entities::store::inner::BackendStore` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+    |
+41  | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+    | ---------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&entities::store::inner::BackendStore`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+247 ~         match &store.as_store_mut().inner.store {
+248 +             _ => todo!(),
+249 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:278:22
+    |
+278 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:291:15
+    |
+291 |         match self {
+    |               ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+291 ~         match self {
+292 +             _ => todo!(),
+293 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:322:15
+    |
+322 |         match self {
+    |               ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+322 ~         match self {
+323 +             _ => todo!(),
+324 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:362:22
+    |
+362 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::inner::BackendMemory` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:370:22
+    |
+370 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::inner::BackendMemory` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:40:29
+    |
+40  |               pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                               ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/inner.rs:10:1
+    |
+10  | / gen_rt_ty!(Memory
+11  | |     @cfg feature = "artifact-size" => derive(loupe::MemoryUsage)
+12  | |     @derives Debug, Clone, PartialEq, Eq, derive_more::From
+13  | | );
+    | |_- in this macro invocation
+    = note: the matched value is of type `&memory::inner::BackendMemory`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&entities::store::inner::BackendStore` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:21:15
+   |
+21 |         match &store.as_store_ref().inner.store {
+   |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+note: `entities::store::inner::BackendStore` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/store/inner.rs:41:1
+   |
+41 | gen_rt_ty!(Store @derives derive_more::From, Debug; @path store);
+   | ---------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&entities::store::inner::BackendStore`
+   = note: references are always considered inhabited
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+   |
+21 ~         match &store.as_store_ref().inner.store {
+22 +             _ => todo!(),
+23 +         }
+   |
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:82:22
+   |
+82 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+   |
+16 | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+   | --------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:90:22
+   |
+90 |         match_rt!(on self => s {
+   |                      ^^^^
+   |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+  --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+   |
+73 |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+   |                             ^^^^^^^^^^^^^^^
+   |
+  ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+   |
+16 | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+   | --------------------------------------------------------------------------------- in this macro invocation
+   = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+   = note: references are always considered inhabited
+   = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+   = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:105:22
+    |
+105 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:123:22
+    |
+123 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:142:22
+    |
+142 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:149:15
+    |
+149 |         match self {
+    |               ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern as shown
+    |
+149 ~         match self {
+150 +             _ => todo!(),
+151 +         }
+    |
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:174:22
+    |
+174 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:185:22
+    |
+185 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:206:22
+    |
+206 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:220:22
+    |
+220 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&memory::view::inner::BackendMemoryView<'_>` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:231:22
+    |
+231 |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `memory::view::inner::BackendMemoryView<'_>` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/utils/macros/backend.rs:73:29
+    |
+73  |             pub(crate) enum [<Backend $id>]$(<$lt>)? {
+    |                             ^^^^^^^^^^^^^^^
+    |
+   ::: /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/entities/memory/view/inner.rs:16:1
+    |
+16  | gen_rt_ty!(MemoryView<'a> @derives Debug, derive_more::From ; @path memory::view);
+    | --------------------------------------------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&memory::view::inner::BackendMemoryView<'_>`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `gen_rt_ty` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&vm::VMFunctionEnvironment` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/impls.rs:17:22
+    |
+17  |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `vm::VMFunctionEnvironment` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:207:18
+    |
+207 |         pub enum [<VM $name>] {
+    |                  ^^^^^^^^^^^^
+...
+400 | define_vm_like!(FunctionEnvironment, Debug);
+    | ------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&vm::VMFunctionEnvironment`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0004]: non-exhaustive patterns: type `&mut vm::VMFunctionEnvironment` is non-empty
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/impls.rs:25:22
+    |
+25  |         match_rt!(on self => s {
+    |                      ^^^^
+    |
+note: `vm::VMFunctionEnvironment` defined here
+   --> /home/galu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/wasmer-6.0.0-beta.1/src/vm/mod.rs:207:18
+    |
+207 |         pub enum [<VM $name>] {
+    |                  ^^^^^^^^^^^^
+...
+400 | define_vm_like!(FunctionEnvironment, Debug);
+    | ------------------------------------------- in this macro invocation
+    = note: the matched value is of type `&mut vm::VMFunctionEnvironment`
+    = note: references are always considered inhabited
+    = help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern
+    = note: this error originates in the macro `define_vm_like` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0004, E0084, E0277, E0282, E0283, E0392, E0599.
+For more information about an error, try `rustc --explain E0004`.
+error: could not compile `wasmer` (lib) due to 154 previous errors
+warning: build failed, waiting for other jobs to finish...

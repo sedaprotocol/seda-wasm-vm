@@ -12,6 +12,7 @@ wasmer-types = { workspace = true }
 [dev-dependencies]
 wasmer = { workspace = true, default-features = false, features = [
 	"compiler",
+	"singlepass",
+	"sys",
 	"wat",
-	"singlepass"
-	] }
+] }

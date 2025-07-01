@@ -30,6 +30,7 @@ rpath = true
 [workspace.dependencies]
 anyhow = "1.0"
 arbitrary = { version = "1.4", features = ["derive"] }
+cargo_metadata = { version = "0.20" }
 cbindgen = "0.26"
 hex = "0.4"
 home = "0.5.5"
@@ -51,16 +52,13 @@ tracing = { version = "0.1", features = ["log-always"] }
 tracing-subscriber = "0.3"
 tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
-wasmer = { version = "4.3.7", default-features = false }
-wasmer-types = { version = "4.3.7" }
+wasmer = { version = "6.0.1", default-features = false }
+wasmer-types = { version = "6.0.1" }
 wasmer-middlewares = { path = "./runtime/wasmer-middlewares" }
-wasmer-wasix = { version = "0.27", default-features = false, features = [
-	"sys",
-	"logging",
+wasmer-wasix = { version = "0.600.1", default-features = false, features = [
 	"host-fs",
+	"sys",
 	"sys-thread",
-	"sys-poll",
-	"host-threads",
 ] }
 which = "7.0"
 xshell = "0.2"

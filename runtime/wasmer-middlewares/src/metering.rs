@@ -15,17 +15,14 @@ use std::{
 };
 
 use wasmer::{
+    sys::{FunctionMiddleware, MiddlewareError, MiddlewareReaderState, ModuleMiddleware},
     wasmparser::{BlockType as WpTypeOrFuncType, Operator},
     AsStoreMut,
     ExportIndex,
-    FunctionMiddleware,
     GlobalInit,
     GlobalType,
     Instance,
     LocalFunctionIndex,
-    MiddlewareError,
-    MiddlewareReaderState,
-    ModuleMiddleware,
     Mutability,
     Type,
 };
@@ -400,7 +397,14 @@ pub fn set_remaining_points(ctx: &mut impl AsStoreMut, instance: &Instance, poin
 mod tests {
     use std::sync::Arc;
 
-    use wasmer::{imports, sys::EngineBuilder, wat2wasm, CompilerConfig, Module, Singlepass, Store, TypedFunction};
+    use wasmer::{
+        imports,
+        sys::{CompilerConfig, EngineBuilder, Singlepass},
+        wat2wasm,
+        Module,
+        Store,
+        TypedFunction,
+    };
 
     use super::*;
 

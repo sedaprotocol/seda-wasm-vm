@@ -20,13 +20,18 @@ sha3 = { workspace = true }
 seahash = { workspace = true }
 tempdir.workspace = true
 thiserror = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["rt-multi-thread"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 tracing-appender.workspace = true
-wasmer = { workspace = true, features = ["singlepass"] }
+wasmer = { workspace = true, features = [
+	"compiler",
+	"singlepass",
+	"sys",
+	"wat",
+] }
 wasmer-middlewares = { workspace = true }
 wasmer-wasix = { workspace = true }
 
 [build-dependencies]
-cargo_metadata = { version = "0.20" }
+cargo_metadata.workspace = true
