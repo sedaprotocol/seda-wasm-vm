@@ -2725,11 +2725,13 @@ version = "2.5.0"
 dependencies = [
  "cbindgen",
  "hex",
+ "rayon",
  "seda-runtime-sdk",
  "seda-wasm-vm",
  "serde_json",
  "tempdir",
  "thiserror 1.0.64",
+ "tokio",
  "tracing",
  "tracing-appender",
 ]

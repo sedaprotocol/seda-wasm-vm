@@ -19,7 +19,6 @@ use wasmer::{
     wasmparser::{BlockType as WpTypeOrFuncType, Operator},
     AsStoreMut,
     ExportIndex,
-    FunctionMiddleware,
     GlobalInit,
     GlobalType,
     Instance,

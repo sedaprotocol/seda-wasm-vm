@@ -7,6 +7,7 @@ use std::{
     sync::OnceLock,
 };
 
+use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
 use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, RuntimeError, VmCallData, VmResult};
 
@@ -153,65 +154,78 @@ pub unsafe extern "C" fn free_ffi_vm_result(vm_result: *mut FfiVmResult) {
     free_ffi_exit_info(&mut (*vm_result).exit_info);
 }
 
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn execute_tally_vm(
-    sedad_home: *const c_char,
-    wasm_bytes: *const u8,
-    wasm_bytes_len: usize,
-    args_ptr: *const *const c_char,
-    args_count: usize,
-    env_keys_ptr: *const *const c_char,
-    env_values_ptr: *const *const c_char,
-    env_count: usize,
-    max_result_bytes: usize,
-    stdout_limit: usize,
-    stderr_limit: usize,
-) -> FfiVmResult {
-    let result = std::panic::catch_unwind(|| {
-        #[cfg(test)]
-        {
-            let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
-            if should_panic == "true" {
-                panic!("Panic for testing");
-            }
+#[repr(C)]
+pub struct FfiVmSettings {
+    pub sedad_home:       *const c_char,
+    pub max_result_bytes: usize,
+    pub stdout_limit:     usize,
+    pub stderr_limit:     usize,
+}
+
+pub struct VmSettings {
+    pub sedad_home:       PathBuf,
+    pub max_result_bytes: usize,
+    pub stdout_limit:     usize,
+    pub stderr_limit:     usize,
+}
+
+impl FfiVmSettings {
+    unsafe fn into_rust(self) -> VmSettings {
+        VmSettings {
+            sedad_home:       PathBuf::from(CStr::from_ptr(self.sedad_home).to_string_lossy().into_owned()),
+            max_result_bytes: self.max_result_bytes,
+            stdout_limit:     self.stdout_limit,
+            stderr_limit:     self.stderr_limit,
         }
+    }
+}
 
-        static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
-        let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
-        let sedad_home = PathBuf::from(sedad_home);
-        let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
+#[derive(Debug, Clone)]
+#[repr(C)]
+pub struct FfiTallyRequest {
+    pub wasm_bytes:     *const u8,
+    pub wasm_bytes_len: usize,
+    pub args_ptr:       *const *const c_char,
+    pub args_count:     usize,
+    pub env_keys_ptr:   *const *const c_char,
+    pub env_values_ptr: *const *const c_char,
+    pub env_count:      usize,
+}
 
-        let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
+pub struct TallyRequest {
+    pub wasm_bytes: Vec<u8>,
+    pub args:       Vec<String>,
+    pub envs:       BTreeMap<String, String>,
+}
 
-        let args: Vec<String> = (0..args_count)
-            .map(|i| {
-                let ptr = *args_ptr.add(i);
-                CStr::from_ptr(ptr).to_string_lossy().into_owned()
-            })
-            .collect();
-
-        let mut envs = BTreeMap::new();
-        for i in 0..env_count {
-            let key_ptr = *env_keys_ptr.add(i);
-            let value_ptr = *env_values_ptr.add(i);
-
-            let key = CStr::from_ptr(key_ptr).to_string_lossy().into_owned();
-            let value = CStr::from_ptr(value_ptr).to_string_lossy().into_owned();
-
-            envs.insert(key, value);
+impl FfiTallyRequest {
+    unsafe fn into_rust(self) -> TallyRequest {
+        TallyRequest {
+            wasm_bytes: std::slice::from_raw_parts(self.wasm_bytes, self.wasm_bytes_len).to_vec(),
+            args:       (0..self.args_count)
+                .map(|i| {
+                    let ptr = *self.args_ptr.add(i);
+                    CStr::from_ptr(ptr).to_string_lossy().into_owned()
+                })
+                .collect(),
+            envs:       (0..self.env_count)
+                .map(|i| {
+                    let key_ptr = *self.env_keys_ptr.add(i);
+                    let value_ptr = *self.env_values_ptr.add(i);
+                    (
+                        CStr::from_ptr(key_ptr).to_string_lossy().into_owned(),
+                        CStr::from_ptr(value_ptr).to_string_lossy().into_owned(),
+                    )
+                })
+                .collect(),
         }
+    }
+}
 
-        let is_tally = envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
-        (
-            _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit),
-            is_tally,
-        )
-    });
-
+fn convert_vm_result(result: Result<VmResult>, max_result_bytes: usize, is_tally: bool) -> FfiVmResult {
     match result {
-        Ok((Ok(vm_result), is_tally)) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
-        Ok((Err(e), _)) => FfiVmResult {
+        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
+        Err(e) => FfiVmResult {
             stdout_ptr: std::ptr::null(),
             stdout_len: 0,
             stderr_ptr: std::ptr::null(),
@@ -224,7 +238,12 @@ pub unsafe extern "C" fn execute_tally_vm(
             },
             gas_used:   0,
         },
+    }
+}
 
+fn convert_panic_hook_result(result: core::result::Result<FfiVmResult, Box<dyn std::any::Any + Send>>) -> FfiVmResult {
+    match result {
+        Ok(vm_result) => vm_result,
         Err(e) => FfiVmResult {
             stdout_ptr: std::ptr::null(),
             stdout_len: 0,
@@ -247,6 +266,181 @@ pub unsafe extern "C" fn execute_tally_vm(
             gas_used:   0,
         },
     }
+}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_request(settings: FfiVmSettings, request: FfiTallyRequest) -> FfiVmResult {
+    let result = std::panic::catch_unwind(|| {
+        #[cfg(test)]
+        {
+            let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
+            if should_panic == "true" {
+                panic!("Panic for testing");
+            }
+        }
+
+        let request = request.into_rust();
+        let vm_settings = settings.into_rust();
+
+        static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
+        let _guard = LOG_GUARD.get_or_init(|| init_logger(&vm_settings.sedad_home));
+
+        let rt = tokio::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create Tokio runtime");
+        let _guard = rt.enter();
+
+        let is_tally = request.envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
+        let res = convert_vm_result(
+            _execute_tally_vm(
+                &vm_settings.sedad_home,
+                request.wasm_bytes,
+                request.args,
+                request.envs,
+                vm_settings.stdout_limit,
+                vm_settings.stderr_limit,
+            ),
+            vm_settings.max_result_bytes,
+            is_tally,
+        );
+
+        drop(_guard); // Ensure the Tokio runtime is dropped before returning
+        drop(rt);
+
+        res
+    });
+
+    convert_panic_hook_result(result)
+}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_requests(
+    settings: FfiVmSettings,
+    request: *const FfiTallyRequest,
+    count: usize,
+) -> *const FfiVmResult {
+    let vm_settings = settings.into_rust();
+    static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
+    let _guard = LOG_GUARD.get_or_init(|| init_logger(&vm_settings.sedad_home));
+
+    // Convert the request pointer to a slice of requests
+    let mut results = Vec::with_capacity(count);
+    let requests = std::slice::from_raw_parts(request, count);
+    // Convert each request from FfiTallyRequest to TallyRequest
+    for raw_request_ptr in requests {
+        let raw_request = std::ptr::read(raw_request_ptr);
+        let request = raw_request.into_rust();
+
+        let is_tally = request.envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
+        let result = std::panic::catch_unwind(|| {
+            #[cfg(test)]
+            {
+                let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
+                if should_panic == "true" {
+                    panic!("Panic for testing");
+                }
+            }
+
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to create Tokio runtime");
+            let _guard = rt.enter();
+
+            let res = convert_vm_result(
+                _execute_tally_vm(
+                    &vm_settings.sedad_home,
+                    request.wasm_bytes,
+                    request.args,
+                    request.envs,
+                    vm_settings.stdout_limit,
+                    vm_settings.stderr_limit,
+                ),
+                vm_settings.max_result_bytes,
+                is_tally,
+            );
+
+            drop(_guard);
+            drop(rt);
+
+            res
+        });
+
+        results.push(convert_panic_hook_result(result));
+    }
+
+    // convert results
+    let boxed: Box<[FfiVmResult]> = results.into_boxed_slice();
+    let ptr = boxed.as_ptr();
+    std::mem::forget(boxed);
+    ptr
+}
+
+unsafe impl Send for FfiTallyRequest {}
+unsafe impl Send for FfiVmResult {}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_requests_parallel(
+    settings: FfiVmSettings,
+    request: *const FfiTallyRequest,
+    count: usize,
+) -> *const FfiVmResult {
+    let vm_settings = settings.into_rust();
+    static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
+    let _guard = LOG_GUARD.get_or_init(|| init_logger(&vm_settings.sedad_home));
+
+    let requests = std::slice::from_raw_parts(request, count).to_vec();
+
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .expect("Failed to create Tokio runtime");
+    let _guard = rt.enter();
+
+    let results: Vec<FfiVmResult> = requests
+        .into_par_iter()
+        .map(|raw_request| {
+            let request = raw_request.into_rust();
+
+            let is_tally = request.envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
+            let result = std::panic::catch_unwind(|| {
+                #[cfg(test)]
+                {
+                    let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
+                    if should_panic == "true" {
+                        panic!("Panic for testing");
+                    }
+                }
+
+                convert_vm_result(
+                    _execute_tally_vm(
+                        &vm_settings.sedad_home,
+                        request.wasm_bytes,
+                        request.args,
+                        request.envs,
+                        vm_settings.stdout_limit,
+                        vm_settings.stderr_limit,
+                    ),
+                    vm_settings.max_result_bytes,
+                    is_tally,
+                )
+            });
+
+            convert_panic_hook_result(result)
+        })
+        .collect();
+
+    drop(_guard); // Ensure the Tokio runtime is dropped before returning
+    drop(rt);
+
+    let boxed: Box<[FfiVmResult]> = results.into_boxed_slice();
+    let ptr = boxed.as_ptr();
+    std::mem::forget(boxed);
+    ptr
 }
 
 const DEFAULT_GAS_LIMIT_ENV_VAR: &str = "DR_TALLY_GAS_LIMIT";
@@ -298,7 +492,7 @@ mod test {
     use seda_runtime_sdk::ToBytes;
     use tempdir::TempDir;
 
-    use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
+    use crate::{FfiTallyRequest, FfiVmSettings, _execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
     #[test]
     fn can_get_runtime_versions() {
@@ -347,7 +541,7 @@ mod test {
     }
 
     #[test]
-    fn cache_invalidates_on_new_version() {
+    fn timing_cache_invalidates_on_new_version() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("CONSENSUS".to_string(), "true".to_string());
@@ -383,12 +577,20 @@ mod test {
         println!("Second run took: {:?}", second_run);
 
         // second run should be about the same as the first run
-        let diff = second_run.as_millis() as i64 - first_run.as_millis() as i64;
-        println!("Diff: {diff}ms");
+        let diff = if first_run > second_run {
+            first_run - second_run
+        } else {
+            second_run - first_run
+        };
+        println!("Diff: {}ms", diff.as_millis());
         // Allow a 50% difference, as the first run might be slower due to cache
         // warmup, but the second run should be about the same.
-        // it shouldn't be as much as 50% but accounting for CI variance + bulk running tests
-        assert!(diff.abs() < (first_run.as_millis() as f64 * 0.5) as i64);
+        // Use relative difference for robust comparison.
+        let max_run = std::cmp::max(first_run, second_run);
+        assert!(
+            diff.as_secs_f64() / max_run.as_secs_f64() < 0.5,
+            "Difference is more than 50%"
+        );
     }
 
     #[test]
@@ -452,21 +654,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1024,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1024,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let result_msg = unsafe {
             CStr::from_ptr(result.result_ptr as *const c_char)
@@ -516,21 +722,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1, // Set to 1 byte to force the error
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let exit_msg = unsafe {
             CStr::from_ptr(result.exit_info.exit_message)
@@ -580,21 +790,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit_does_not_matter_for_dr_mode").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let exit_msg = unsafe {
             CStr::from_ptr(result.exit_info.exit_message)
@@ -917,21 +1131,26 @@ mod test {
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1024,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1024,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
+
         std::env::remove_var("_GIBBERISH_CHECK_TO_PANIC");
 
         let exit_msg = unsafe {
