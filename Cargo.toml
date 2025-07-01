@@ -52,10 +52,10 @@ tracing = { version = "0.1", features = ["log-always"] }
 tracing-subscriber = "0.3"
 tracing-appender = "0.2"
 url = { version = "2.3", default-features = false }
-wasmer = { version = "6.0.1", default-features = false }
-wasmer-types = { version = "6.0.1" }
+wasmer = { version = "5.0.4", default-features = false }
+wasmer-types = { version = "5.0.4" }
 wasmer-middlewares = { path = "./runtime/wasmer-middlewares" }
-wasmer-wasix = { version = "0.600.1", default-features = false, features = [
+wasmer-wasix = { version = "0.34.0", default-features = false, features = [
 	"host-fs",
 	"sys",
 	"sys-thread",

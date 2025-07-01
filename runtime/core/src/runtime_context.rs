@@ -2,11 +2,12 @@ use std::{fs, path::Path, sync::Arc};
 
 use seda_runtime_sdk::{VmCallData, WasmId};
 use wasmer::{
-    sys::{BaseTunables, CompilerConfig, NativeEngineExt, Singlepass, Target},
+    sys::{BaseTunables, CompilerConfig, NativeEngineExt, Singlepass},
     Engine,
     Module,
     Pages,
     Store,
+    Target,
 };
 use wasmer_middlewares::Metering;
 

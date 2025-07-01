@@ -1,15 +1,11 @@
 use std::ptr::NonNull;
 
 use wasmer::{
-    sys::{
-        vm::{VMMemory, VMMemoryDefinition, VMTable, VMTableDefinition},
-        Tunables,
-    },
+    sys::Tunables,
+    vm::{MemoryStyle, TableStyle, VMMemory, VMMemoryDefinition, VMTable, VMTableDefinition},
     MemoryError,
-    MemoryStyle,
     MemoryType,
     Pages,
-    TableStyle,
     TableType,
 };
 
