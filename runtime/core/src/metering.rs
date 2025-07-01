@@ -70,9 +70,7 @@ pub fn get_wasm_operation_gas_cost(operator: &Operator) -> u64 {
     }
 
     match operator {
-        Operator::MemoryGrow { mem, mem_byte: _ } => {
-            GAS_MEMORY_GROW_BASE + ((WASM_PAGE_SIZE as u64 * *mem as u64) * GAS_PER_BYTE)
-        }
+        Operator::MemoryGrow { mem } => GAS_MEMORY_GROW_BASE + ((WASM_PAGE_SIZE as u64 * *mem as u64) * GAS_PER_BYTE),
         _ => GAS_PER_OPERATION,
     }
 }
