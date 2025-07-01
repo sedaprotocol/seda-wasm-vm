@@ -23,3 +23,6 @@ tracing-appender.workspace = true
 wasmer = { workspace = true, features = ["singlepass"] }
 wasmer-middlewares = { workspace = true }
 wasmer-wasix = { workspace = true }
+
+[build-dependencies]
+cargo_metadata = { version = "0.20" }

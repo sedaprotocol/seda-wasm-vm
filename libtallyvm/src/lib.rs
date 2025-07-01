@@ -300,6 +300,14 @@ mod test {
     use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
     #[test]
+    fn can_get_runtime_versions() {
+        assert_eq!(seda_wasm_vm::WASMER_VERSION, "4.3.7");
+        assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "4.3.7");
+        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "2.4.1");
+        assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.27.0");
+    }
+
+    #[test]
     fn execute_tally_vm() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();

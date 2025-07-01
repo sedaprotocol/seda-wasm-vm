@@ -46,7 +46,7 @@ jobs:
       - name: 🛠️ Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.80.1
+          toolchain: 1.82.0
 
       - name: 📥 Install Dependencies
         run: |

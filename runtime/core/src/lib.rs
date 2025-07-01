@@ -16,6 +16,11 @@ pub mod wasm_cache;
 
 use std::path::Path;
 
+pub const WASMER_VERSION: &str = env!("WASMER_VERSION");
+pub const WASMER_TYPES_VERSION: &str = env!("WASMER_TYPES_VERSION");
+pub const WASMER_MIDDLEWARES_VERSION: &str = env!("WASMER_MIDDLEWARES_VERSION");
+pub const WASMER_WASIX_VERSION: &str = env!("WASMER_WASIX_VERSION");
+
 pub use context::VmContext;
 pub use core_vm_imports::create_custom_core_imports;
 pub use errors::RuntimeError;
