@@ -19,5 +19,6 @@ tracing-appender.workspace = true
 cbindgen.workspace = true
 
 [dev-dependencies]
+seda-wasm-vm = { workspace = true, features = ["test-utils"] }
 serde_json.workspace = true
 tempdir.workspace = true
