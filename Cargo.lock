@@ -2732,10 +2732,12 @@ dependencies = [
  "cbindgen",
  "hex",
  "seda-sdk-rs 1.0.0",
+ "rayon",
  "seda-wasm-vm",
  "serde_json",
  "tempdir",
  "thiserror 1.0.64",
+ "tokio",
  "tracing",
  "tracing-appender",
 ]

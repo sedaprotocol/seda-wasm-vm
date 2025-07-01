@@ -1,6 +1,7 @@
 use core::str;
 use std::io::Read;
 
+use tokio::task;
 use wasmer::Instance;
 use wasmer_middlewares::metering::{get_remaining_points, set_remaining_points, MeteringPoints};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
@@ -19,6 +20,35 @@ const MAX_VM_RESULT_SIZE_BYTES: usize = 96000;
 
 fn internal_run_vm(
     call_data: VmCallData,
+    context: RuntimeContext,
+    stdout: &mut Vec<String>,
+    stderr: &mut Vec<String>,
+    stdout_limit: usize,
+    stderr_limit: usize,
+) -> ExecutionResult<(Vec<u8>, i32, u64)> {
+    let mut local_stdout = std::mem::take(stdout);
+    let mut local_stderr = std::mem::take(stderr);
+
+    let (res, local_stdout, local_stderr) = task::block_in_place(move || {
+        let res = _internal_run_vm(
+            call_data,
+            context,
+            &mut local_stdout,
+            &mut local_stderr,
+            stdout_limit,
+            stderr_limit,
+        );
+
+        (res, local_stdout, local_stderr)
+    });
+    *stdout = local_stdout;
+    *stderr = local_stderr;
+
+    res
+}
+
+fn _internal_run_vm(
+    call_data: VmCallData,
     mut context: RuntimeContext,
     stdout: &mut Vec<String>,
     stderr: &mut Vec<String>,
@@ -27,12 +57,9 @@ fn internal_run_vm(
 ) -> ExecutionResult<(Vec<u8>, i32, u64)> {
     // If the gas limit is set, we need to calculate the startup cost
     let gas_cost = if let Some(gas_limit) = call_data.gas_limit {
-        // Errors if gas_cost doesn't fit in a u64 i.e. too expensive
         let Ok(Some(gas_cost)): Result<Option<u64>, _> = vm_gas_startup_cost(&call_data.args) else {
             return Err(VmResultStatus::GasStartupCostTooHigh(gas_limit));
         };
-
-        // If the startup cost is higher than the gas limit, we return an error
         if gas_cost > gas_limit {
             return Err(VmResultStatus::GasStartupCostTooHigh(gas_limit));
         }
@@ -46,15 +73,6 @@ fn internal_run_vm(
 
     let (stdout_tx, mut stdout_rx) = Pipe::channel();
     let (stderr_tx, mut stderr_rx) = Pipe::channel();
-
-    // leftovers from upgrading to wasmer 4.2.4...
-    // there has to be a cleaner way to do this
-    // maybe actix to spawn a future that times out???
-    let runtime = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap();
-    let _guard = runtime.enter();
 
     let mut wasi_env = WasiEnv::builder(function_name.clone())
         .envs(call_data.envs.clone())

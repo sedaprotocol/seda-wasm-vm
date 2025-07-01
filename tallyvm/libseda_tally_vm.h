@@ -25,6 +25,23 @@ typedef struct FfiVmResult {
   uint64_t gas_used;
 } FfiVmResult;
 
+typedef struct FfiVmSettings {
+  const char *sedad_home;
+  uintptr_t max_result_bytes;
+  uintptr_t stdout_limit;
+  uintptr_t stderr_limit;
+} FfiVmSettings;
+
+typedef struct FfiTallyRequest {
+  const uint8_t *wasm_bytes;
+  uintptr_t wasm_bytes_len;
+  const char *const *args_ptr;
+  uintptr_t args_count;
+  const char *const *env_keys_ptr;
+  const char *const *env_values_ptr;
+  uintptr_t env_count;
+} FfiTallyRequest;
+
 /**
  * # Safety
  */
@@ -38,14 +55,19 @@ void free_ffi_vm_result(struct FfiVmResult *vm_result);
 /**
  * # Safety
  */
-struct FfiVmResult execute_tally_vm(const char *sedad_home,
-                                    const uint8_t *wasm_bytes,
-                                    uintptr_t wasm_bytes_len,
-                                    const char *const *args_ptr,
-                                    uintptr_t args_count,
-                                    const char *const *env_keys_ptr,
-                                    const char *const *env_values_ptr,
-                                    uintptr_t env_count,
-                                    uintptr_t max_result_bytes,
-                                    uintptr_t stdout_limit,
-                                    uintptr_t stderr_limit);
+struct FfiVmResult execute_tally_request(struct FfiVmSettings settings,
+                                         struct FfiTallyRequest request);
+
+/**
+ * # Safety
+ */
+const struct FfiVmResult *execute_tally_requests(struct FfiVmSettings settings,
+                                                 const struct FfiTallyRequest *request,
+                                                 uintptr_t count);
+
+/**
+ * # Safety
+ */
+const struct FfiVmResult *execute_tally_requests_parallel(struct FfiVmSettings settings,
+                                                          const struct FfiTallyRequest *request,
+                                                          uintptr_t count);

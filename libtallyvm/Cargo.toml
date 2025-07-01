@@ -14,6 +14,8 @@ hex.workspace = true
 seda-sdk-rs = { workspace = true }
 tracing.workspace = true
 tracing-appender.workspace = true
+rayon = { version = "1.10" }
+tokio = { workspace = true, features = ["rt-multi-thread"] }
 
 [build-dependencies]
 cbindgen.workspace = true
