@@ -2731,8 +2731,8 @@ version = "2.5.0"
 dependencies = [
  "cbindgen",
  "hex",
- "seda-sdk-rs 1.0.0",
  "rayon",
+ "seda-sdk-rs 1.0.0",
  "seda-wasm-vm",
  "serde_json",
  "tempdir",

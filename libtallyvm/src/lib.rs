@@ -7,7 +7,6 @@ use std::{
 };
 
 use rayon::iter::{IntoParallelIterator, ParallelIterator};
-use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
 use seda_wasm_vm::{
     init_logger,
     start_runtime,
