@@ -4,6 +4,8 @@ package tallyvm
 import "C"
 
 import (
+	"fmt"
+	"runtime"
 	"sync"
 	"unsafe"
 )
@@ -178,6 +180,7 @@ func ExecuteTallyVm(
 	return buildResultFromC(&result)
 }
 
+// Might not need this?
 var cgoLock sync.Mutex
 
 func ExecuteMultipleFromGoInParallel(
@@ -187,13 +190,28 @@ func ExecuteMultipleFromGoInParallel(
 ) []VmResult {
 	var wg sync.WaitGroup
 	results := make([]VmResult, len(bytes))
+	maxProcs := runtime.GOMAXPROCS(-1) - 1
+
+	// Prevent too many goroutines from being created since they each call Cgo
+	// which creates a new thread.
+	semaphore := make(chan struct{}, maxProcs)
 	wg.Add(len(bytes))
+
 	for i := range bytes {
+		semaphore <- struct{}{}
+
 		go func(i int) {
-			defer wg.Done()
-			cgoLock.Lock()
-			results[i] = ExecuteTallyVm(bytes[i], args[i], envs[i])
-			cgoLock.Unlock()
+			defer func() {
+				<-semaphore
+				wg.Done()
+			}()
+
+			fmt.Println("Executing", i, maxProcs)
+			result := ExecuteTallyVm(bytes[i], args[i], envs[i])
+
+			// cgoLock.Lock()
+			results[i] = result
+			// cgoLock.Unlock()
 		}(i)
 	}
 	wg.Wait()
