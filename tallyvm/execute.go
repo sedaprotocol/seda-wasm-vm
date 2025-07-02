@@ -219,11 +219,13 @@ func ExecuteMultipleFromC(bytes [][]byte, args [][]string, envs []map[string]str
 		arr[i] = cReqs[i].req
 	}
 
+	cgoLock.Lock()
 	cResults := C.execute_tally_requests(
 		cSettings,
 		(*C.FfiTallyRequest)(cArray),
 		C.uintptr_t(count),
 	)
+	cgoLock.Unlock()
 
 	results := make([]VmResult, count)
 	slice := (*[1 << 30]C.FfiVmResult)(unsafe.Pointer(cResults))[:count:count]
