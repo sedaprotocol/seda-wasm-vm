@@ -15,17 +15,15 @@ use std::{
 };
 
 use wasmer::{
+    sys::{FunctionMiddleware, MiddlewareReaderState, ModuleMiddleware},
     wasmparser::{BlockType as WpTypeOrFuncType, Operator},
     AsStoreMut,
     ExportIndex,
-    FunctionMiddleware,
     GlobalInit,
     GlobalType,
     Instance,
     LocalFunctionIndex,
     MiddlewareError,
-    MiddlewareReaderState,
-    ModuleMiddleware,
     Mutability,
     Type,
 };

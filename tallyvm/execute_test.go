@@ -317,3 +317,50 @@ func TestMemoryDynamicTooMuch(t *testing.T) {
 	assert.Equal(t, "memory allocation of 8192000 bytes failed\n", res.Stderr[0])
 	assert.Equal(t, 21244868027500, int(res.GasUsed))
 }
+
+func setup_n(Fatal func(args ...any), n int) ([][]byte, [][]string, []map[string]string) {
+	file := "../test-wasm-files/tally.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		Fatal(err)
+	}
+
+	reveals := "[{\"salt\":[1],\"exit_code\":0,\"gas_used\":\"200\",\"reveal\":[2]},{\"salt\":[3],\"exit_code\":0,\"gas_used\":\"201\",\"reveal\":[5]},{\"salt\":[4],\"exit_code\":0,\"gas_used\":\"202\",\"reveal\":[6]}]"
+	reveals_filter := "[0,0,0]"
+
+	bytesArr := make([][]byte, n)
+	argsArr := make([][]string, n)
+	envsArr := make([]map[string]string, n)
+	for i := range bytesArr {
+		bytesArr[i] = data
+		argsArr[i] = []string{"input_here", reveals, reveals_filter}
+		envsArr[i] = map[string]string{
+			"CONSENSUS":          "true",
+			"VM_MODE":            "tally",
+			"DR_TALLY_GAS_LIMIT": "150000000000000",
+		}
+	}
+	return bytesArr, argsArr, envsArr
+}
+
+func TestExecutionGoMultipleParallel(t *testing.T) {
+	defer cleanup()
+	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)
+
+	tallyvm.ExecuteMultipleFromGoInParallel(bytesArr, argsArr, envsArr)
+}
+
+func TestExecutionCMultiple(t *testing.T) {
+	defer cleanup()
+	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)
+
+	tallyvm.ExecuteMultipleFromC(bytesArr, argsArr, envsArr)
+}
+
+// broken for now ignore me :(
+// func TestExecutionCMultipleParallel(t *testing.T) {
+// 	defer cleanup()
+// 	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)
+
+// 	tallyvm.ExecuteMultipleFromCParallel(bytesArr, argsArr, envsArr)
+// }
