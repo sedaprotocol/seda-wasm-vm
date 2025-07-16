@@ -302,10 +302,10 @@ mod test {
 
     #[test]
     fn can_get_runtime_versions() {
-        assert_eq!(seda_wasm_vm::WASMER_VERSION, "4.3.7");
-        assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "4.3.7");
+        assert_eq!(seda_wasm_vm::WASMER_VERSION, "5.0.4");
+        assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "5.0.4");
         assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "2.5.0");
-        assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.27.0");
+        assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.34.0");
     }
 
     #[test]
@@ -347,7 +347,7 @@ mod test {
     }
 
     #[test]
-    fn cache_invalidates_on_new_version() {
+    fn timing_cache_invalidates_on_new_version() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("CONSENSUS".to_string(), "true".to_string());
@@ -383,12 +383,20 @@ mod test {
         println!("Second run took: {:?}", second_run);
 
         // second run should be about the same as the first run
-        let diff = second_run.as_millis() as i64 - first_run.as_millis() as i64;
-        println!("Diff: {diff}ms");
+        let diff = if first_run > second_run {
+            first_run - second_run
+        } else {
+            second_run - first_run
+        };
+        println!("Diff: {}ms", diff.as_millis());
         // Allow a 50% difference, as the first run might be slower due to cache
         // warmup, but the second run should be about the same.
-        // it shouldn't be as much as 50% but accounting for CI variance + bulk running tests
-        assert!(diff.abs() < (first_run.as_millis() as f64 * 0.5) as i64);
+        // Use relative difference for robust comparison.
+        let max_run = std::cmp::max(first_run, second_run);
+        assert!(
+            diff.as_secs_f64() / max_run.as_secs_f64() < 0.5,
+            "Difference is more than 50%"
+        );
     }
 
     #[test]

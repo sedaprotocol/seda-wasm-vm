@@ -162,8 +162,10 @@ impl Compile {
                     "/opt/aarch64-linux-musl-cross/bin/aarch64-linux-musl-gcc"
                 };
                 std::env::set_var("CC", cc_path);
+                std::env::set_var("CRATE_CC_NO_DEFAULTS", "1");
                 "libseda_tally_vm_muslc.aarch64.a"
             }
+
             Arch::StaticX86_64 => "libseda_tally_vm_muslc.x86_64.a",
         };
 
@@ -180,8 +182,23 @@ impl Compile {
             target_dir.join(target).join(path).join(arch.filename()),
             target_dir.join(rename),
         )?;
+
         std::env::remove_var("CC");
         std::env::remove_var("CXX");
+        match arch {
+            Arch::Aarch64 => {
+                std::env::remove_var("qemu_aarch64");
+                std::env::remove_var("CC_aarch64_unknown_linux_gnu");
+                std::env::remove_var("AR_aarch64_unknown_linux_gnu");
+                std::env::remove_var("CFLAGS_aarch64_unknown_linux_gnu");
+                std::env::remove_var("CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER");
+                std::env::remove_var("CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER");
+            }
+            Arch::StaticAarch64 => {
+                std::env::remove_var("CRATE_CC_NO_DEFAULTS");
+            }
+            _ => {}
+        }
         Ok(())
     }
 }
