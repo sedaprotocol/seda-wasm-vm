@@ -1,10 +1,10 @@
-use seda_runtime_sdk::{VmCallData, VmType};
 use wasmer::{Exports, FunctionEnv, Imports, Module, Store, WasmPtr};
 use wasmer_wasix::{get_wasi_version, WasiFunctionEnv};
 
 use crate::{
     errors::Result,
     tally_vm_imports::{create_custom_tally_imports, SAFE_TALLY_IMPORTS},
+    vm::{VmCallData, VmType},
     wasi_vm_imports::{
         args_get::{args_get_import_obj, args_sizes_get_import_obj},
         environ_get::{environ_get_import_obj, environ_sizes_get_import_obj},

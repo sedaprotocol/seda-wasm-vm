@@ -14,7 +14,8 @@ home = { workspace = true }
 k256 = { workspace = true }
 lazy_static = { workspace = true }
 parking_lot = { workspace = true }
-seda-runtime-sdk = { workspace = true }
+seda-sdk-rs = { workspace = true }
+serde = { workspace = true, features = ["derive", "std"] }
 serde_json = { workspace = true, features = ["std"] }
 sha3 = { workspace = true }
 seahash = { workspace = true }
@@ -27,6 +28,9 @@ tracing-appender.workspace = true
 wasmer = { workspace = true, features = ["singlepass"] }
 wasmer-middlewares = { workspace = true }
 wasmer-wasix = { workspace = true }
+
+[dev-dependencies]
+arbitrary.workspace = true
 
 [build-dependencies]
 cargo_metadata = { version = "0.20" }

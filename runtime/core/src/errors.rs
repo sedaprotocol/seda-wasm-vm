@@ -1,6 +1,5 @@
 use std::{num::ParseIntError, string::FromUtf8Error};
 
-use seda_runtime_sdk::SDKError;
 use thiserror::Error;
 use wasmer::{CompileError, ExportError};
 use wasmer_wasix::{FsError, WasiError, WasiStateCreationError};
@@ -49,7 +48,7 @@ pub enum RuntimeError {
     NodeError(String),
 
     #[error("SDK Error: {0}")]
-    SDKError(#[from] SDKError),
+    SDKError(#[from] seda_sdk_rs::errors::SDKError),
 
     #[error(transparent)]
     MemoryAccessError(#[from] wasmer::MemoryAccessError),

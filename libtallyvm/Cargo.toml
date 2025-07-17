@@ -9,9 +9,9 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 seda-wasm-vm = { workspace = true }
-seda-runtime-sdk = { workspace = true }
 thiserror = { workspace = true }
 hex.workspace = true
+seda-sdk-rs = { workspace = true }
 tracing.workspace = true
 tracing-appender.workspace = true
 

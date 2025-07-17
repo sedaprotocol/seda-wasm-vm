@@ -7,8 +7,13 @@ use std::{
     sync::OnceLock,
 };
 
-use seda_runtime_sdk::{ExitInfo, VmType, WasmId};
-use seda_wasm_vm::{init_logger, start_runtime, RuntimeContext, RuntimeError, VmCallData, VmResult};
+use seda_wasm_vm::{
+    init_logger,
+    start_runtime,
+    vm::{ExitInfo, VmCallData, VmResult, VmType, WasmId},
+    RuntimeContext,
+    RuntimeError,
+};
 
 use crate::errors::Result;
 
@@ -295,7 +300,7 @@ mod test {
         mem,
     };
 
-    use seda_runtime_sdk::ToBytes;
+    use seda_sdk_rs::bytes::ToBytes;
     use tempdir::TempDir;
 
     use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};

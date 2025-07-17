@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use parking_lot::{Mutex, RwLock};
-use seda_runtime_sdk::VmCallData;
 use wasmer::{AsStoreRef, FunctionEnv, Imports, Instance, Memory, MemoryView, Store};
 use wasmer_wasix::{WasiEnv, WasiVersion};
+
+use crate::vm::VmCallData;
 
 #[derive(Clone)]
 pub struct VmContext {

@@ -1,7 +1,6 @@
 use core::str;
 use std::io::Read;
 
-use seda_runtime_sdk::{ExecutionResult, ExitInfo, ExitInfoWithGasUsed, VmCallData, VmResult, VmResultStatus};
 use wasmer::Instance;
 use wasmer_middlewares::metering::{get_remaining_points, set_remaining_points, MeteringPoints};
 use wasmer_wasix::{Pipe, WasiEnv, WasiRuntimeError};
@@ -10,6 +9,7 @@ use crate::{
     context::VmContext,
     metering::vm_gas_startup_cost,
     runtime_context::RuntimeContext,
+    vm::*,
     vm_imports::create_wasm_imports,
 };
 

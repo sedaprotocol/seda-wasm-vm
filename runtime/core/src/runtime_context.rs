@@ -1,6 +1,5 @@
 use std::{path::Path, sync::Arc};
 
-use seda_runtime_sdk::{VmCallData, WasmId};
 use wasmer::{
     sys::{BaseTunables, CompilerConfig, NativeEngineExt, Singlepass},
     Engine,
@@ -15,6 +14,7 @@ use crate::{
     errors::Result,
     memory::LimitingTunables,
     metering::get_wasm_operation_gas_cost,
+    vm::{VmCallData, WasmId},
     wasm_cache::{get_full_wasm_path_from_id, valid_wasm_cache_id, wasm_cache_id, wasm_cache_load, wasm_cache_store},
 };
 
