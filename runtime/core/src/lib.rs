@@ -9,6 +9,7 @@ mod runtime;
 mod runtime_context;
 mod safe_wasi_imports;
 mod tally_vm_imports;
+pub mod vm;
 mod vm_imports;
 mod wasi_vm_imports;
 pub mod wasm_cache;
@@ -59,7 +60,6 @@ pub use errors::RuntimeError;
 pub use runtime::start_runtime;
 pub use runtime_context::RuntimeContext;
 pub use safe_wasi_imports::*;
-pub use seda_runtime_sdk::{VmCallData, VmResult};
 #[cfg(feature = "test-utils")]
 pub use test_override::*;
 use tracing::level_filters::LevelFilter;

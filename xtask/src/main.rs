@@ -212,8 +212,16 @@ struct Cov {
 impl Cov {
     fn handle(self, sh: &Shell) -> Result<()> {
         cmd!(sh, "cargo llvm-cov clean --workspace").run()?;
-        cmd!(sh, "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci -- --skip timing_").run()?;
-        cmd!(sh, "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm -p seda-runtime-sdk --locked nextest -P ci -- timing_").run()?;
+        cmd!(
+            sh,
+            "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm --locked nextest -P ci -- --skip timing_"
+        )
+        .run()?;
+        cmd!(
+            sh,
+            "cargo llvm-cov --no-report -p seda-tally-vm -p seda-wasm-vm --locked nextest -P ci -- timing_"
+        )
+        .run()?;
         if self.ci {
             cmd!(sh, "cargo llvm-cov report --cobertura --output-path cobertura.xml").run()?;
         } else {

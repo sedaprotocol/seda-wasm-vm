@@ -1,6 +1,4 @@
-use std::collections::HashMap;
-
-use seda_runtime_sdk::{HttpFetchResponse, PromiseStatus};
+use seda_sdk_rs::{promise::PromiseStatus, HttpFetchResponse};
 use wasmer::{Function, FunctionEnv, FunctionEnvMut, Store, WasmPtr};
 
 use crate::{
@@ -29,7 +27,7 @@ pub fn proxy_http_fetch_import_obj(store: &mut Store, vm_context: &FunctionEnv<V
             let http_response: HttpFetchResponse = HttpFetchResponse {
                 url:            "".to_string(),
                 status:         0,
-                headers:        HashMap::default(),
+                headers:        Default::default(),
                 content_length: message.len(),
                 bytes:          message,
             };

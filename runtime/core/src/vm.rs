@@ -1,9 +1,8 @@
 use core::fmt;
 use std::collections::BTreeMap;
 
+use seda_sdk_rs::bytes::{Bytes, ToBytes};
 use serde::{Deserialize, Serialize};
-
-use crate::{Bytes, ToBytes};
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(test, derive(arbitrary::Arbitrary))]

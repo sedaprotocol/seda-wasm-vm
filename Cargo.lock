@@ -2032,12 +2032,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
-
-[[package]]
 name = "path-clean"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2684,22 +2678,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "seda-runtime-sdk"
-version = "2.5.0"
+name = "seda-sdk-macros"
+version = "0.1.0"
+source = "git+https://github.com/sedaprotocol/seda-sdk?tag=rs-sdk/v1.0.0-rc.3#ff0fd02f2464d2435e9f7a53da0c94d77c4515f8"
 dependencies = [
- "arbitrary",
- "paste",
- "rand 0.8.5",
- "serde",
- "serde_json",
- "thiserror 1.0.64",
- "url",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.87",
 ]
 
 [[package]]
 name = "seda-sdk-macros"
-version = "0.1.0"
-source = "git+https://github.com/sedaprotocol/seda-sdk?tag=rs-sdk/v1.0.0-rc.3#ff0fd02f2464d2435e9f7a53da0c94d77c4515f8"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0438b5216cd73921ddb4b7021f0d2b3e23a95ba7d63071adb4610966cf7d6542"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2713,10 +2705,24 @@ source = "git+https://github.com/sedaprotocol/seda-sdk?tag=rs-sdk/v1.0.0-rc.3#ff
 dependencies = [
  "anyhow",
  "hex",
- "seda-sdk-macros",
+ "seda-sdk-macros 0.1.0",
  "serde",
  "serde_json",
  "thiserror 1.0.64",
+]
+
+[[package]]
+name = "seda-sdk-rs"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ac45bd96bc67158e8bc11dbc005013727bcedbc9e93d3faec292187de274303"
+dependencies = [
+ "anyhow",
+ "hex",
+ "seda-sdk-macros 1.0.0",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -2725,7 +2731,7 @@ version = "2.5.0"
 dependencies = [
  "cbindgen",
  "hex",
- "seda-runtime-sdk",
+ "seda-sdk-rs 1.0.0",
  "seda-wasm-vm",
  "serde_json",
  "tempdir",
@@ -2738,6 +2744,7 @@ dependencies = [
 name = "seda-wasm-vm"
 version = "2.5.0"
 dependencies = [
+ "arbitrary",
  "cargo_metadata",
  "hex",
  "home",
@@ -2745,7 +2752,8 @@ dependencies = [
  "lazy_static",
  "parking_lot",
  "seahash",
- "seda-runtime-sdk",
+ "seda-sdk-rs 1.0.0",
+ "serde",
  "serde_json",
  "sha3",
  "tempdir",
@@ -3139,7 +3147,7 @@ version = "2.5.0"
 dependencies = [
  "anyhow",
  "hex",
- "seda-sdk-rs",
+ "seda-sdk-rs 1.0.0-rc.3",
  "serde",
  "serde_json",
 ]
