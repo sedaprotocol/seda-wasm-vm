@@ -6,7 +6,6 @@ use std::{
     ptr,
 };
 
-use rayon::iter::{IntoParallelIterator, ParallelIterator};
 use seda_wasm_vm::{
     init_logger,
     start_runtime,
@@ -204,15 +203,26 @@ pub struct TallyRequest {
 
 impl FfiTallyRequest {
     unsafe fn into_rust(self) -> TallyRequest {
+        // --- manual copy to avoid SIGBUS on large vector moves ---
+        let len = self.wasm_bytes_len;
+        let mut wasm_bytes = Vec::with_capacity(len);
+        // SAFETY: copying exactly `len` bytes from a valid C buffer
+        unsafe {
+            let src = self.wasm_bytes;
+            let dst = wasm_bytes.as_mut_ptr();
+            std::ptr::copy_nonoverlapping(src, dst, len);
+            wasm_bytes.set_len(len);
+        }
+
         TallyRequest {
-            wasm_bytes: std::slice::from_raw_parts(self.wasm_bytes, self.wasm_bytes_len).to_vec(),
-            args:       (0..self.args_count)
+            wasm_bytes,
+            args: (0..self.args_count)
                 .map(|i| {
                     let ptr = *self.args_ptr.add(i);
                     CStr::from_ptr(ptr).to_string_lossy().into_owned()
                 })
                 .collect(),
-            envs:       (0..self.env_count)
+            envs: (0..self.env_count)
                 .map(|i| {
                     let key_ptr = *self.env_keys_ptr.add(i);
                     let value_ptr = *self.env_values_ptr.add(i);
@@ -385,35 +395,32 @@ pub unsafe extern "C" fn execute_tally_requests_parallel(
     request: *const FfiTallyRequest,
     count: usize,
 ) -> *const FfiVmResult {
-    let vm_settings = settings.into_rust();
+    let vm_settings = std::sync::Arc::new(settings.into_rust());
     let _file_guard = init_logger(&vm_settings.sedad_home);
-
     let requests = std::slice::from_raw_parts(request, count).to_vec();
 
+    // build multi-threaded runtime with ample blocking threads
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
+        .max_blocking_threads(count)
         .build()
         .expect("Failed to create Tokio runtime");
-    let rt_guard = rt.enter();
+    let _enter = rt.enter();
 
-    let results: Vec<FfiVmResult> = requests
-        .into_par_iter()
-        .map(|raw_request| {
-            let request = raw_request.into_rust();
-            let is_tally = request.envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
-            let result = std::panic::catch_unwind(|| {
-                #[cfg(test)]
-                {
-                    if std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default() == "true" {
-                        panic!("Panic for testing");
-                    }
-                }
+    // spawn each request on Tokio's blocking pool
+    let mut handles = Vec::with_capacity(count);
+    for raw in requests {
+        let vm_settings = vm_settings.clone();
+        handles.push(tokio::task::spawn_blocking(move || {
+            let req = unsafe { raw.into_rust() };
+            let is_tally = req.envs.get("VM_MODE").is_some_and(|m| m == "tally");
+            let res = std::panic::catch_unwind(|| {
                 convert_vm_result(
                     _execute_tally_vm(
                         &vm_settings.sedad_home,
-                        request.wasm_bytes,
-                        request.args,
-                        request.envs,
+                        req.wasm_bytes,
+                        req.args,
+                        req.envs,
                         vm_settings.stdout_limit,
                         vm_settings.stderr_limit,
                     ),
@@ -421,14 +428,21 @@ pub unsafe extern "C" fn execute_tally_requests_parallel(
                     is_tally,
                 )
             });
-            convert_panic_hook_result(result)
-        })
-        .collect();
+            convert_panic_hook_result(res)
+        }));
+    }
 
-    drop(rt_guard);
+    // await all tasks
+    let results: Vec<FfiVmResult> = rt.block_on(async {
+        let joined = futures::future::join_all(handles).await;
+        joined.into_iter().map(|r| r.expect("task panic")).collect()
+    });
+
+    drop(_enter);
     drop(rt);
 
-    let boxed: Box<[FfiVmResult]> = results.into_boxed_slice();
+    // box and leak slice for FFI
+    let boxed = results.into_boxed_slice();
     let ptr = boxed.as_ptr();
     std::mem::forget(boxed);
     ptr

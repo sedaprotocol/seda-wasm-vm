@@ -343,6 +343,9 @@ func setup_n(Fatal func(args ...any), n int) ([][]byte, [][]string, []map[string
 	return bytesArr, argsArr, envsArr
 }
 
+// This has a random chance of panicking.
+// It hits a resource contention without the mutex.
+// More likely to happen the more parallel executions you do.
 func TestExecutionGoMultipleParallel(t *testing.T) {
 	defer cleanup()
 	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)
@@ -357,7 +360,7 @@ func TestExecutionCMultiple(t *testing.T) {
 	tallyvm.ExecuteMultipleFromC(bytesArr, argsArr, envsArr)
 }
 
-// broken for now ignore me :(
+// Similarly has a chance of panicking that increases with the number of parallel executions.
 // func TestExecutionCMultipleParallel(t *testing.T) {
 // 	defer cleanup()
 // 	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)

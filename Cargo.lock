@@ -2730,8 +2730,8 @@ name = "seda-tally-vm"
 version = "2.5.0"
 dependencies = [
  "cbindgen",
+ "futures",
  "hex",
- "rayon",
  "seda-sdk-rs 1.0.0",
  "seda-wasm-vm",
  "serde_json",

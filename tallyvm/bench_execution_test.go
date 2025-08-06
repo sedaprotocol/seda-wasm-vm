@@ -55,6 +55,7 @@ func BenchmarkExecutionGo100Times(b *testing.B) {
 }
 
 // ~23s
+// Panics currently
 func BenchmarkExecutionGo100TimesParallel(b *testing.B) {
 	defer cleanup()
 	bytesArr, argsArr, envsArr := setup_n(b.Fatal, 100)
