@@ -180,9 +180,6 @@ func ExecuteTallyVm(
 	return buildResultFromC(&result)
 }
 
-// Might not need this?
-var cgoLock sync.Mutex
-
 func ExecuteMultipleFromGoInParallel(
 	bytes [][]byte,
 	args [][]string,
@@ -209,9 +206,7 @@ func ExecuteMultipleFromGoInParallel(
 			fmt.Println("Executing", i, maxProcs)
 			result := ExecuteTallyVm(bytes[i], args[i], envs[i])
 
-			// cgoLock.Lock()
 			results[i] = result
-			// cgoLock.Unlock()
 		}(i)
 	}
 	wg.Wait()
@@ -237,13 +232,11 @@ func ExecuteMultipleFromC(bytes [][]byte, args [][]string, envs []map[string]str
 		arr[i] = cReqs[i].req
 	}
 
-	cgoLock.Lock()
 	cResults := C.execute_tally_requests(
 		cSettings,
 		(*C.FfiTallyRequest)(cArray),
 		C.uintptr_t(count),
 	)
-	cgoLock.Unlock()
 
 	results := make([]VmResult, count)
 	slice := (*[1 << 30]C.FfiVmResult)(unsafe.Pointer(cResults))[:count:count]

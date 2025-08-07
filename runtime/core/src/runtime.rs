@@ -93,8 +93,10 @@ fn _internal_run_vm(
     )
     .map_err(|_| VmResultStatus::FailedToCreateVMImports)?;
 
+    // let _lock = get_instance_mutex().lock();
     let wasmer_instance = Instance::new(&mut context.wasm_store, &context.wasm_module, &imports)
         .map_err(|e| VmResultStatus::FailedToCreateWasmerInstance(e.to_string(), gas_cost))?;
+    // drop(_lock);
 
     vm_context.as_mut(&mut context.wasm_store).instance = Some(wasmer_instance.clone());
 

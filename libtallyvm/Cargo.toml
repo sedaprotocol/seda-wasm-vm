@@ -9,13 +9,13 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 seda-wasm-vm = { workspace = true }
-thiserror = { workspace = true }
+futures.workspace = true
 hex.workspace = true
 seda-sdk-rs = { workspace = true }
+thiserror = { workspace = true }
 tracing.workspace = true
 tracing-appender.workspace = true
 tokio = { workspace = true, features = ["rt-multi-thread"] }
-futures = { version = "0.3" }
 
 [build-dependencies]
 cbindgen.workspace = true

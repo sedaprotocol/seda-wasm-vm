@@ -4,6 +4,7 @@ use std::{
     mem,
     path::{Path, PathBuf},
     ptr,
+    sync::{Mutex, OnceLock},
 };
 
 use seda_wasm_vm::{
@@ -450,6 +451,12 @@ pub unsafe extern "C" fn execute_tally_requests_parallel(
 
 const DEFAULT_GAS_LIMIT_ENV_VAR: &str = "DR_TALLY_GAS_LIMIT";
 
+static INSTANCE_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn get_instance_mutex() -> &'static Mutex<()> {
+    INSTANCE_MUTEX.get_or_init(|| Mutex::new(()))
+}
+
 fn _execute_tally_vm(
     sedad_home: &Path,
     wasm_bytes: Vec<u8>,
@@ -480,7 +487,9 @@ fn _execute_tally_vm(
         ..Default::default()
     };
 
+    let lock = get_instance_mutex().lock().unwrap();
     let runtime_context = RuntimeContext::new(sedad_home, &call_data)?;
+    drop(lock);
     let result = start_runtime(call_data, runtime_context, stdout_limit, stderr_limit);
 
     Ok(result)

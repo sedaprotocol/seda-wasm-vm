@@ -16,7 +16,7 @@ func init() {
 	tallyvm.TallyVmDir = tempdir
 }
 
-// ~21s
+// ~16s
 func BenchmarkExecutionGo100Times(b *testing.B) {
 	defer cleanup()
 
@@ -54,8 +54,7 @@ func BenchmarkExecutionGo100Times(b *testing.B) {
 	}
 }
 
-// ~23s
-// Panics currently
+// ~4s
 func BenchmarkExecutionGo100TimesParallel(b *testing.B) {
 	defer cleanup()
 	bytesArr, argsArr, envsArr := setup_n(b.Fatal, 100)
@@ -82,6 +81,26 @@ func BenchmarkExecutionC100Times(b *testing.B) {
 
 	b.ResetTimer()
 	results := tallyvm.ExecuteMultipleFromC(bytesArr, argsArr, envsArr)
+	b.StopTimer()
+
+	// Check results ignore this in the benchmark
+	for _, result := range results {
+		assert.Equal(b, "Ok", result.ExitInfo.ExitMessage)
+		assert.Equal(b, 0, result.ExitInfo.ExitCode)
+		assert.NotEmpty(b, result.Result)
+		assert.Empty(b, result.Stderr)
+		assert.NotEmpty(b, result.Stdout)
+		assert.Equal(b, 30944893003750, int(result.GasUsed))
+	}
+}
+
+// ~1.7s
+func BenchmarkExecutionC100TimesParallel(b *testing.B) {
+	defer cleanup()
+	bytesArr, argsArr, envsArr := setup_n(b.Fatal, 100)
+
+	b.ResetTimer()
+	results := tallyvm.ExecuteMultipleFromCParallel(bytesArr, argsArr, envsArr)
 	b.StopTimer()
 
 	// Check results ignore this in the benchmark
