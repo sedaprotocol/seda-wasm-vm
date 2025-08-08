@@ -4,7 +4,7 @@ use std::{
     mem,
     path::{Path, PathBuf},
     ptr,
-    sync::OnceLock,
+    sync::{Mutex, OnceLock},
 };
 
 use seda_wasm_vm::{
@@ -158,65 +158,89 @@ pub unsafe extern "C" fn free_ffi_vm_result(vm_result: *mut FfiVmResult) {
     free_ffi_exit_info(&mut (*vm_result).exit_info);
 }
 
-/// # Safety
-#[no_mangle]
-pub unsafe extern "C" fn execute_tally_vm(
-    sedad_home: *const c_char,
-    wasm_bytes: *const u8,
-    wasm_bytes_len: usize,
-    args_ptr: *const *const c_char,
-    args_count: usize,
-    env_keys_ptr: *const *const c_char,
-    env_values_ptr: *const *const c_char,
-    env_count: usize,
-    max_result_bytes: usize,
-    stdout_limit: usize,
-    stderr_limit: usize,
-) -> FfiVmResult {
-    let result = std::panic::catch_unwind(|| {
-        #[cfg(test)]
-        {
-            let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
-            if should_panic == "true" {
-                panic!("Panic for testing");
-            }
+#[repr(C)]
+pub struct FfiVmSettings {
+    pub sedad_home:       *const c_char,
+    pub max_result_bytes: usize,
+    pub stdout_limit:     usize,
+    pub stderr_limit:     usize,
+}
+
+pub struct VmSettings {
+    pub sedad_home:       PathBuf,
+    pub max_result_bytes: usize,
+    pub stdout_limit:     usize,
+    pub stderr_limit:     usize,
+}
+
+impl FfiVmSettings {
+    unsafe fn into_rust(self) -> VmSettings {
+        VmSettings {
+            sedad_home:       PathBuf::from(CStr::from_ptr(self.sedad_home).to_string_lossy().into_owned()),
+            max_result_bytes: self.max_result_bytes,
+            stdout_limit:     self.stdout_limit,
+            stderr_limit:     self.stderr_limit,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+#[repr(C)]
+pub struct FfiTallyRequest {
+    pub wasm_bytes:     *const u8,
+    pub wasm_bytes_len: usize,
+    pub args_ptr:       *const *const c_char,
+    pub args_count:     usize,
+    pub env_keys_ptr:   *const *const c_char,
+    pub env_values_ptr: *const *const c_char,
+    pub env_count:      usize,
+}
+
+pub struct TallyRequest {
+    pub wasm_bytes: Vec<u8>,
+    pub args:       Vec<String>,
+    pub envs:       BTreeMap<String, String>,
+}
+
+impl FfiTallyRequest {
+    unsafe fn into_rust(self) -> TallyRequest {
+        // --- manual copy to avoid SIGBUS on large vector moves ---
+        let len = self.wasm_bytes_len;
+        let mut wasm_bytes = Vec::with_capacity(len);
+        // SAFETY: copying exactly `len` bytes from a valid C buffer
+        unsafe {
+            let src = self.wasm_bytes;
+            let dst = wasm_bytes.as_mut_ptr();
+            std::ptr::copy_nonoverlapping(src, dst, len);
+            wasm_bytes.set_len(len);
         }
 
-        static LOG_GUARD: OnceLock<tracing_appender::non_blocking::WorkerGuard> = OnceLock::new();
-        let sedad_home = CStr::from_ptr(sedad_home).to_string_lossy().into_owned();
-        let sedad_home = PathBuf::from(sedad_home);
-        let _guard = LOG_GUARD.get_or_init(|| init_logger(&sedad_home));
-
-        let wasm_bytes = std::slice::from_raw_parts(wasm_bytes, wasm_bytes_len).to_vec();
-
-        let args: Vec<String> = (0..args_count)
-            .map(|i| {
-                let ptr = *args_ptr.add(i);
-                CStr::from_ptr(ptr).to_string_lossy().into_owned()
-            })
-            .collect();
-
-        let mut envs = BTreeMap::new();
-        for i in 0..env_count {
-            let key_ptr = *env_keys_ptr.add(i);
-            let value_ptr = *env_values_ptr.add(i);
-
-            let key = CStr::from_ptr(key_ptr).to_string_lossy().into_owned();
-            let value = CStr::from_ptr(value_ptr).to_string_lossy().into_owned();
-
-            envs.insert(key, value);
+        TallyRequest {
+            wasm_bytes,
+            args: (0..self.args_count)
+                .map(|i| {
+                    let ptr = *self.args_ptr.add(i);
+                    CStr::from_ptr(ptr).to_string_lossy().into_owned()
+                })
+                .collect(),
+            envs: (0..self.env_count)
+                .map(|i| {
+                    let key_ptr = *self.env_keys_ptr.add(i);
+                    let value_ptr = *self.env_values_ptr.add(i);
+                    (
+                        CStr::from_ptr(key_ptr).to_string_lossy().into_owned(),
+                        CStr::from_ptr(value_ptr).to_string_lossy().into_owned(),
+                    )
+                })
+                .collect(),
         }
+    }
+}
 
-        let is_tally = envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
-        (
-            _execute_tally_vm(&sedad_home, wasm_bytes, args, envs, stdout_limit, stderr_limit),
-            is_tally,
-        )
-    });
-
+fn convert_vm_result(result: Result<VmResult>, max_result_bytes: usize, is_tally: bool) -> FfiVmResult {
     match result {
-        Ok((Ok(vm_result), is_tally)) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
-        Ok((Err(e), _)) => FfiVmResult {
+        Ok(vm_result) => FfiVmResult::from_result(vm_result, max_result_bytes, is_tally),
+        Err(e) => FfiVmResult {
             stdout_ptr: std::ptr::null(),
             stdout_len: 0,
             stderr_ptr: std::ptr::null(),
@@ -229,7 +253,12 @@ pub unsafe extern "C" fn execute_tally_vm(
             },
             gas_used:   0,
         },
+    }
+}
 
+fn convert_panic_hook_result(result: core::result::Result<FfiVmResult, Box<dyn std::any::Any + Send>>) -> FfiVmResult {
+    match result {
+        Ok(vm_result) => vm_result,
         Err(e) => FfiVmResult {
             stdout_ptr: std::ptr::null(),
             stdout_len: 0,
@@ -254,7 +283,179 @@ pub unsafe extern "C" fn execute_tally_vm(
     }
 }
 
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_request(settings: FfiVmSettings, request: FfiTallyRequest) -> FfiVmResult {
+    let (subscriber, _file_guard) = init_logger(&PathBuf::from(
+        CStr::from_ptr(settings.sedad_home).to_string_lossy().into_owned(),
+    ));
+    tracing::subscriber::with_default(subscriber, || {
+        let result = std::panic::catch_unwind(|| {
+            #[cfg(test)]
+            {
+                if std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default() == "true" {
+                    panic!("Panic for testing");
+                }
+            }
+            let request = request.into_rust();
+            let vm_settings = settings.into_rust();
+            let rt = tokio::runtime::Builder::new_multi_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to create Tokio runtime");
+            let _enter = rt.enter();
+            let is_tally = request.envs.get("VM_MODE").is_some_and(|m| m == "tally");
+            let res = convert_vm_result(
+                _execute_tally_vm(
+                    &vm_settings.sedad_home,
+                    request.wasm_bytes,
+                    request.args,
+                    request.envs,
+                    vm_settings.stdout_limit,
+                    vm_settings.stderr_limit,
+                ),
+                vm_settings.max_result_bytes,
+                is_tally,
+            );
+            drop(_enter);
+            drop(rt);
+            res
+        });
+        convert_panic_hook_result(result)
+    })
+}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_requests(
+    settings: FfiVmSettings,
+    request: *const FfiTallyRequest,
+    count: usize,
+) -> *const FfiVmResult {
+    let vm_settings = settings.into_rust();
+    let _file_guard = init_logger(&vm_settings.sedad_home);
+
+    // Convert the request pointer to a slice of requests
+    let mut results = Vec::with_capacity(count);
+    let requests = std::slice::from_raw_parts(request, count);
+    for raw_request_ptr in requests {
+        let raw_request = std::ptr::read(raw_request_ptr);
+        let request = raw_request.into_rust();
+
+        let is_tally = request.envs.get("VM_MODE").is_some_and(|mode| mode == "tally");
+        let result = std::panic::catch_unwind(|| {
+            #[cfg(test)]
+            {
+                let should_panic = std::env::var("_GIBBERISH_CHECK_TO_PANIC").unwrap_or_default();
+                if should_panic == "true" {
+                    panic!("Panic for testing");
+                }
+            }
+
+            let rt = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .expect("Failed to create Tokio runtime");
+            let _guard = rt.enter();
+
+            let res = convert_vm_result(
+                _execute_tally_vm(
+                    &vm_settings.sedad_home,
+                    request.wasm_bytes,
+                    request.args,
+                    request.envs,
+                    vm_settings.stdout_limit,
+                    vm_settings.stderr_limit,
+                ),
+                vm_settings.max_result_bytes,
+                is_tally,
+            );
+
+            drop(_guard);
+            drop(rt);
+
+            res
+        });
+
+        results.push(convert_panic_hook_result(result));
+    }
+
+    let boxed: Box<[FfiVmResult]> = results.into_boxed_slice();
+    let ptr = boxed.as_ptr();
+    std::mem::forget(boxed);
+    ptr
+}
+
+unsafe impl Send for FfiTallyRequest {}
+unsafe impl Send for FfiVmResult {}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn execute_tally_requests_parallel(
+    settings: FfiVmSettings,
+    request: *const FfiTallyRequest,
+    count: usize,
+) -> *const FfiVmResult {
+    let vm_settings = std::sync::Arc::new(settings.into_rust());
+    let _file_guard = init_logger(&vm_settings.sedad_home);
+    let requests = std::slice::from_raw_parts(request, count).to_vec();
+
+    // build multi-threaded runtime with ample blocking threads
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .max_blocking_threads(count)
+        .build()
+        .expect("Failed to create Tokio runtime");
+    let _enter = rt.enter();
+
+    // spawn each request on Tokio's blocking pool
+    let mut handles = Vec::with_capacity(count);
+    for raw in requests {
+        let vm_settings = vm_settings.clone();
+        handles.push(tokio::task::spawn_blocking(move || {
+            let req = unsafe { raw.into_rust() };
+            let is_tally = req.envs.get("VM_MODE").is_some_and(|m| m == "tally");
+            let res = std::panic::catch_unwind(|| {
+                convert_vm_result(
+                    _execute_tally_vm(
+                        &vm_settings.sedad_home,
+                        req.wasm_bytes,
+                        req.args,
+                        req.envs,
+                        vm_settings.stdout_limit,
+                        vm_settings.stderr_limit,
+                    ),
+                    vm_settings.max_result_bytes,
+                    is_tally,
+                )
+            });
+            convert_panic_hook_result(res)
+        }));
+    }
+
+    // await all tasks
+    let results: Vec<FfiVmResult> = rt.block_on(async {
+        let joined = futures::future::join_all(handles).await;
+        joined.into_iter().map(|r| r.expect("task panic")).collect()
+    });
+
+    drop(_enter);
+    drop(rt);
+
+    // box and leak slice for FFI
+    let boxed = results.into_boxed_slice();
+    let ptr = boxed.as_ptr();
+    std::mem::forget(boxed);
+    ptr
+}
+
 const DEFAULT_GAS_LIMIT_ENV_VAR: &str = "DR_TALLY_GAS_LIMIT";
+
+static INSTANCE_MUTEX: OnceLock<Mutex<()>> = OnceLock::new();
+
+fn get_instance_mutex() -> &'static Mutex<()> {
+    INSTANCE_MUTEX.get_or_init(|| Mutex::new(()))
+}
 
 fn _execute_tally_vm(
     sedad_home: &Path,
@@ -286,7 +487,9 @@ fn _execute_tally_vm(
         ..Default::default()
     };
 
+    let lock = get_instance_mutex().lock().unwrap();
     let runtime_context = RuntimeContext::new(sedad_home, &call_data)?;
+    drop(lock);
     let result = start_runtime(call_data, runtime_context, stdout_limit, stderr_limit);
 
     Ok(result)
@@ -303,7 +506,7 @@ mod test {
     use seda_sdk_rs::bytes::ToBytes;
     use tempdir::TempDir;
 
-    use crate::{_execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
+    use crate::{FfiTallyRequest, FfiVmSettings, _execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
 
     #[test]
     fn can_get_runtime_versions() {
@@ -313,8 +516,8 @@ mod test {
         assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.34.0");
     }
 
-    #[test]
-    fn cache_works() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn cache_works() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("CONSENSUS".to_string(), "true".to_string());
@@ -351,8 +554,8 @@ mod test {
         assert!(second_run < first_run);
     }
 
-    #[test]
-    fn timing_cache_invalidates_on_new_version() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn timing_cache_invalidates_on_new_version() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("CONSENSUS".to_string(), "true".to_string());
@@ -404,8 +607,8 @@ mod test {
         );
     }
 
-    #[test]
-    fn execute_tally_vm() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_tally_vm() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         // VM_MODE dr to force the http_fetch path
@@ -465,21 +668,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1024,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1024,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let result_msg = unsafe {
             CStr::from_ptr(result.result_ptr as *const c_char)
@@ -529,21 +736,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1, // Set to 1 byte to force the error
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let exit_msg = unsafe {
             CStr::from_ptr(result.exit_info.exit_message)
@@ -593,21 +804,25 @@ mod test {
         let temp_dir = TempDir::new("execute_c_tally_vm_exceeds_byte_limit_does_not_matter_for_dr_mode").unwrap();
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
 
         let exit_msg = unsafe {
             CStr::from_ptr(result.exit_info.exit_message)
@@ -625,8 +840,8 @@ mod test {
         }
     }
 
-    #[test]
-    fn execute_tally_vm_proxy_http_fetch() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_tally_vm_proxy_http_fetch() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -653,8 +868,8 @@ mod test {
         assert_eq!(result.gas_used, 21736902545000);
     }
 
-    #[test]
-    fn execute_tally_vm_no_args() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_tally_vm_no_args() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/tally.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "150000000000000".to_string());
@@ -667,8 +882,8 @@ mod test {
         assert_eq!(result.gas_used, 10124565078750);
     }
 
-    #[test]
-    fn execute_tally_vm_with_low_gas_limit() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_tally_vm_with_low_gas_limit() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -686,8 +901,8 @@ mod test {
         assert_eq!(result.gas_used, total_gas);
     }
 
-    #[test]
-    fn vm_does_not_run_if_startup_cost_is_higher_than_gas_limit() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn vm_does_not_run_if_startup_cost_is_higher_than_gas_limit() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -705,8 +920,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn execute_tally_keccak256() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_tally_keccak256() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -733,8 +948,8 @@ mod test {
         assert_eq!(result.gas_used, 11250594475000);
     }
 
-    #[test]
-    fn simple_price_feed() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn simple_price_feed() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/simplePriceFeed.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -760,8 +975,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn polyfill_does_not_crash_vm() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn polyfill_does_not_crash_vm() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/randomNumber.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "dr".to_string());
@@ -777,8 +992,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn userland_non_zero_exit_code() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn userland_non_zero_exit_code() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/null_byte_string.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -805,8 +1020,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn assign_too_much_memory() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn assign_too_much_memory() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/assign_too_much_memory.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -832,8 +1047,8 @@ mod test {
         assert_eq!(result.exit_info.exit_message, "Error: Failed to create WASMER instance: Insufficient resources: Failed to create memory: A user-defined error occurred: Minimum exceeds the allowed memory limit".to_string());
     }
 
-    #[test]
-    fn import_length_overflow() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn import_length_overflow() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -851,8 +1066,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn price_feed_tally() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn price_feed_tally() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -879,8 +1094,8 @@ mod test {
         assert_eq!(result.gas_used, 14103058802500);
     }
 
-    #[test]
-    fn call_result_write_len_0() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn call_result_write_len_0() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -900,8 +1115,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn execute_c_tally_vm_panic() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_c_tally_vm_panic() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/integration-test.wasm");
 
         let args: [String; 0] = [];
@@ -930,21 +1145,26 @@ mod test {
         let tempdir = temp_dir.path().display().to_string();
         let tempdir_craw = CString::new(tempdir).unwrap().into_raw();
         std::env::set_var("_GIBBERISH_CHECK_TO_PANIC", "true");
-        let mut result = unsafe {
-            super::execute_tally_vm(
-                tempdir_craw,
-                wasm_bytes.as_ptr(),
-                wasm_bytes.len(),
-                arg_ptrs.as_ptr(),
-                args.len(),
-                env_key_ptrs.as_ptr(),
-                env_value_ptrs.as_ptr(),
-                envs.len(),
-                1024,
-                1024,
-                1024,
-            )
+
+        let ffi_settings = FfiVmSettings {
+            sedad_home:       tempdir_craw,
+            max_result_bytes: 1024,
+            stdout_limit:     1024,
+            stderr_limit:     1024,
         };
+
+        let ffi_request = FfiTallyRequest {
+            wasm_bytes:     wasm_bytes.as_ptr(),
+            wasm_bytes_len: wasm_bytes.len(),
+            args_ptr:       arg_ptrs.as_ptr(),
+            args_count:     args.len(),
+            env_keys_ptr:   env_key_ptrs.as_ptr(),
+            env_values_ptr: env_value_ptrs.as_ptr(),
+            env_count:      envs.len(),
+        };
+
+        let mut result = unsafe { super::execute_tally_request(ffi_settings, ffi_request) };
+
         std::env::remove_var("_GIBBERISH_CHECK_TO_PANIC");
 
         let exit_msg = unsafe {
@@ -964,8 +1184,8 @@ mod test {
         }
     }
 
-    #[test]
-    fn test_stdout_and_stderr_limit() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_stdout_and_stderr_limit() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -987,8 +1207,8 @@ mod test {
         assert_eq!(result.stderr[0], "Ba");
     }
 
-    #[test]
-    fn test_long_stdout_and_stderr() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_long_stdout_and_stderr() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1011,8 +1231,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn test_stdout_and_stderr_fail_when_given_non_utf8() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn test_stdout_and_stderr_fail_when_given_non_utf8() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1047,8 +1267,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn cannot_spam_call_result_write() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn cannot_spam_call_result_write() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1069,8 +1289,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn timing_call_infinite_loop() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn timing_call_infinite_loop() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1093,8 +1313,8 @@ mod test {
         assert!(result.gas_used > 0);
     }
 
-    #[test]
-    fn dr_playground_multiple_price_feed() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn dr_playground_multiple_price_feed() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/price-feed-playground.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1124,8 +1344,8 @@ mod test {
         assert_eq!(result.gas_used, 11986115812500);
     }
 
-    #[test]
-    fn timing_spam_fd_write() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn timing_spam_fd_write() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/spam-fd-write.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1145,8 +1365,8 @@ mod test {
         );
     }
 
-    #[test]
-    fn memory_fill_prealloc() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn memory_fill_prealloc() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1163,8 +1383,8 @@ mod test {
         assert_eq!(result.stderr[0], "memory allocation of 44832551 bytes failed\n");
     }
 
-    #[test]
-    fn memory_fill_dynamic() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn memory_fill_dynamic() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("VM_MODE".to_string(), "tally".to_string());
@@ -1181,8 +1401,8 @@ mod test {
         assert_eq!(result.stderr[0], "memory allocation of 8192000 bytes failed\n");
     }
 
-    #[test]
-    fn execute_binary_100_times() {
+    #[tokio::test(flavor = "multi_thread")]
+    async fn execute_binary_100_times() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();
         envs.insert("CONSENSUS".to_string(), "true".to_string());

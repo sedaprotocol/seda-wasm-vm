@@ -30,6 +30,7 @@ rpath = true
 anyhow = "1.0"
 arbitrary = { version = "1.4", features = ["derive"] }
 cbindgen = "0.26"
+futures = { version = "0.3" }
 hex = "0.4"
 home = "0.5.5"
 k256 = "0.13.3"
