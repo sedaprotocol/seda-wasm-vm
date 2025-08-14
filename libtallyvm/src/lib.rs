@@ -512,7 +512,7 @@ mod test {
     fn can_get_runtime_versions() {
         assert_eq!(seda_wasm_vm::WASMER_VERSION, "5.0.4");
         assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "5.0.4");
-        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "3.0.0-dev.0");
+        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "3.0.0-dev.1");
         assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.34.0");
     }
 
