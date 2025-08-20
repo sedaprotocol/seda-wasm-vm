@@ -2,11 +2,16 @@ package tallyvm_test
 
 import (
 	"encoding/hex"
+	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
@@ -362,4 +367,84 @@ func TestExecutionCMultipleParallel(t *testing.T) {
 	bytesArr, argsArr, envsArr := setup_n(t.Fatal, 2)
 
 	tallyvm.ExecuteMultipleFromCParallel(bytesArr, argsArr, envsArr)
+}
+
+func copyDir(src string, dst string) error {
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		rel, err := filepath.Rel(src, path)
+		if err != nil {
+			return err
+		}
+		target := filepath.Join(dst, rel)
+
+		if info.IsDir() {
+			return os.MkdirAll(target, info.Mode())
+		}
+
+		srcFile, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer srcFile.Close()
+
+		dstFile, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, info.Mode())
+		if err != nil {
+			return err
+		}
+		defer dstFile.Close()
+
+		_, err = io.Copy(dstFile, srcFile)
+		return err
+	})
+}
+
+func TestCacheInvalidation(t *testing.T) {
+	defer cleanup()
+
+	file := "../test-wasm-files/tally.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reveals := "[{\"salt\":[1],\"exit_code\":0,\"gas_used\":\"200\",\"reveal\":[2]},{\"salt\":[3],\"exit_code\":0,\"gas_used\":\"201\",\"reveal\":[5]},{\"salt\":[4],\"exit_code\":0,\"gas_used\":\"202\",\"reveal\":[6]}]"
+	reveals_filter := "[0,0,0]"
+
+	res := tallyvm.ExecuteTallyVm(data, []string{"input_here", reveals, reveals_filter}, map[string]string{
+		"CONSENSUS":          "true",
+		"VM_MODE":            "tally",
+		"DR_TALLY_GAS_LIMIT": "150000000000000",
+	})
+	assert.Equal(t, 0, res.ExitInfo.ExitCode)
+
+	path, currentVersion := tallyvm.GetInvalidateWasmCacheInfo()
+	// Make a copy to a different version than the current one
+	err = os.Mkdir(filepath.Join(path, "v1.0.0-fake"), 0755)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = copyDir(filepath.Join(path, currentVersion), filepath.Join(path, "v1.0.0-fake"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = tallyvm.InvalidateWasmCache(sdk.Context{}.WithLogger(log.NewLogger(os.Stdout, log.LevelOption(zerolog.DebugLevel))))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// ensure the v1.0.0-fake directory is deleted
+	_, err = os.Stat(path)
+	if os.IsNotExist(err) {
+		t.Fatal("v1.0.0-fake directory was not deleted")
+	}
+
+	// ensure the current version directory is not deleted
+	_, err = os.Stat(currentVersion)
+	if !os.IsNotExist(err) {
+		t.Fatal("current version directory was deleted")
+	}
 }

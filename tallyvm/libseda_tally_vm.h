@@ -42,6 +42,11 @@ typedef struct FfiTallyRequest {
   uintptr_t env_count;
 } FfiTallyRequest;
 
+typedef struct FfiInvalidateWasmCacheInfo {
+  const char *wasm_cache_dirs;
+  const char *version_name;
+} FfiInvalidateWasmCacheInfo;
+
 /**
  * # Safety
  */
@@ -71,3 +76,13 @@ const struct FfiVmResult *execute_tally_requests(struct FfiVmSettings settings,
 const struct FfiVmResult *execute_tally_requests_parallel(struct FfiVmSettings settings,
                                                           const struct FfiTallyRequest *request,
                                                           uintptr_t count);
+
+/**
+ * # Safety
+ */
+void free_ffi_invalidate_wasm_cache_info(struct FfiInvalidateWasmCacheInfo *cache_info);
+
+/**
+ * # Safety
+ */
+struct FfiInvalidateWasmCacheInfo invalidate_wasm_cache_info(const char *sedad_home_ptr);

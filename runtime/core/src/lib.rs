@@ -5,6 +5,7 @@ mod errors;
 mod memory;
 pub mod metering;
 mod resources_dir;
+pub use resources_dir::resources_home_dir;
 mod runtime;
 mod runtime_context;
 mod safe_wasi_imports;

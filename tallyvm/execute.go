@@ -5,9 +5,13 @@ import "C"
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"runtime"
 	"sync"
 	"unsafe"
+
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type ExitInfo struct {
@@ -277,4 +281,46 @@ func ExecuteMultipleFromCParallel(bytes [][]byte, args [][]string, envs []map[st
 		results[i] = buildResultFromC(&slice[i])
 	}
 	return results
+}
+
+func GetInvalidateWasmCacheInfo() (string, string) {
+	tallyVmDirC := C.CString(TallyVmDir)
+	defer C.free(unsafe.Pointer(tallyVmDirC))
+
+	cResponse := C.invalidate_wasm_cache_info(tallyVmDirC)
+	defer C.free_ffi_invalidate_wasm_cache_info(&cResponse)
+	path := C.GoString(cResponse.wasm_cache_dirs)
+	currentVersion := C.GoString(cResponse.version_name)
+
+	return path, currentVersion
+}
+
+func InvalidateWasmCache(ctx sdk.Context) error {
+	path, currentVersion := GetInvalidateWasmCacheInfo()
+	ctx.Logger().Info("Invalidating WASM cache for versions not matching:", currentVersion)
+
+	vmVersionDirs, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
+
+	// loop through the directories, that have the versions as their names
+	for _, vmVersionDir := range vmVersionDirs {
+		if !vmVersionDir.IsDir() {
+			ctx.Logger().Error("Illegal file/folder in Tally WASM Cache Directory:", vmVersionDir.Name())
+			continue
+		}
+
+		// Check if the folder name does not match the current version
+		// if so delete it
+		name := vmVersionDir.Name()
+		if name != currentVersion {
+			if err := os.RemoveAll(filepath.Join(path, vmVersionDir.Name())); err != nil {
+				return err
+			}
+		}
+
+	}
+
+	return nil
 }

@@ -495,6 +495,42 @@ fn _execute_tally_vm(
     Ok(result)
 }
 
+#[repr(C)]
+pub struct FfiInvalidateWasmCacheInfo {
+    wasm_cache_dirs: *const c_char,
+    version_name:    *const c_char,
+}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn free_ffi_invalidate_wasm_cache_info(cache_info: *mut FfiInvalidateWasmCacheInfo) {
+    if !(*cache_info).wasm_cache_dirs.is_null() {
+        let _ = CString::from_raw((*cache_info).wasm_cache_dirs as *mut c_char);
+        (*cache_info).wasm_cache_dirs = std::ptr::null();
+    }
+    if !(*cache_info).version_name.is_null() {
+        let _ = CString::from_raw((*cache_info).version_name as *mut c_char);
+        (*cache_info).version_name = std::ptr::null();
+    }
+}
+
+/// # Safety
+#[no_mangle]
+pub unsafe extern "C" fn invalidate_wasm_cache_info(sedad_home_ptr: *const c_char) -> FfiInvalidateWasmCacheInfo {
+    let sedad_home = PathBuf::from(CStr::from_ptr(sedad_home_ptr).to_string_lossy().into_owned());
+    let resource_home_dir = seda_wasm_vm::resources_home_dir(&sedad_home);
+    let wasm_cache_dir = resource_home_dir.join(seda_wasm_vm::wasm_cache::WASM_CACHE_FOLDER_NAME);
+    let version_name = seda_wasm_vm::get_version_file_name();
+
+    let wasm_cache_dirs = CString::new(wasm_cache_dir.to_string_lossy().into_owned()).unwrap();
+    let version_name = CString::new(version_name.to_string()).unwrap();
+
+    FfiInvalidateWasmCacheInfo {
+        wasm_cache_dirs: wasm_cache_dirs.into_raw(),
+        version_name:    version_name.into_raw(),
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::{
