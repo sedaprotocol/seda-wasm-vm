@@ -431,6 +431,14 @@ func TestCacheInvalidation(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// create an illegal file to ensure it doesn't break the invalidation
+	illegalFilePath := filepath.Join(path, "illegal_file.txt")
+	illegalFile, err := os.Create(illegalFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer illegalFile.Close()
+
 	err = tallyvm.InvalidateWasmCache(sdk.Context{}.WithLogger(log.NewLogger(os.Stdout, log.LevelOption(zerolog.DebugLevel))))
 	if err != nil {
 		t.Fatal(err)

@@ -307,7 +307,7 @@ func InvalidateWasmCache(ctx sdk.Context) error {
 	// loop through the directories, that have the versions as their names
 	for _, vmVersionDir := range vmVersionDirs {
 		if !vmVersionDir.IsDir() {
-			ctx.Logger().Error("Illegal file/folder in Tally WASM Cache Directory:", vmVersionDir.Name())
+			ctx.Logger().Warn("Illegal file/folder in Tally WASM Cache Directory:", vmVersionDir.Name())
 			continue
 		}
 
@@ -315,6 +315,7 @@ func InvalidateWasmCache(ctx sdk.Context) error {
 		// if so delete it
 		name := vmVersionDir.Name()
 		if name != currentVersion {
+			ctx.Logger().Info("Removing old Tally WASM Cache Directory:", name)
 			if err := os.RemoveAll(filepath.Join(path, vmVersionDir.Name())); err != nil {
 				return err
 			}
