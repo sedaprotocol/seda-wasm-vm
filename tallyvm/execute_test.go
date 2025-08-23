@@ -14,7 +14,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
+	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v3"
 )
 
 func init() {

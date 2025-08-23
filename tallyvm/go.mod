@@ -1,4 +1,4 @@
-module github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2
+module github.com/sedaprotocol/seda-wasm-vm/tallyvm/v3
 
 go 1.23.5
 

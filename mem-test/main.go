@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
+	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v3"
 )
 
 type Config struct {

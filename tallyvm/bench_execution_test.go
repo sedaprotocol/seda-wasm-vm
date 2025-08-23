@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v2"
+	"github.com/sedaprotocol/seda-wasm-vm/tallyvm/v3"
 	"github.com/stretchr/testify/assert"
 )
 
