@@ -44,6 +44,11 @@ Used to verify that a common usecase works as expected when built with the Assem
 Source `spam-fd-write.wat`
 Used to verify that calling `fd-write` directly does not have a significant impact on the compute time.
 
+### stdout_null_bytes.wasm
+
+Source: ???
+Used to verify that a null byte in stdout does not panic at the VM or FFI layers.
+
 ### tally.wasm
 
 Source: ???
