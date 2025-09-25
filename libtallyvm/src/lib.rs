@@ -19,6 +19,12 @@ use crate::errors::Result;
 
 mod errors;
 
+/// Safely converts a Rust string to a CString
+/// Input is not sanitized to avoid impacting network performance.
+fn safe_string_to_cstring(input: &str) -> CString {
+    CString::new(input).unwrap_or_else(|_| CString::new("Invalid string").unwrap())
+}
+
 #[derive(Debug)]
 #[repr(C)]
 pub struct FfiExitInfo {
@@ -38,7 +44,7 @@ pub unsafe extern "C" fn free_ffi_exit_info(exit_info: *mut FfiExitInfo) {
 impl From<ExitInfo> for FfiExitInfo {
     fn from(exit_info: ExitInfo) -> Self {
         FfiExitInfo {
-            exit_message: CString::new(exit_info.exit_message).unwrap().into_raw(),
+            exit_message: safe_string_to_cstring(&exit_info.exit_message).into_raw(),
             exit_code:    exit_info.exit_code,
         }
     }
@@ -59,22 +65,14 @@ pub struct FfiVmResult {
 
 impl FfiVmResult {
     fn from_result(vm_result: VmResult, max_result_bytes: usize, is_tally: bool) -> Self {
-        let stdout: Vec<CString> = vm_result
-            .stdout
-            .iter()
-            .map(|s| CString::new(s.as_str()).unwrap())
-            .collect();
+        let stdout: Vec<CString> = vm_result.stdout.iter().map(|s| safe_string_to_cstring(s)).collect();
         let stdout_storage: Vec<*const c_char> = stdout.into_iter().map(|s| s.into_raw() as *const _).collect();
         let boxed_slice: Box<[*const c_char]> = stdout_storage.into_boxed_slice();
         let stdout_ptr = boxed_slice.as_ptr();
         let stdout_len = boxed_slice.len();
         mem::forget(boxed_slice);
 
-        let stderr: Vec<CString> = vm_result
-            .stderr
-            .iter()
-            .map(|s| CString::new(s.as_str()).unwrap())
-            .collect();
+        let stderr: Vec<CString> = vm_result.stderr.iter().map(|s| safe_string_to_cstring(s)).collect();
         let stderr_storage: Vec<*const c_char> = stderr.into_iter().map(|s| s.into_raw() as *const _).collect();
         let boxed_slice: Box<[*const c_char]> = stderr_storage.into_boxed_slice();
         let stderr_ptr = boxed_slice.as_ptr();
@@ -248,7 +246,7 @@ fn convert_vm_result(result: Result<VmResult>, max_result_bytes: usize, is_tally
             result_ptr: std::ptr::null(),
             result_len: 0,
             exit_info:  FfiExitInfo {
-                exit_message: CString::new(format!("VM Error: {e}")).unwrap().into_raw(),
+                exit_message: safe_string_to_cstring(&format!("VM Error: {e}")).into_raw(),
                 exit_code:    e.exit_code(),
             },
             gas_used:   0,
@@ -267,13 +265,12 @@ fn convert_panic_hook_result(result: core::result::Result<FfiVmResult, Box<dyn s
             result_ptr: std::ptr::null(),
             result_len: 0,
             exit_info:  FfiExitInfo {
-                exit_message: CString::new(format!(
+                exit_message: safe_string_to_cstring(&format!(
                     "The tally VM panicked.\n\
                      Please report this issue at: \
                      https://github.com/sedaprotocol/seda-wasm-vm/issues.\n\
                      Panic Error:\n{e:?}"
                 ))
-                .unwrap()
                 .into_raw(),
 
                 exit_code: 42,
@@ -540,6 +537,7 @@ mod test {
     };
 
     use seda_sdk_rs::bytes::ToBytes;
+    use seda_wasm_vm::vm::{ExitInfo, VmResult};
     use tempdir::TempDir;
 
     use crate::{FfiTallyRequest, FfiVmSettings, _execute_tally_vm, DEFAULT_GAS_LIMIT_ENV_VAR};
@@ -548,7 +546,7 @@ mod test {
     fn can_get_runtime_versions() {
         assert_eq!(seda_wasm_vm::WASMER_VERSION, "5.0.4");
         assert_eq!(seda_wasm_vm::WASMER_TYPES_VERSION, "5.0.4");
-        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "3.0.0-dev.1");
+        assert_eq!(seda_wasm_vm::WASMER_MIDDLEWARES_VERSION, "3.0.0-dev.2");
         assert_eq!(seda_wasm_vm::WASMER_WASIX_VERSION, "0.34.0");
     }
 
@@ -1472,5 +1470,107 @@ mod test {
         println!("Average execution time for 100 runs: {:?}", average_duration);
 
         assert!(average_duration < std::time::Duration::from_secs(10));
+    }
+
+    #[test]
+    fn test_nul_error_stdout() {
+        // Create a test case that reproduces the NulError
+        // This simulates the scenario where stdout contains null bytes
+        let vm_result = VmResult {
+            stdout:    vec![
+                "Received response: @B\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n".to_string(),
+                "Final consensus response: @B\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n".to_string(),
+            ],
+            stderr:    vec![],
+            result:    Some(vec![]),
+            exit_info: ExitInfo {
+                exit_message: "Success".to_string(),
+                exit_code:    0,
+            },
+            gas_used:  0,
+        };
+
+        // Convert to FfiVmResult
+        let ffi_result = crate::FfiVmResult::from_result(vm_result, 1024, true);
+
+        // This should not panic when we free it
+        unsafe {
+            crate::free_ffi_vm_result(&ffi_result as *const _ as *mut _);
+        }
+    }
+
+    #[test]
+    fn test_nul_error_stderr() {
+        // Create a test case that reproduces the NulError
+        // This simulates the scenario where stdout contains null bytes
+        let vm_result = VmResult {
+            stdout:    vec![],
+            stderr:    vec![
+                "Received response: @B\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n".to_string(),
+                "Final consensus response: @B\x0f\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n".to_string(),
+            ],
+            result:    Some(vec![]),
+            exit_info: ExitInfo {
+                exit_message: "Success".to_string(),
+                exit_code:    0,
+            },
+            gas_used:  0,
+        };
+
+        // Convert to FfiVmResult
+        let ffi_result = crate::FfiVmResult::from_result(vm_result, 1024, true);
+
+        // This should not panic when we free it
+        unsafe {
+            crate::free_ffi_vm_result(&ffi_result as *const _ as *mut _);
+        }
+    }
+
+    #[test]
+    fn test_cstring_edge_cases() {
+        // Test various edge cases for CString conversion
+        let long_string = "a".repeat(1000);
+        let test_cases = vec![
+            // Empty string
+            ("", "empty string"),
+            // String with only null bytes
+            ("\0\0\0", "only null bytes"),
+            // String with null bytes at start
+            ("\0hello", "null at start"),
+            // String with null bytes in middle
+            ("hello\0world", "null in middle"),
+            // String with null bytes at end
+            ("hello\0", "null at end"),
+            // String with multiple null bytes
+            ("a\0b\0c\0d", "multiple nulls"),
+            // Normal string
+            ("normal string", "normal string"),
+            // String with special characters
+            ("hello\nworld\t!", "special chars"),
+            // Very long string
+            (&long_string, "long string"),
+        ];
+
+        for (test_string, description) in test_cases {
+            let vm_result = VmResult {
+                stdout:    vec![test_string.to_string()],
+                stderr:    vec![],
+                result:    Some(vec![]),
+                exit_info: ExitInfo {
+                    exit_message: test_string.to_string(),
+                    exit_code:    0,
+                },
+                gas_used:  0,
+            };
+
+            // This should not panic for any of these cases
+            let ffi_result = crate::FfiVmResult::from_result(vm_result, 1024, true);
+
+            unsafe {
+                crate::free_ffi_vm_result(&ffi_result as *const _ as *mut _);
+            }
+
+            println!("✓ Test case '{}' passed", description);
+        }
     }
 }

@@ -29,6 +29,33 @@ func cleanup() {
 	os.RemoveAll(tallyvm.TallyVmDir)
 }
 
+func TestStdoutNullBytes(t *testing.T) {
+	defer cleanup()
+	tallyvm.TallyMaxBytes = 1024
+	tallyvm.TallyMaxStdoutBytes = 512
+	tallyvm.TallyMaxStderrBytes = 512
+
+	file := "../test-wasm-files/stdout_null_bytes.wasm"
+	data, err := os.ReadFile(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	reveals := "[{\"reveal\":[64,66,15,0,0,0,0,0,0,0,0,0,0,0,0,0],\"dr_id\":\"9114624281982027b30361ffc796a6ab91fcd4b54cf6f3569399f13791b5376f\",\"exit_code\":0,\"gas_used\":9003056492500,\"proxy_public_keys\":[],\"dr_block_height\":6111196}]"
+	reveals_filter := "[0]"
+
+	res := tallyvm.ExecuteTallyVm(data, []string{"", reveals, reveals_filter}, map[string]string{
+		"CONSENSUS":             "true",
+		"VM_MODE":               "tally",
+		"DR_TALLY_GAS_LIMIT":    "150000000000000",
+		"DR_REPLICATION_FACTOR": "1",
+	})
+
+	t.Log(res)
+
+	assert.Equal(t, "Invalid string", res.Stdout[0])
+}
+
 func TestTallyBinaryWorks(t *testing.T) {
 	defer cleanup()
 
