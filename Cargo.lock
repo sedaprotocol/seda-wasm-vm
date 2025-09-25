@@ -2219,7 +2219,7 @@ dependencies = [
 
 [[package]]
 name = "seda-runtime-sdk"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "arbitrary",
  "paste",
@@ -2255,7 +2255,7 @@ dependencies = [
 
 [[package]]
 name = "seda-tally-vm"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "cbindgen",
  "hex",
@@ -2270,7 +2270,7 @@ dependencies = [
 
 [[package]]
 name = "seda-wasm-vm"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "cargo_metadata",
  "hex",
@@ -2650,7 +2650,7 @@ dependencies = [
 
 [[package]]
 name = "test-vm"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "anyhow",
  "hex",
@@ -3416,7 +3416,7 @@ dependencies = [
 
 [[package]]
 name = "wasmer-middlewares"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "wasmer",
  "wasmer-types",
@@ -3929,7 +3929,7 @@ checksum = "32ac00cd3f8ec9c1d33fb3e7958a82df6989c42d747bd326c822b1d625283547"
 
 [[package]]
 name = "xtask"
-version = "2.5.0"
+version = "2.6.0"
 dependencies = [
  "anyhow",
  "clap 4.5.19",
