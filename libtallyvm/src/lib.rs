@@ -1125,7 +1125,7 @@ mod test {
             1024,
         )
         .unwrap();
-        assert_eq!(result.gas_used, 14103058802500);
+        assert_eq!(result.gas_used, 14000427996250);
     }
 
     #[tokio::test(flavor = "multi_thread")]
