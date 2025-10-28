@@ -29,8 +29,9 @@ build: build-rust
 
 build-rust: build-rust-release
 
-build-test: 
+build-test:
 	cargo build -p test-vm --target wasm32-wasip1;
+	cp target/wasm32-wasip1/debug/test-vm.wasm test-wasm-files/test-vm.wasm
 
 build-rust-debug:
 	cargo build

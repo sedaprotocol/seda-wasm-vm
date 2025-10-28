@@ -1324,6 +1324,29 @@ mod test {
     }
 
     #[tokio::test(flavor = "multi_thread")]
+    async fn clock_time_get() {
+        let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
+        let mut envs: BTreeMap<String, String> = BTreeMap::new();
+        envs.insert("VM_MODE".to_string(), "tally".to_string());
+        envs.insert(DEFAULT_GAS_LIMIT_ENV_VAR.to_string(), "50000000000000".to_string());
+
+        let temp_dir = TempDir::new("clock_time_get").unwrap();
+        let tempdir = temp_dir.path();
+
+        let method = "clock_time_get".to_string();
+        let method_hex = hex::encode(method.to_bytes().eject());
+
+        let result =
+            _execute_tally_vm(tempdir, wasm_bytes.to_vec(), vec![method_hex], envs.clone(), 1024, 1024).unwrap();
+        assert_eq!(result.exit_info.exit_code, 252);
+        assert_eq!(&result.exit_info.exit_message, "Not ok");
+        assert!(
+            result.stderr[0].contains("Method not implemented clock_time_get"),
+            "Expected error message not found"
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
     async fn timing_call_infinite_loop() {
         let wasm_bytes = include_bytes!("../../test-wasm-files/test-vm.wasm");
         let mut envs: BTreeMap<String, String> = BTreeMap::new();

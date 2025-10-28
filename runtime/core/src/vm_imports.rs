@@ -75,11 +75,12 @@ pub fn create_wasm_imports(
         allowed_wasi_exports.insert(
             "clock_time_get".to_string(),
             // https://wasix.org/docs/api-reference/wasi/clock_time_get
-            // https://docs.rs/wasix/latest/wasix/lib_generated64/fn.clock_time_get.html
+            // https://docs.rs/wasix/0.12.21/wasix/lib_generated64/wasi_snapshot_preview1/fn.clock_time_get.html
             crate::generic_polyfill_import_obj!(
                 "clock_time_get", i32,
                 _id: i32,
-                _precision: i32
+                _precision: i64,
+                _time: i32
             )(store, vm_context),
         );
 
