@@ -248,7 +248,7 @@ func TestMaxOutputByteLimits(t *testing.T) {
 	assert.Equal(t, "Ok", res.ExitInfo.ExitMessage)
 	assert.Equal(t, 0, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
-	assert.Equal(t, 11089317466250, int(res.GasUsed))
+	assert.Equal(t, 11089317485000, int(res.GasUsed))
 	assert.Equal(t, res.Stdout[0], "Fo")
 	assert.Equal(t, res.Stderr[0], "Ba")
 }
@@ -311,7 +311,7 @@ func TestMemoryPreallocTooMuch(t *testing.T) {
 	assert.Equal(t, 252, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.Equal(t, "memory allocation of 44832551 bytes failed\n", res.Stderr[0])
-	assert.Equal(t, 12104438591250, int(res.GasUsed))
+	assert.Equal(t, 12104607510000, int(res.GasUsed))
 }
 
 func TestMemoryDynamicTooMuch(t *testing.T) {
@@ -342,5 +342,5 @@ func TestMemoryDynamicTooMuch(t *testing.T) {
 	assert.Equal(t, 252, res.ExitInfo.ExitCode)
 	assert.Empty(t, res.Result)
 	assert.Equal(t, "memory allocation of 8192000 bytes failed\n", res.Stderr[0])
-	assert.Equal(t, 21244868027500, int(res.GasUsed))
+	assert.Equal(t, 21244077546250, int(res.GasUsed))
 }
