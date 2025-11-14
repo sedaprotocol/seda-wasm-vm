@@ -1,6 +1,6 @@
 module github.com/sedaprotocol/seda-wasm-vm/tallyvm/v3
 
-go 1.23.5
+go 1.23
 
 require (
 	cosmossdk.io/log v1.4.1

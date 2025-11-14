@@ -2,7 +2,7 @@ name: Tests & Checks
 on: [pull_request]
 
 env:
-  GO_VERSION: 1.21.3
+  GO_VERSION: 1.23
   # https://releases.rs/docs/1.85.0/ release date
   RUSTUP_TOOLCHAIN: nightly-2025-02-20
   RUST_BACKTRACE: 1
